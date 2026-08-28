@@ -1,0 +1,5 @@
+# Keep GitHub's language badge focused on the Java backend while the Vite
+# frontend remains part of the project.
+src/**/*.ts linguist-detectable=false
+src/**/*.tsx linguist-detectable=false
+vite.config.ts linguist-detectable=false

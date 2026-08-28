@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "dev:backend": "mvn -Djavax.net.ssl.trustStoreType=Windows-ROOT -f backend/pom.xml spring-boot:run",
+    "dev:backend": "mvn \"-Djavax.net.ssl.trustStoreType=Windows-ROOT\" -f backend/pom.xml spring-boot:run",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
