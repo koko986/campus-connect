@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, MessagesSquare, Search, Sparkle } from "lucide-react";
 
@@ -5,21 +6,21 @@ import heroImg from "@/assets/hero-students.jpg";
 import { Logo } from "@/components/app-shell";
 import { UniversityCard } from "@/components/community";
 import { Button } from "@/components/ui/button";
-import { universities } from "@/lib/mock-data";
+import { listUniversities } from "@/lib/data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UniVoice — Choose a university with help from real students" },
+      { title: "TAKKA - Choose a university with help from real students" },
       {
         name: "description",
-        content:
-          "UniVoice connects high school graduates with current university students. Explore universities, read honest posts, ask questions and chat.",
+        content: "TAKKA connects prospective students with current university students.",
       },
-      { property: "og:title", content: "UniVoice — Choose a university with help from real students" },
+      { property: "og:title", content: "TAKKA - University discovery through student experience" },
       {
         property: "og:description",
-        content: "Explore universities through the experiences of the people who actually study there.",
+        content:
+          "Explore universities through the experiences of the people who actually study there.",
       },
     ],
   }),
@@ -45,6 +46,9 @@ const steps = [
 ];
 
 function Landing() {
+  const universities = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
+  const departmentCount =
+    universities.data?.reduce((total, university) => total + university.departments.length, 0) ?? 0;
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
@@ -68,8 +72,8 @@ function Landing() {
             Choose your university through the students who study there.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
-            Rankings and brochures won't tell you what first year really feels like. UniVoice connects you
-            with verified current students — read their posts, ask questions, and chat before you decide.
+            Rankings and brochures do not tell you what first year really feels like. TAKKA connects
+            you with current students so you can ask questions before you decide.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full">
@@ -83,9 +87,9 @@ function Landing() {
           </div>
           <dl className="mt-10 grid max-w-md grid-cols-3 gap-4">
             {[
-              ["6", "Universities"],
-              ["500+", "Student posts"],
-              ["1.2k", "Answers"],
+              [String(universities.data?.length ?? 0), "Universities"],
+              [String(departmentCount), "Departments"],
+              ["Live", "Database"],
             ].map(([value, label]) => (
               <div key={label}>
                 <dt className="text-2xl font-bold">{value}</dt>
@@ -128,7 +132,7 @@ function Landing() {
           </Button>
         </div>
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {universities.slice(0, 3).map((u) => (
+          {universities.data?.slice(0, 3).map((u) => (
             <UniversityCard key={u.id} university={u} />
           ))}
         </div>
@@ -146,7 +150,7 @@ function Landing() {
       </section>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        UniVoice · A student community for university discovery
+        TAKKA · A student community for university discovery
       </footer>
     </div>
   );

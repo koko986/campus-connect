@@ -6,13 +6,16 @@ import { Logo } from "@/components/app-shell";
 export const Route = createFileRoute("/get-started")({
   head: () => ({
     meta: [
-      { title: "Get started — UniVoice" },
+      { title: "Get started - TAKKA" },
       {
         name: "description",
         content: "Tell us whether you're a current university student or looking for a university.",
       },
-      { property: "og:title", content: "Get started — UniVoice" },
-      { property: "og:description", content: "Choose your account type and join the student community." },
+      { property: "og:title", content: "Get started - TAKKA" },
+      {
+        property: "og:description",
+        content: "Choose your account type and join the student community.",
+      },
     ],
   }),
   component: GetStarted,
@@ -40,7 +43,10 @@ function GetStarted() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
         <Logo />
-        <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+        <Link
+          to="/login"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground"
+        >
           Log in
         </Link>
       </header>
@@ -70,7 +76,8 @@ function GetStarted() {
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{o.text}</p>
               <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Continue <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                Continue{" "}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
           ))}

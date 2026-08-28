@@ -10,13 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GetStartedRouteImport } from './routes/get-started'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as QuestionsRouteImport } from './routes/questions'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RegisterRoleRouteImport } from './routes/register.$role'
+import { Route as UniversitiesIndexRouteImport } from './routes/universities/index'
+import { Route as UniversitiesIdRouteImport } from './routes/universities/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GetStartedRoute = GetStartedRouteImport.update({
@@ -29,44 +47,143 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionsRoute = QuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoleRoute = RegisterRoleRouteImport.update({
   id: '/register/$role',
   path: '/register/$role',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UniversitiesIndexRoute = UniversitiesIndexRouteImport.update({
+  id: '/universities/',
+  path: '/universities/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UniversitiesIdRoute = UniversitiesIdRouteImport.update({
+  id: '/universities/$id',
+  path: '/universities/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
+  '/profile': typeof ProfileRoute
+  '/questions': typeof QuestionsRoute
+  '/settings': typeof SettingsRoute
   '/register/$role': typeof RegisterRoleRoute
+  '/universities/$id': typeof UniversitiesIdRoute
+  '/universities/': typeof UniversitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
+  '/profile': typeof ProfileRoute
+  '/questions': typeof QuestionsRoute
+  '/settings': typeof SettingsRoute
   '/register/$role': typeof RegisterRoleRoute
+  '/universities/$id': typeof UniversitiesIdRoute
+  '/universities': typeof UniversitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
+  '/profile': typeof ProfileRoute
+  '/questions': typeof QuestionsRoute
+  '/settings': typeof SettingsRoute
   '/register/$role': typeof RegisterRoleRoute
+  '/universities/$id': typeof UniversitiesIdRoute
+  '/universities/': typeof UniversitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/get-started' | '/login' | '/register/$role'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/get-started'
+    | '/login'
+    | '/messages'
+    | '/profile'
+    | '/questions'
+    | '/settings'
+    | '/register/$role'
+    | '/universities/$id'
+    | '/universities/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/get-started' | '/login' | '/register/$role'
-  id: '__root__' | '/' | '/get-started' | '/login' | '/register/$role'
+  to:
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/get-started'
+    | '/login'
+    | '/messages'
+    | '/profile'
+    | '/questions'
+    | '/settings'
+    | '/register/$role'
+    | '/universities/$id'
+    | '/universities'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/dashboard'
+    | '/get-started'
+    | '/login'
+    | '/messages'
+    | '/profile'
+    | '/questions'
+    | '/settings'
+    | '/register/$role'
+    | '/universities/$id'
+    | '/universities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  DashboardRoute: typeof DashboardRoute
   GetStartedRoute: typeof GetStartedRoute
   LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRoute
+  ProfileRoute: typeof ProfileRoute
+  QuestionsRoute: typeof QuestionsRoute
+  SettingsRoute: typeof SettingsRoute
   RegisterRoleRoute: typeof RegisterRoleRoute
+  UniversitiesIdRoute: typeof UniversitiesIdRoute
+  UniversitiesIndexRoute: typeof UniversitiesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +193,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/get-started': {
@@ -92,6 +223,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questions': {
+      id: '/questions'
+      path: '/questions'
+      fullPath: '/questions'
+      preLoaderRoute: typeof QuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register/$role': {
       id: '/register/$role'
       path: '/register/$role'
@@ -99,14 +258,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRoleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/universities/': {
+      id: '/universities/'
+      path: '/universities'
+      fullPath: '/universities/'
+      preLoaderRoute: typeof UniversitiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/universities/$id': {
+      id: '/universities/$id'
+      path: '/universities/$id'
+      fullPath: '/universities/$id'
+      preLoaderRoute: typeof UniversitiesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  DashboardRoute: DashboardRoute,
   GetStartedRoute: GetStartedRoute,
   LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRoute,
+  ProfileRoute: ProfileRoute,
+  QuestionsRoute: QuestionsRoute,
+  SettingsRoute: SettingsRoute,
   RegisterRoleRoute: RegisterRoleRoute,
+  UniversitiesIdRoute: UniversitiesIdRoute,
+  UniversitiesIndexRoute: UniversitiesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
