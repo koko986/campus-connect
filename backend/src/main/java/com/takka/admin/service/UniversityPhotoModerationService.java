@@ -2,6 +2,7 @@ package com.takka.admin.service;
 
 import com.takka.admin.mapper.UniversityPhotoMapper;
 import com.takka.admin.model.AdminIdentity;
+import com.takka.admin.model.ModerationAction;
 import com.takka.admin.model.UniversityPhotoView;
 import com.takka.admin.repository.UniversityPhotoRepository;
 import com.takka.admin.support.Json;
@@ -19,9 +20,12 @@ public class UniversityPhotoModerationService {
   public static final List<String> STATUSES = List.of("PENDING", "APPROVED", "REJECTED");
 
   private final UniversityPhotoRepository photos;
+  private final AuditTrailService auditTrail;
 
-  public UniversityPhotoModerationService(UniversityPhotoRepository photos) {
+  public UniversityPhotoModerationService(
+      UniversityPhotoRepository photos, AuditTrailService auditTrail) {
     this.photos = photos;
+    this.auditTrail = auditTrail;
   }
 
   public Page<UniversityPhotoView> queue(String status, PageRequest request) {
@@ -49,5 +53,15 @@ public class UniversityPhotoModerationService {
           Json.text(updated, "image_path"),
           Json.text(Json.embeddedRow(updated, "uploader"), "full_name", "TAKKA student"));
     }
+
+    ModerationAction action =
+        "APPROVED".equals(decision)
+            ? ModerationAction.APPROVE_UNIVERSITY_PHOTO
+            : ModerationAction.REJECT_UNIVERSITY_PHOTO;
+    String reason =
+        reviewNote == null || reviewNote.isBlank()
+            ? ("APPROVED".equals(decision) ? "Approved campus photo" : "Rejected campus photo")
+            : reviewNote.trim();
+    auditTrail.record(administrator, action, photoId, reason, null, updated);
   }
 }

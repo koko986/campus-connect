@@ -35,8 +35,12 @@ public record AuditEntryView(
     if (action == null) return "muted";
     return switch (action) {
       case BLOCK_USER, DELETE_USER, REMOVE_POST, ARCHIVE_UNIVERSITY -> "danger";
-      case UNBLOCK_USER, RESTORE_POST, RESOLVE_REPORT, PUBLISH_UNIVERSITY -> "success";
-      case DISMISS_REPORT, UNPUBLISH_UNIVERSITY -> "warning";
+      case UNBLOCK_USER,
+          RESTORE_POST,
+          RESOLVE_REPORT,
+          PUBLISH_UNIVERSITY,
+          APPROVE_UNIVERSITY_PHOTO -> "success";
+      case DISMISS_REPORT, UNPUBLISH_UNIVERSITY, REJECT_UNIVERSITY_PHOTO -> "warning";
       case CREATE_UNIVERSITY, UPDATE_UNIVERSITY -> "info";
     };
   }
