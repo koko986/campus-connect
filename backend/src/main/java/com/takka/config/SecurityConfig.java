@@ -61,7 +61,8 @@ public class SecurityConfig {
   }
 
   @Bean
-  UrlBasedCorsConfigurationSource cors(@Value("${takka.frontend-origin}") String origin) {
+  UrlBasedCorsConfigurationSource corsConfigurationSource(
+      @Value("${takka.frontend-origin}") String origin) {
     var configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(List.of(origin, origin.replace("localhost", "127.0.0.1")));
     configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key"));
