@@ -4,7 +4,8 @@
   "build": {
     "env": {
       "VITE_SUPABASE_URL": "https://rgotqcryuogqrdzlfntb.supabase.co",
-      "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_yY153JVd0BKy8_xMfVc9lw_eFtzsXJT"
+      "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_yY153JVd0BKy8_xMfVc9lw_eFtzsXJT",
+      "VITE_TAKKA_API_URL": "https://campus-connect-backend-production-4525.up.railway.app"
     }
   }
 }
