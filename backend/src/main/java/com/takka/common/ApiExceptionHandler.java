@@ -1,6 +1,7 @@
 package com.takka.common;
 
 import java.util.Map;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientResponseException;
 
-@RestControllerAdvice
+/** JSON error responses for the API. Scoped so console pages keep rendering HTML errors. */
+@Order(20)
+@RestControllerAdvice(basePackages = {"com.takka.reports", "com.takka.account"})
 public class ApiExceptionHandler {
   @ExceptionHandler(AccessDeniedException.class)
   ResponseEntity<Map<String, String>> denied(AccessDeniedException error) {

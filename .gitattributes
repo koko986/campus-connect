@@ -1,5 +1,6 @@
-# Keep GitHub's language badge focused on the Java backend while the Vite
-# frontend remains part of the project.
-src/**/*.ts linguist-detectable=false
-src/**/*.tsx linguist-detectable=false
-vite.config.ts linguist-detectable=false
+# Generated files are excluded from GitHub's language statistics so the badge
+# reflects code that is actually written and reviewed in this repository.
+# Everything else — including the Vite frontend — is counted honestly.
+src/routeTree.gen.ts linguist-generated=true
+src/lib/database.types.ts linguist-generated=true
+package-lock.json linguist-generated=true

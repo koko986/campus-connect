@@ -1,6 +1,6 @@
 # TAKKA
 
-TAKKA is a university discovery and student community platform for Myanmar. The React application uses Supabase Auth, PostgreSQL, Row Level Security, and Realtime. The Spring Boot service in `backend/` protects reports, moderation, account administration, and university catalog management.
+TAKKA is a university discovery and student community platform for Myanmar. The React application uses Supabase Auth, PostgreSQL, Row Level Security, and Realtime. The Spring Boot service in `backend/` protects reports and hosts the administration console, which is a server-rendered Java application rather than part of the student app.
 
 ## Requirements
 
@@ -71,4 +71,26 @@ cd backend
 mvn spring-boot:run
 ```
 
-The community can read public Supabase data without Java, but reporting and `/admin` require this service. Supabase user access tokens are validated server-side; the secret key is used only for administrator operations.
+The community can read public Supabase data without Java, but reporting and the administration console require this service. Supabase user access tokens are validated server-side; the secret key is used only for administrator operations.
+
+## Administration Console
+
+Administration is a separate Java application, not a page inside the student app. Sign in at:
+
+```
+http://localhost:8080/admin
+```
+
+The console has its own cookie session and CSRF protection, its own sidebar (Overview, Reports, Accounts, Posts, Universities, Catalog, Audit log), and shares no layout, navigation, or styling with the member experience. Signing in requires Supabase credentials that also have an active row in `admin_users`; member credentials are refused with an explanation rather than given a session.
+
+Two roles exist. A `MODERATOR` can work the report queue, block and unblock accounts, and remove or restore posts. A `SUPER_ADMIN` can additionally delete accounts, edit the university directory, publish or archive universities, and curate campuses, departments, and programs. Every action appends an immutable row to `moderation_actions`, visible under Audit log.
+
+Members never see an administration link, and there is no `/admin` route in the React app.
+
+## Language Report
+
+```powershell
+pwsh ./scripts/language-report.ps1
+```
+
+Prints bytes and lines per language, excluding files marked `linguist-generated` in `.gitattributes`, and exits non-zero if TypeScript ever outgrows Java. Add `-Detailed` to list every counted file.

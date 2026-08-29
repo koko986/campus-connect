@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
-import { submitReport } from "@/lib/admin-api";
+import { submitReport } from "@/lib/api";
 import type { CommunityProfile, FeedPost, University } from "@/lib/data";
 import {
   avatarUrl,

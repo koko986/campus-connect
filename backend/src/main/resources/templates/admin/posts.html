@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('Posts')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <form th:action="@{/admin/posts}" method="get" class="console-filters">
+        <label>
+          <span>Status</span>
+          <select name="status">
+            <option value="" th:selected="${#strings.isEmpty(statusFilter)}">All posts</option>
+            <option
+              th:each="status : ${statuses}"
+              th:value="${status.name()}"
+              th:text="${status.label()}"
+              th:selected="${status.name() == statusFilter}"
+            ></option>
+          </select>
+        </label>
+        <button type="submit" class="console-button console-button--ghost">Apply</button>
+      </form>
+
+      <p th:if="${posts.isEmpty()}" class="console-empty">No posts match this filter.</p>
+
+      <table th:unless="${posts.isEmpty()}" class="console-table console-table--roomy">
+        <thead>
+          <tr>
+            <th>Post</th>
+            <th>Author</th>
+            <th>Reports</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="post : ${posts.items()}">
+            <td>
+              <p class="console-post-body" th:text="${post.excerpt()}">Body</p>
+              <span class="console-muted" th:text="${post.created()}">date</span>
+            </td>
+            <td>
+              <span class="console-strong" th:if="${post.hasAuthor()}" th:text="${post.authorName()}">Name</span>
+              <span class="console-muted" th:if="${post.hasAuthor()}" th:text="${post.authorEmail()}">email</span>
+              <span class="console-muted" th:unless="${post.hasAuthor()}">Deleted account</span>
+            </td>
+            <td>
+              <span th:if="${post.isReported()}" class="console-pill console-pill--warning"
+                th:text="${post.reportCount()}">0</span>
+              <span th:unless="${post.isReported()}" class="console-muted">0</span>
+            </td>
+            <td>
+              <span
+                class="console-pill"
+                th:classappend="'console-pill--' + ${post.statusTone()}"
+                th:text="${post.status().label()}"
+                >Published</span
+              >
+              <p class="console-detail" th:if="${post.hasRemovalReason()}" th:text="${post.removalReason()}"></p>
+            </td>
+            <td class="console-actions">
+              <details th:if="${post.isPublished()}" class="console-action">
+                <summary class="console-button console-button--danger">Remove</summary>
+                <form
+                  th:action="@{'/admin/posts/' + ${post.id()} + '/remove'}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
+                  <label>
+                    <span>Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
+                      placeholder="Recorded in the audit trail"></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--danger">Confirm removal</button>
+                </form>
+              </details>
+
+              <details th:unless="${post.isPublished()}" class="console-action">
+                <summary class="console-button console-button--primary">Restore</summary>
+                <form
+                  th:action="@{'/admin/posts/' + ${post.id()} + '/restore'}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
+                  <label>
+                    <span>Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--primary">Confirm restore</button>
+                </form>
+              </details>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:unless="${posts.isEmpty()}">
+        <nav th:replace="~{admin/fragments :: pagination(${posts}, '/admin/posts')}"></nav>
+      </div>
+    </main>
+  </body>
+</html>

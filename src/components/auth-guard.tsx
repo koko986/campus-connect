@@ -4,7 +4,7 @@ import { LoaderCircle, ShieldBan } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import { useAuth } from "@/lib/auth";
-import { getAccountStatus } from "@/lib/admin-api";
+import { getAccountStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 
 export function AuthGuard({ children }: { children: ReactNode }) {

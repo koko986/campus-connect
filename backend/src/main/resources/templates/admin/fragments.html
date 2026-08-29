@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <!--
+    Shared pieces of the console shell. Every console page includes these fragments, which is why
+    the console chrome has no student navigation, avatar, or link into a member account.
+  -->
+  <head th:fragment="head(title)">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title th:text="'TAKKA Admin · ' + ${title}">TAKKA Admin</title>
+    <link rel="stylesheet" th:href="@{/admin/assets/console.css}" />
+  </head>
+
+  <body>
+    <aside th:fragment="sidebar" class="console-sidebar">
+      <div class="console-brand">
+        <span class="console-brand-mark">TK</span>
+        <span class="console-brand-text">
+          <strong>TAKKA</strong>
+          <small>Administration</small>
+        </span>
+      </div>
+      <nav class="console-nav">
+        <a
+          th:each="item : ${navigation}"
+          th:href="@{${item.href()}}"
+          th:text="${item.label()}"
+          th:classappend="${item == section} ? 'is-active' : ''"
+          class="console-nav-link"
+          >Section</a
+        >
+      </nav>
+      <p class="console-scope">
+        Moderation console. Member pages are served by the TAKKA app and are not reachable from here.
+      </p>
+    </aside>
+
+    <header th:fragment="topbar" class="console-topbar">
+      <div class="console-heading">
+        <h1 th:text="${pageTitle}">Console</h1>
+        <p th:text="${section.label()}">Section</p>
+      </div>
+      <div class="console-identity">
+        <span class="console-email" th:text="${administrator.email()}">admin@takka</span>
+        <span
+          class="console-pill"
+          th:classappend="${superAdmin} ? 'console-pill--info' : 'console-pill--muted'"
+          th:text="${administrator.role().label()}"
+          >Role</span
+        >
+        <form th:action="@{/admin/logout}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="console-button console-button--ghost">Sign out</button>
+        </form>
+      </div>
+    </header>
+
+    <div th:fragment="flash" class="console-flash">
+      <p th:if="${flashSuccess}" class="console-banner console-banner--success" th:text="${flashSuccess}"></p>
+      <p th:if="${flashError}" class="console-banner console-banner--error" th:text="${flashError}"></p>
+    </div>
+
+    <!-- Page links keep the active filter by re-using the encoded query the controller built. -->
+    <nav th:fragment="pagination(pageData, path)" class="console-pagination">
+      <span class="console-pagination-range">
+        Rows <strong th:text="${pageData.firstRowNumber()}">0</strong>–<strong
+          th:text="${pageData.lastRowNumber()}"
+          >0</strong
+        >
+      </span>
+      <span class="console-pagination-controls">
+        <a
+          th:if="${pageData.hasPrevious()}"
+          th:href="${path + '?' + (#strings.isEmpty(filterQuery) ? '' : filterQuery + '&amp;') + 'page=' + pageData.previousPage()}"
+          class="console-button console-button--ghost"
+          >Previous</a
+        >
+        <a
+          th:if="${pageData.hasNext()}"
+          th:href="${path + '?' + (#strings.isEmpty(filterQuery) ? '' : filterQuery + '&amp;') + 'page=' + pageData.nextPage()}"
+          class="console-button console-button--ghost"
+          >Next</a
+        >
+      </span>
+    </nav>
+  </body>
+</html>

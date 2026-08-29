@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('Audit log')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <p class="console-scope-note">
+        Every administrator action is appended here. A database trigger rejects edits and deletions, so
+        this record cannot be altered from the console.
+      </p>
+
+      <p th:if="${entries.isEmpty()}" class="console-empty">No moderation actions recorded yet.</p>
+
+      <table th:unless="${entries.isEmpty()}" class="console-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Administrator</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="entry : ${entries.items()}">
+            <td th:text="${entry.recorded()}">date</td>
+            <td th:text="${entry.adminEmail()}">admin</td>
+            <td>
+              <span
+                class="console-pill"
+                th:classappend="'console-pill--' + ${entry.actionTone()}"
+                th:text="${entry.actionLabel()}"
+                >Action</span
+              >
+              <span class="console-muted" th:if="${entry.linkedToReport()}">from a report</span>
+            </td>
+            <td>
+              <span class="console-strong" th:if="${entry.hasTargetLabel()}" th:text="${entry.targetLabel()}">Target</span>
+              <span class="console-muted" th:text="${entry.targetType()}">TYPE</span>
+            </td>
+            <td class="console-detail" th:text="${entry.reason()}">reason</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:unless="${entries.isEmpty()}">
+        <nav th:replace="~{admin/fragments :: pagination(${entries}, '/admin/audit')}"></nav>
+      </div>
+    </main>
+  </body>
+</html>

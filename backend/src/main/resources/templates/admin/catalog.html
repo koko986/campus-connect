@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('Catalog')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <form th:action="@{/admin/catalog}" method="get" class="console-filters">
+        <label class="console-filters-grow">
+          <span>University</span>
+          <select name="universityId">
+            <option value="">Choose a university</option>
+            <option
+              th:each="option : ${universities}"
+              th:value="${option.id()}"
+              th:text="${option.label()}"
+              th:selected="${universityId != null and option.id().toString() == universityId.toString()}"
+            ></option>
+          </select>
+        </label>
+        <label>
+          <span>Records</span>
+          <select name="resource">
+            <option
+              th:each="item : ${resources}"
+              th:value="${item.slug()}"
+              th:text="${item.label()}"
+              th:selected="${item == resource}"
+            ></option>
+          </select>
+        </label>
+        <button type="submit" class="console-button console-button--ghost">Show</button>
+      </form>
+
+      <p th:if="${universityId == null}" class="console-empty">
+        Choose a university to curate its campuses, departments, and programs.
+      </p>
+
+      <div th:if="${universityId != null}">
+        <p th:if="${items.isEmpty()}" class="console-empty"
+          th:text="'No ' + ${#strings.toLowerCase(resource.label())} + ' recorded for this university yet.'"></p>
+
+        <table th:unless="${items.isEmpty()}" class="console-table">
+          <thead>
+            <tr>
+              <th th:text="${resource.singular()}">Name</th>
+              <th>Detail</th>
+              <th>Source</th>
+              <th th:if="${superAdmin}">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${items}">
+              <td class="console-strong" th:text="${item.name()}">Name</td>
+              <td>
+                <span th:if="${!#strings.isEmpty(item.detail())}" th:text="${item.detail()}">Detail</span>
+                <span th:if="${#strings.isEmpty(item.detail())}" class="console-muted">—</span>
+                <span class="console-muted" th:if="${item.hasDegreeLevel()}" th:text="${item.degreeLevel()}">level</span>
+              </td>
+              <td>
+                <a th:if="${item.hasSourceUrl()}" th:href="${item.sourceUrl()}" rel="noreferrer noopener"
+                  target="_blank" class="console-link">Source</a>
+                <span th:unless="${item.hasSourceUrl()}" class="console-muted">—</span>
+              </td>
+              <td th:if="${superAdmin}">
+                <a
+                  th:href="@{/admin/catalog(universityId=${universityId},resource=${resource.slug()},edit=${item.id()})}"
+                  class="console-button console-button--ghost"
+                  >Edit</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <section th:if="${superAdmin}" class="console-panel">
+          <div class="console-panel-head">
+            <h2 th:text="${form.isEditing()} ? 'Edit ' + ${resource.singular()} : 'Add ' + ${resource.singular()}">
+              Add
+            </h2>
+            <a
+              th:if="${form.isEditing()}"
+              th:href="@{/admin/catalog(universityId=${universityId},resource=${resource.slug()})}"
+              class="console-button console-button--ghost"
+              >Cancel edit</a
+            >
+          </div>
+
+          <form
+            th:action="@{'/admin/catalog/' + ${resource.slug()}}"
+            th:object="${form}"
+            method="post"
+            class="console-form console-form--wide"
+          >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{universityId}" />
+
+            <div class="console-form-grid">
+              <label>
+                <span th:text="${resource.singular()} + ' name'">Name</span>
+                <input type="text" th:field="*{name}" required />
+                <em class="console-field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></em>
+              </label>
+
+              <label th:if="${resource.isCampuses()}">
+                <span>City</span>
+                <input type="text" th:field="*{city}" required />
+                <em class="console-field-error" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></em>
+              </label>
+              <label th:if="${resource.isCampuses()}">
+                <span>Address</span>
+                <input type="text" th:field="*{address}" />
+                <em class="console-field-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></em>
+              </label>
+              <label th:if="${resource.isCampuses()}">
+                <span>Latitude</span>
+                <input type="number" step="any" th:field="*{latitude}" />
+                <em class="console-field-error" th:if="${#fields.hasErrors('latitude')}" th:errors="*{latitude}"></em>
+              </label>
+              <label th:if="${resource.isCampuses()}">
+                <span>Longitude</span>
+                <input type="number" step="any" th:field="*{longitude}" />
+                <em class="console-field-error" th:if="${#fields.hasErrors('longitude')}" th:errors="*{longitude}"></em>
+              </label>
+
+              <label th:if="${resource.isPrograms()}">
+                <span>Department</span>
+                <select th:field="*{departmentId}">
+                  <option value="">No department</option>
+                  <option
+                    th:each="department : ${departments}"
+                    th:value="${department.id()}"
+                    th:text="${department.name()}"
+                  ></option>
+                </select>
+              </label>
+              <label th:if="${resource.isPrograms()}">
+                <span>Degree level</span>
+                <input type="text" th:field="*{degreeLevel}" placeholder="Bachelor" />
+                <em class="console-field-error" th:if="${#fields.hasErrors('degreeLevel')}"
+                  th:errors="*{degreeLevel}"></em>
+              </label>
+
+              <label>
+                <span>Source URL</span>
+                <input type="url" th:field="*{sourceUrl}" />
+                <em class="console-field-error" th:if="${#fields.hasErrors('sourceUrl')}" th:errors="*{sourceUrl}"></em>
+              </label>
+            </div>
+
+            <label th:if="${resource.isPrograms()}">
+              <span>Description</span>
+              <textarea th:field="*{description}" rows="4"></textarea>
+              <em class="console-field-error" th:if="${#fields.hasErrors('description')}"
+                th:errors="*{description}"></em>
+            </label>
+
+            <div class="console-form-actions">
+              <button type="submit" class="console-button console-button--primary"
+                th:text="${form.isEditing()} ? 'Save changes' : 'Add to catalog'">Save</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

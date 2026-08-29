@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('Reports')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <form th:action="@{/admin/reports}" method="get" class="console-filters">
+        <label>
+          <span>Status</span>
+          <select name="status">
+            <option value="" th:selected="${#strings.isEmpty(statusFilter)}">All statuses</option>
+            <option
+              th:each="status : ${statuses}"
+              th:value="${status.name()}"
+              th:text="${status.label()}"
+              th:selected="${status.name() == statusFilter}"
+            ></option>
+          </select>
+        </label>
+        <button type="submit" class="console-button console-button--ghost">Apply</button>
+      </form>
+
+      <p th:if="${reports.isEmpty()}" class="console-empty">No reports match this filter.</p>
+
+      <table th:unless="${reports.isEmpty()}" class="console-table console-table--roomy">
+        <thead>
+          <tr>
+            <th>Submitted</th>
+            <th>Target</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="report : ${reports.items()}">
+            <td>
+              <span th:text="${report.submitted()}">date</span>
+              <span class="console-muted" th:text="'waiting ' + ${report.age()}">waiting</span>
+            </td>
+            <td>
+              <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
+              <span class="console-muted" th:text="${report.targetType().label()}">Account</span>
+              <p class="console-detail" th:if="${report.hasDetails()}" th:text="${report.details()}"></p>
+            </td>
+            <td th:text="${report.reason()}">SPAM</td>
+            <td>
+              <span
+                class="console-pill"
+                th:classappend="'console-pill--' + ${report.statusTone()}"
+                th:text="${report.status().label()}"
+                >Open</span
+              >
+              <p class="console-detail" th:if="${report.hasResolutionNotes()}"
+                th:text="${report.resolutionNotes()}"></p>
+            </td>
+            <td>
+              <span th:unless="${report.isActionable()}" class="console-muted">Closed</span>
+              <details th:if="${report.isActionable()}" class="console-action">
+                <summary class="console-button console-button--primary">Decide</summary>
+                <form
+                  th:action="@{'/admin/reports/' + ${report.id()} + '/decision'}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
+                  <label>
+                    <span>Decision</span>
+                    <select name="status" required>
+                      <option
+                        th:each="decision : ${decisions}"
+                        th:value="${decision.name()}"
+                        th:text="${decision.label()}"
+                      ></option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Notes</span>
+                    <textarea name="notes" rows="3" minlength="3" maxlength="2000" required
+                      placeholder="Recorded in the audit trail"></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--primary">Save decision</button>
+                </form>
+              </details>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:unless="${reports.isEmpty()}">
+        <nav th:replace="~{admin/fragments :: pagination(${reports}, '/admin/reports')}"></nav>
+      </div>
+    </main>
+  </body>
+</html>

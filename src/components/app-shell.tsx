@@ -7,13 +7,11 @@ import {
   User,
   Settings,
   LogOut,
-  ShieldCheck,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
-import { useAdminIdentity } from "@/components/admin-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -52,10 +50,6 @@ export function AppShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut, user } = useAuth();
-  const admin = useAdminIdentity();
-  const navigation = admin.data
-    ? [...nav, { to: "/admin" as const, label: "Administration", icon: ShieldCheck }]
-    : nav;
 
   const member = useQuery({
     queryKey: ["member-profile", user?.id],
@@ -73,7 +67,7 @@ export function AppShell({
         <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
           <Logo className="px-2" />
           <nav className="mt-8 flex flex-1 flex-col gap-1">
-            {navigation.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -107,13 +101,6 @@ export function AppShell({
               </div>
               <h1 className="hidden text-base font-semibold lg:block">{title ?? "Home"}</h1>
               <div className="ml-auto" />
-              {admin.data ? (
-                <Button asChild variant="ghost" size="icon" aria-label="Open administration">
-                  <Link to="/admin">
-                    <ShieldCheck className="size-[18px]" />
-                  </Link>
-                </Button>
-              ) : null}
               <Button
                 variant="ghost"
                 size="icon"
@@ -149,7 +136,7 @@ export function AppShell({
 
         <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
           <div className="flex items-center justify-around px-1 pt-1">
-            {navigation.slice(0, 5).map((item) => (
+            {nav.slice(0, 5).map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

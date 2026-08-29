@@ -10,6 +10,7 @@ import {
 import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { Toaster } from "../components/ui/sonner";
 import { AuthProvider } from "../lib/auth";
 import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 
@@ -134,6 +135,7 @@ function RootComponent() {
       <ThemeProvider>
         <AuthProvider>
           <Outlet />
+          <Toaster position="top-center" richColors />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

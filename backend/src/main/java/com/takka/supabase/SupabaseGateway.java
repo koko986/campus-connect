@@ -48,6 +48,31 @@ public class SupabaseGateway {
     return new TakkaPrincipal(UUID.fromString(user.get("id").asText()), user.path("email").asText(""), token);
   }
 
+  /**
+   * Exchanges email and password for a Supabase session. The console needs this because a
+   * server-rendered page has no browser SDK to obtain an access token for it.
+   */
+  public TakkaPrincipal signInWithPassword(String email, String password) {
+    requireKey(publishableKey, "SUPABASE_PUBLISHABLE_KEY");
+    JsonNode session = client.post()
+        .uri(url + "/auth/v1/token?grant_type=password")
+        .header("apikey", publishableKey)
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON)
+        .body(Map.of("email", email, "password", password))
+        .retrieve()
+        .body(JsonNode.class);
+    if (session == null || !session.hasNonNull("access_token")) {
+      throw new IllegalArgumentException("Invalid email or password");
+    }
+    JsonNode user = session.path("user");
+    if (!user.hasNonNull("id")) throw new IllegalArgumentException("Invalid email or password");
+    return new TakkaPrincipal(
+        UUID.fromString(user.get("id").asText()),
+        user.path("email").asText(""),
+        session.get("access_token").asText());
+  }
+
   public JsonNode get(String resourceAndQuery) {
     return request(HttpMethod.GET, resourceAndQuery, null, null);
   }

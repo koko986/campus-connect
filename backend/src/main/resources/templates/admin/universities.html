@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('Universities')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <div class="console-panel-head">
+        <p class="console-scope-note">
+          Published universities are visible to students. Unpublished and archived records stay hidden.
+        </p>
+        <a th:if="${superAdmin}" th:href="@{/admin/universities/new}" class="console-button console-button--primary"
+          >Add university</a
+        >
+      </div>
+
+      <p th:if="${universities.isEmpty()}" class="console-empty">The directory is empty.</p>
+
+      <table th:unless="${universities.isEmpty()}" class="console-table console-table--roomy">
+        <thead>
+          <tr>
+            <th>University</th>
+            <th>Location</th>
+            <th>Catalog</th>
+            <th>State</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="university : ${universities.items()}">
+            <td>
+              <span class="console-strong" th:text="${university.name()}">Name</span>
+              <span class="console-muted" th:text="${university.shortName()} + ' · ' + ${university.slug()}"
+                >short</span
+              >
+            </td>
+            <td>
+              <span th:text="${university.location()}">City</span>
+              <span class="console-muted" th:text="${university.universityType()}">public</span>
+            </td>
+            <td>
+              <span class="console-muted"
+                th:text="${university.campuses()} + ' campuses · ' + ${university.departments()} + ' departments · ' + ${university.programs()} + ' programs'"
+                >counts</span
+              >
+            </td>
+            <td>
+              <span
+                class="console-pill"
+                th:classappend="'console-pill--' + ${university.stateTone()}"
+                th:text="${university.state()}"
+                >Draft</span
+              >
+              <span class="console-muted" th:text="'updated ' + ${university.updated()}">updated</span>
+            </td>
+            <td class="console-actions">
+              <span th:unless="${superAdmin}" class="console-muted">Read only for moderators</span>
+
+              <a
+                th:if="${superAdmin}"
+                th:href="@{'/admin/universities/' + ${university.id()} + '/edit'}"
+                class="console-button console-button--ghost"
+                >Edit</a
+              >
+              <a
+                th:if="${superAdmin}"
+                th:href="@{/admin/catalog(universityId=${university.id()})}"
+                class="console-button console-button--ghost"
+                >Catalog</a
+              >
+
+              <details th:each="change : ${stateChanges}" th:if="${superAdmin}" class="console-action">
+                <summary
+                  class="console-button"
+                  th:classappend="${change.name() == 'ARCHIVE'} ? 'console-button--danger' : 'console-button--ghost'"
+                  th:text="${change.label()}"
+                  >Publish</summary
+                >
+                <form
+                  th:action="@{'/admin/universities/' + ${university.id()} + '/state/' + ${change.slug()}}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <label>
+                    <span>Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
+                      placeholder="Recorded in the audit trail"></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--primary"
+                    th:text="'Confirm ' + ${change.label()}">Confirm</button>
+                </form>
+              </details>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:unless="${universities.isEmpty()}">
+        <nav th:replace="~{admin/fragments :: pagination(${universities}, '/admin/universities')}"></nav>
+      </div>
+    </main>
+  </body>
+</html>

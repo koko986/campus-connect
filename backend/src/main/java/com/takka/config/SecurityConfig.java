@@ -1,10 +1,15 @@
 package com.takka.config;
 
+import com.takka.admin.session.AdminSessionFilter;
+import com.takka.admin.session.AdminSessionService;
 import com.takka.security.SupabaseAuthenticationFilter;
+import com.takka.supabase.SupabaseGateway;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -12,10 +17,38 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Two independent chains. The console at {@code /admin/**} is a server-rendered application with
+ * cookie sessions and CSRF protection; the JSON API stays stateless and is authenticated per
+ * request by a Supabase bearer token.
+ *
+ * <p>Both authentication filters are constructed here rather than being beans, because Spring Boot
+ * registers {@code Filter} beans with the servlet container and each filter must run only inside
+ * the chain it belongs to.
+ */
 @Configuration
 public class SecurityConfig {
+  private static final String LOGIN_PAGE = "/admin/login";
+
   @Bean
-  SecurityFilterChain security(HttpSecurity http, SupabaseAuthenticationFilter authFilter) throws Exception {
+  @Order(Ordered.HIGHEST_PRECEDENCE)
+  SecurityFilterChain adminConsoleSecurity(HttpSecurity http, AdminSessionService sessions) throws Exception {
+    return http
+        .securityMatcher("/admin/**")
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(LOGIN_PAGE, "/admin/forbidden", "/admin/assets/**").permitAll()
+            .anyRequest().hasAuthority(AdminSessionFilter.ADMIN_AUTHORITY))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .exceptionHandling(exceptions -> exceptions
+            .authenticationEntryPoint((request, response, denied) -> response.sendRedirect(LOGIN_PAGE))
+            .accessDeniedPage("/admin/forbidden"))
+        .addFilterBefore(new AdminSessionFilter(sessions), UsernamePasswordAuthenticationFilter.class)
+        .build();
+  }
+
+  @Bean
+  @Order(Ordered.LOWEST_PRECEDENCE)
+  SecurityFilterChain apiSecurity(HttpSecurity http, SupabaseGateway supabase) throws Exception {
     return http
         .csrf(csrf -> csrf.disable())
         .cors(cors -> {})
@@ -23,7 +56,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/actuator/health", "/error").permitAll()
             .anyRequest().authenticated())
-        .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(new SupabaseAuthenticationFilter(supabase), UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 
@@ -35,7 +68,7 @@ public class SecurityConfig {
     configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowCredentials(true);
     var source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
+    source.registerCorsConfiguration("/api/**", configuration);
     return source;
   }
 }

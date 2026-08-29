@@ -11,10 +11,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
+/** Authenticates API requests from a Supabase access token. Constructed by the security chain. */
 public class SupabaseAuthenticationFilter extends OncePerRequestFilter {
   private final SupabaseGateway supabase;
 
