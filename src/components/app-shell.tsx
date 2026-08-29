@@ -9,6 +9,7 @@ import {
   LogOut,
   ShieldCheck,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
@@ -16,6 +17,7 @@ import { useAdminIdentity } from "@/components/admin-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { avatarUrl, getMemberProfile } from "@/lib/data";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -49,11 +51,21 @@ export function AppShell({
   title?: string;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, user } = useAuth();
   const admin = useAdminIdentity();
   const navigation = admin.data
     ? [...nav, { to: "/admin" as const, label: "Administration", icon: ShieldCheck }]
     : nav;
+
+  const member = useQuery({
+    queryKey: ["member-profile", user?.id],
+    queryFn: () => getMemberProfile(user!.id),
+    enabled: Boolean(user),
+  });
+  const verified = member.data?.student?.verification_status === "verified";
+
+  // "/profile" must not light up while viewing another member at "/profiles/:id".
+  const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
 
   return (
     <AuthGuard>
@@ -61,26 +73,23 @@ export function AppShell({
         <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
           <Logo className="px-2" />
           <nav className="mt-8 flex flex-1 flex-col gap-1">
-            {navigation.map((item) => {
-              const active = pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-primary-soft text-primary-soft-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <item.icon className="size-[18px]" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navigation.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive(item.to)
+                    ? "bg-primary-soft text-primary-soft-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <item.icon className="size-[18px]" />
+                {item.label}
+              </Link>
+            ))}
           </nav>
-          {profile?.account_type === "current_student" ? (
+          {verified ? (
             <div className="rounded-lg bg-primary-soft p-4">
               <p className="text-sm font-semibold text-primary-soft-foreground">Verified student</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -114,10 +123,13 @@ export function AppShell({
               >
                 <LogOut className="size-[18px]" />
               </Button>
-              <Link to="/profile">
+              <Link to="/profile" aria-label="Open your profile">
                 <Avatar className="size-9 border border-border">
                   {profile?.avatar_path ? (
-                    <AvatarImage src={profile.avatar_path} alt={profile.full_name} />
+                    <AvatarImage
+                      src={avatarUrl(profile.avatar_path) ?? undefined}
+                      alt={profile.full_name}
+                    />
                   ) : null}
                   <AvatarFallback className="bg-primary-soft text-xs font-semibold text-primary-soft-foreground">
                     {profile ? initials(profile.full_name) : "?"}
@@ -135,24 +147,21 @@ export function AppShell({
           </div>
         </div>
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
-          <div className="flex items-center justify-around px-2 py-2">
-            {navigation.slice(0, 5).map((item) => {
-              const active = pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex flex-1 flex-col items-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
-                    active ? "text-primary" : "text-muted-foreground",
-                  )}
-                >
-                  <item.icon className="size-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+          <div className="flex items-center justify-around px-1 pt-1">
+            {navigation.slice(0, 5).map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
+                  isActive(item.to) ? "text-primary" : "text-muted-foreground",
+                )}
+              >
+                <item.icon className="size-5" />
+                {item.label}
+              </Link>
+            ))}
           </div>
         </nav>
       </div>

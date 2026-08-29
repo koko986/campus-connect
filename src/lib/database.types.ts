@@ -201,30 +201,75 @@ export type Database = {
           },
         ];
       };
+      comment_votes: {
+        Row: {
+          comment_id: string;
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          comment_id: string;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          comment_id?: string;
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comment_votes_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comment_votes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       comments: {
         Row: {
           author_id: string | null;
           body: string;
           created_at: string;
+          deleted_at: string | null;
           id: string;
+          parent_comment_id: string | null;
           post_id: string;
+          reply_count: number;
           updated_at: string;
+          vote_count: number;
         };
         Insert: {
           author_id?: string | null;
           body: string;
           created_at?: string;
+          deleted_at?: string | null;
           id?: string;
+          parent_comment_id?: string | null;
           post_id: string;
+          reply_count?: number;
           updated_at?: string;
+          vote_count?: number;
         };
         Update: {
           author_id?: string | null;
           body?: string;
           created_at?: string;
+          deleted_at?: string | null;
           id?: string;
+          parent_comment_id?: string | null;
           post_id?: string;
+          reply_count?: number;
           updated_at?: string;
+          vote_count?: number;
         };
         Relationships: [
           {
@@ -232,6 +277,13 @@ export type Database = {
             columns: ["author_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_parent_comment_id_fkey";
+            columns: ["parent_comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
             referencedColumns: ["id"];
           },
           {
@@ -281,22 +333,34 @@ export type Database = {
       };
       conversations: {
         Row: {
+          conversation_type: Database["public"]["Enums"]["conversation_type"];
           created_at: string;
           created_by: string | null;
           id: string;
           last_message_at: string;
+          member_count: number;
+          title: string | null;
+          university_id: string | null;
         };
         Insert: {
+          conversation_type?: Database["public"]["Enums"]["conversation_type"];
           created_at?: string;
           created_by?: string | null;
           id?: string;
           last_message_at?: string;
+          member_count?: number;
+          title?: string | null;
+          university_id?: string | null;
         };
         Update: {
+          conversation_type?: Database["public"]["Enums"]["conversation_type"];
           created_at?: string;
           created_by?: string | null;
           id?: string;
           last_message_at?: string;
+          member_count?: number;
+          title?: string | null;
+          university_id?: string | null;
         };
         Relationships: [
           {
@@ -304,6 +368,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: false;
+            referencedRelation: "universities";
             referencedColumns: ["id"];
           },
         ];
@@ -514,13 +585,18 @@ export type Database = {
         Row: {
           author_id: string | null;
           body: string;
+          comment_count: number;
           created_at: string;
+          deleted_at: string | null;
+          deleted_by: string | null;
           id: string;
           image_path: string | null;
+          like_count: number;
           moderation_status: string;
           removal_reason: string | null;
           removed_at: string | null;
           removed_by: string | null;
+          scope: Database["public"]["Enums"]["post_scope"];
           topic: string | null;
           university_id: string | null;
           updated_at: string;
@@ -529,13 +605,18 @@ export type Database = {
         Insert: {
           author_id?: string | null;
           body: string;
+          comment_count?: number;
           created_at?: string;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
           id?: string;
           image_path?: string | null;
+          like_count?: number;
           moderation_status?: string;
           removal_reason?: string | null;
           removed_at?: string | null;
           removed_by?: string | null;
+          scope?: Database["public"]["Enums"]["post_scope"];
           topic?: string | null;
           university_id?: string | null;
           updated_at?: string;
@@ -544,13 +625,18 @@ export type Database = {
         Update: {
           author_id?: string | null;
           body?: string;
+          comment_count?: number;
           created_at?: string;
+          deleted_at?: string | null;
+          deleted_by?: string | null;
           id?: string;
           image_path?: string | null;
+          like_count?: number;
           moderation_status?: string;
           removal_reason?: string | null;
           removed_at?: string | null;
           removed_by?: string | null;
+          scope?: Database["public"]["Enums"]["post_scope"];
           topic?: string | null;
           university_id?: string | null;
           updated_at?: string;
@@ -560,6 +646,13 @@ export type Database = {
           {
             foreignKeyName: "posts_author_id_fkey";
             columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_deleted_by_fkey";
+            columns: ["deleted_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -827,6 +920,39 @@ export type Database = {
           },
         ];
       };
+      saved_posts: {
+        Row: {
+          created_at: string;
+          post_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          post_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          post_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_posts_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "saved_posts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       saved_universities: {
         Row: {
           created_at: string;
@@ -1017,6 +1143,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      join_university_group: {
+        Args: { target_university_id: string };
+        Returns: string;
+      };
+      soft_delete_comment: {
+        Args: { target_comment_id: string };
+        Returns: boolean;
+      };
+      soft_delete_post: { Args: { target_post_id: string }; Returns: boolean };
       start_direct_conversation: {
         Args: { other_user_id: string };
         Returns: string;
@@ -1024,7 +1159,9 @@ export type Database = {
     };
     Enums: {
       account_type: "current_student" | "prospective_student";
+      conversation_type: "DIRECT" | "UNIVERSITY_GROUP";
       notification_type: "comment" | "answer" | "message" | "like" | "helpful_vote" | "system";
+      post_scope: "COMMUNITY" | "PROFILE_ONLY";
       post_visibility: "public" | "university";
       university_type: "public" | "private";
     };
@@ -1149,7 +1286,9 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["current_student", "prospective_student"],
+      conversation_type: ["DIRECT", "UNIVERSITY_GROUP"],
       notification_type: ["comment", "answer", "message", "like", "helpful_vote", "system"],
+      post_scope: ["COMMUNITY", "PROFILE_ONLY"],
       post_visibility: ["public", "university"],
       university_type: ["public", "private"],
     },

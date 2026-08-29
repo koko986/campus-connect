@@ -18,6 +18,8 @@ import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PostsIdRouteImport } from './routes/posts.$id'
+import { Route as ProfilesIdRouteImport } from './routes/profiles.$id'
 import { Route as RegisterRoleRouteImport } from './routes/register.$role'
 import { Route as UniversitiesIndexRouteImport } from './routes/universities/index'
 import { Route as UniversitiesIdRouteImport } from './routes/universities/$id'
@@ -67,6 +69,16 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostsIdRoute = PostsIdRouteImport.update({
+  id: '/posts/$id',
+  path: '/posts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfilesIdRoute = ProfilesIdRouteImport.update({
+  id: '/profiles/$id',
+  path: '/profiles/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoleRoute = RegisterRoleRouteImport.update({
   id: '/register/$role',
   path: '/register/$role',
@@ -93,6 +105,8 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
+  '/posts/$id': typeof PostsIdRoute
+  '/profiles/$id': typeof ProfilesIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities/': typeof UniversitiesIndexRoute
@@ -107,6 +121,8 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
+  '/posts/$id': typeof PostsIdRoute
+  '/profiles/$id': typeof ProfilesIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities': typeof UniversitiesIndexRoute
@@ -122,6 +138,8 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
+  '/posts/$id': typeof PostsIdRoute
+  '/profiles/$id': typeof ProfilesIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities/': typeof UniversitiesIndexRoute
@@ -138,6 +156,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/questions'
     | '/settings'
+    | '/posts/$id'
+    | '/profiles/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities/'
@@ -152,6 +172,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/questions'
     | '/settings'
+    | '/posts/$id'
+    | '/profiles/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities'
@@ -166,6 +188,8 @@ export interface FileRouteTypes {
     | '/profile'
     | '/questions'
     | '/settings'
+    | '/posts/$id'
+    | '/profiles/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities/'
@@ -181,6 +205,8 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   QuestionsRoute: typeof QuestionsRoute
   SettingsRoute: typeof SettingsRoute
+  PostsIdRoute: typeof PostsIdRoute
+  ProfilesIdRoute: typeof ProfilesIdRoute
   RegisterRoleRoute: typeof RegisterRoleRoute
   UniversitiesIdRoute: typeof UniversitiesIdRoute
   UniversitiesIndexRoute: typeof UniversitiesIndexRoute
@@ -251,6 +277,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/posts/$id': {
+      id: '/posts/$id'
+      path: '/posts/$id'
+      fullPath: '/posts/$id'
+      preLoaderRoute: typeof PostsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profiles/$id': {
+      id: '/profiles/$id'
+      path: '/profiles/$id'
+      fullPath: '/profiles/$id'
+      preLoaderRoute: typeof ProfilesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register/$role': {
       id: '/register/$role'
       path: '/register/$role'
@@ -285,6 +325,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   QuestionsRoute: QuestionsRoute,
   SettingsRoute: SettingsRoute,
+  PostsIdRoute: PostsIdRoute,
+  ProfilesIdRoute: ProfilesIdRoute,
   RegisterRoleRoute: RegisterRoleRoute,
   UniversitiesIdRoute: UniversitiesIdRoute,
   UniversitiesIndexRoute: UniversitiesIndexRoute,

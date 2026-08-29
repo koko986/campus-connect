@@ -12,7 +12,10 @@ import {
 import type { Tables } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
-type Profile = Tables<"profiles">;
+type Profile = Pick<
+  Tables<"profiles">,
+  "id" | "full_name" | "avatar_path" | "account_type" | "bio" | "is_public" | "created_at"
+>;
 
 type AuthContextValue = {
   initialized: boolean;
@@ -25,8 +28,13 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// The email column is revoked for signed-in members, so the columns are named.
 async function getProfile(userId: string) {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id,full_name,avatar_path,account_type,bio,is_public,created_at")
+    .eq("id", userId)
+    .single();
   if (error) throw error;
   return data;
 }

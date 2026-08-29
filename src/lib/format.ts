@@ -9,3 +9,7 @@ export function initials(name: string) {
 export function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
 }
+
+export function accountTypeLabel(accountType: "current_student" | "prospective_student") {
+  return accountType === "current_student" ? "University student" : "Prospective student";
+}
