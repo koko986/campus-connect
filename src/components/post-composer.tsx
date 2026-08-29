@@ -34,6 +34,8 @@ import {
   uploadPostImage,
   validateImage,
 } from "@/lib/data";
+import { imageProblemMessage } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 export function PostComposer({
   defaultUniversityId,
@@ -42,6 +44,7 @@ export function PostComposer({
 }) {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
@@ -92,7 +95,9 @@ export function PostComposer({
     onSuccess: async () => {
       reset();
       setOpen(false);
-      toast.success(scope === "COMMUNITY" ? "Posted to the community" : "Posted to your profile");
+      toast.success(
+        scope === "COMMUNITY" ? t("composer.postedCommunity") : t("composer.postedProfile"),
+      );
       await Promise.all([
         client.invalidateQueries({ queryKey: ["feed"] }),
         client.invalidateQueries({ queryKey: ["profile-posts"] }),
@@ -107,7 +112,7 @@ export function PostComposer({
     }
     const problem = validateImage(next, POST_IMAGE_MAX_BYTES);
     if (problem) {
-      toast.error(problem);
+      toast.error(imageProblemMessage(t, problem));
       if (fileInput.current) fileInput.current.value = "";
       return;
     }
@@ -128,49 +133,49 @@ export function PostComposer({
       <DialogTrigger asChild>
         <Button className="h-11">
           <Plus className="size-4" />
-          New post
+          {t("composer.new")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Share with TAKKA</DialogTitle>
-          <DialogDescription>
-            Write from your own experience and protect personal information.
-          </DialogDescription>
+          <DialogTitle>{t("composer.title")}</DialogTitle>
+          <DialogDescription>{t("composer.description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <Tabs value={scope} onValueChange={(next) => setScope(next as PostScope)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="COMMUNITY">Community</TabsTrigger>
-              <TabsTrigger value="PROFILE_ONLY">Profile only</TabsTrigger>
+              <TabsTrigger value="COMMUNITY">{t("composer.scope.community")}</TabsTrigger>
+              <TabsTrigger value="PROFILE_ONLY">{t("composer.scope.profileOnly")}</TabsTrigger>
             </TabsList>
           </Tabs>
           <p className="text-xs text-muted-foreground">
             {scope === "COMMUNITY"
-              ? "Appears in Home and on the university page you tag."
-              : "Appears only on your profile, never in Home or university feeds."}
+              ? t("composer.scope.communityNote")
+              : t("composer.scope.profileNote")}
           </p>
 
           <div>
-            <Label htmlFor="post-body">Post</Label>
+            <Label htmlFor="post-body">{t("composer.postLabel")}</Label>
             <Textarea
               id="post-body"
               className="mt-1 min-h-32"
               maxLength={4000}
               value={body}
               onChange={(event) => setBody(event.target.value)}
-              placeholder="What would you tell a student considering this path?"
+              placeholder={t("composer.bodyPlaceholder")}
             />
           </div>
 
           <div>
             <Label htmlFor="post-university">
-              University {scope === "COMMUNITY" ? "(required)" : "(optional)"}
+              {scope === "COMMUNITY"
+                ? t("composer.universityRequired")
+                : t("composer.universityOptional")}
             </Label>
             <Select value={universityId} onValueChange={setUniversityId}>
               <SelectTrigger id="post-university" className="mt-1">
-                <SelectValue placeholder="Choose a university" />
+                <SelectValue placeholder={t("composer.chooseUniversity")} />
               </SelectTrigger>
               <SelectContent>
                 {universities.data?.map((university) => (
@@ -183,14 +188,14 @@ export function PostComposer({
           </div>
 
           <div>
-            <Label htmlFor="post-topic">Topic (optional)</Label>
+            <Label htmlFor="post-topic">{t("composer.topic")}</Label>
             <Input
               id="post-topic"
               className="mt-1"
               maxLength={80}
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
-              placeholder="Housing, scholarships, campus life"
+              placeholder={t("composer.topicPlaceholder")}
             />
           </div>
 
@@ -207,7 +212,7 @@ export function PostComposer({
               <div className="relative">
                 <img
                   src={preview}
-                  alt="Selected attachment"
+                  alt={t("composer.selectedAlt")}
                   className="max-h-64 w-full rounded-lg object-cover"
                 />
                 <Button
@@ -215,7 +220,7 @@ export function PostComposer({
                   variant="secondary"
                   size="icon"
                   className="absolute right-2 top-2 size-9"
-                  aria-label="Remove image"
+                  aria-label={t("composer.removeImage")}
                   onClick={() => chooseFile(null)}
                 >
                   <X className="size-4" />
@@ -229,21 +234,19 @@ export function PostComposer({
                 onClick={() => fileInput.current?.click()}
               >
                 <ImagePlus className="size-4" />
-                Add a photo
+                {t("composer.addPhoto")}
               </Button>
             )}
-            <p className="mt-1.5 text-xs text-muted-foreground">JPG, PNG or WebP up to 5 MB.</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{t("composer.imageNote")}</p>
           </div>
 
           {publish.error ? <Failure error={publish.error} /> : null}
 
           <Button className="h-11 w-full" disabled={!canPublish} onClick={() => publish.mutate()}>
-            {publish.isPending ? "Publishing..." : "Publish"}
+            {publish.isPending ? t("composer.publishing") : t("composer.publish")}
           </Button>
           {needsUniversity ? (
-            <p className="text-xs text-muted-foreground">
-              Community posts need exactly one university tag.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("composer.needsUniversity")}</p>
           ) : null}
         </div>
       </DialogContent>

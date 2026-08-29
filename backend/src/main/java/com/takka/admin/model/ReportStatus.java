@@ -1,26 +1,30 @@
 package com.takka.admin.model;
 
+import com.takka.admin.support.MessageException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 /** Lifecycle of a user-submitted report, mirroring the {@code reports.status} check constraint. */
 public enum ReportStatus {
-  OPEN("Open", "queued"),
-  REVIEWING("Reviewing", "queued"),
-  RESOLVED("Resolved", "closed"),
-  DISMISSED("Dismissed", "closed");
+  OPEN("queued"),
+  REVIEWING("queued"),
+  RESOLVED("closed"),
+  DISMISSED("closed");
 
-  private final String label;
   private final String group;
 
-  ReportStatus(String label, String group) {
-    this.label = label;
+  ReportStatus(String group) {
     this.group = group;
   }
 
-  public String label() {
-    return label;
+  public String labelKey() {
+    return "enum.reportStatus." + name();
+  }
+
+  /** Phrasing used when reporting the decision back, as in "marked as resolved". */
+  public String decidedKey() {
+    return "enum.reportStatus.decided." + name();
   }
 
   /** True once the report no longer needs attention. */
@@ -48,6 +52,6 @@ public enum ReportStatus {
   }
 
   public static ReportStatus require(String value) {
-    return parse(value).orElseThrow(() -> new IllegalArgumentException("Unknown report status: " + value));
+    return parse(value).orElseThrow(() -> new MessageException("error.report.unknownStatus", value));
   }
 }

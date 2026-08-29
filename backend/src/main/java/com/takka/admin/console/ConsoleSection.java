@@ -3,40 +3,43 @@ package com.takka.admin.console;
 import com.takka.admin.model.AdminIdentity;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The console's own navigation. This is the only menu an administrator sees: none of the student
  * app's pages appear here, and the console has no link back into a member account.
  */
 public enum ConsoleSection {
-  OVERVIEW("Overview", "/admin", "Console overview"),
-  REPORTS("Reports", "/admin/reports", "Report queue"),
-  ACCOUNTS("Accounts", "/admin/members", "Member accounts"),
-  POSTS("Posts", "/admin/posts", "Post moderation"),
-  UNIVERSITIES("Universities", "/admin/universities", "University directory"),
-  CATALOG("Catalog", "/admin/catalog", "Campuses, departments, and programs"),
-  AUDIT("Audit log", "/admin/audit", "Moderation audit trail");
+  OVERVIEW("/admin"),
+  REPORTS("/admin/reports"),
+  ACCOUNTS("/admin/members"),
+  POSTS("/admin/posts"),
+  UNIVERSITIES("/admin/universities"),
+  CATALOG("/admin/catalog"),
+  AUDIT("/admin/audit");
 
-  private final String label;
   private final String href;
-  private final String title;
 
-  ConsoleSection(String label, String href, String title) {
-    this.label = label;
+  ConsoleSection(String href) {
     this.href = href;
-    this.title = title;
-  }
-
-  public String label() {
-    return label;
   }
 
   public String href() {
     return href;
   }
 
-  public String title() {
-    return title;
+  /** Short name shown in the sidebar. */
+  public String labelKey() {
+    return "console.nav." + slug();
+  }
+
+  /** Longer heading shown at the top of the page. */
+  public String titleKey() {
+    return "console.title." + slug();
+  }
+
+  private String slug() {
+    return name().toLowerCase(Locale.ROOT);
   }
 
   /** Sections available to an administrator; every section is readable by both roles. */

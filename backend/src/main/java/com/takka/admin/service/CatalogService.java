@@ -7,6 +7,7 @@ import com.takka.admin.model.CatalogItemView;
 import com.takka.admin.model.CatalogResource;
 import com.takka.admin.repository.CatalogRepository;
 import com.takka.admin.support.Json;
+import com.takka.admin.support.MessageException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class CatalogService {
   public CatalogItemForm editForm(CatalogResource resource, UUID id, UUID universityId) {
     var row = catalogRepository
         .findById(resource, id)
-        .orElseThrow(() -> new IllegalArgumentException(resource.singular() + " not found"));
+        .orElseThrow(() -> new MessageException(resource.notFoundKey()));
     var view = CatalogMapper.toView(row, resource);
 
     var form = new CatalogItemForm();
@@ -59,7 +60,7 @@ public class CatalogService {
   public String save(AdminIdentity administrator, CatalogResource resource, CatalogItemForm form) {
     AdminAccess.requireSuperAdmin(administrator);
     if (form.isMissingRequiredCity(resource)) {
-      throw new IllegalArgumentException("A city is required for a campus");
+      throw new MessageException("error.catalog.cityRequired");
     }
 
     var attributes = form.toAttributes(resource);

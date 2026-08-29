@@ -18,9 +18,9 @@ public record UniversityView(
     int programs,
     String updated) {
 
-  public String state() {
-    if (archived) return "Archived";
-    return published ? "Published" : "Draft";
+  public String stateKey() {
+    if (archived) return "enum.directoryState.ARCHIVED";
+    return published ? "enum.directoryState.PUBLISHED" : "enum.directoryState.DRAFT";
   }
 
   public String stateTone() {

@@ -48,17 +48,25 @@ import {
   subscribeToConversationList,
   unsubscribe,
 } from "@/lib/data";
+import { useT, type Translate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type MessagePage = { messages: ConversationMessage[]; olderCursor: string | null };
 type MessageCache = InfiniteData<MessagePage, string | undefined>;
 
-function conversationLabel(conversation: ConversationSummary, viewerId: string) {
+function conversationLabel(t: Translate, conversation: ConversationSummary, viewerId: string) {
   if (conversation.conversationType === "UNIVERSITY_GROUP") {
-    return conversation.title ?? "University group";
+    return conversation.title ?? t("messages.group");
   }
   const other = conversation.members.find((member) => member.id !== viewerId);
-  return other?.full_name ?? "Conversation";
+  return other?.full_name ?? t("messages.conversation");
+}
+
+/** Burmese has no plural inflection, so the split matters only for the English catalog. */
+function memberCount(t: Translate, count: number) {
+  return count === 1
+    ? t("messages.memberCountOne", { count })
+    : t("messages.memberCount", { count });
 }
 
 function ConversationRow({
@@ -72,6 +80,7 @@ function ConversationRow({
   active: boolean;
   onSelect: () => void;
 }) {
+  const t = useT();
   const other = conversation.members.find((member) => member.id !== viewerId);
   const isGroup = conversation.conversationType === "UNIVERSITY_GROUP";
   return (
@@ -91,10 +100,10 @@ function ConversationRow({
       ) : null}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold">
-          {conversationLabel(conversation, viewerId)}
+          {conversationLabel(t, conversation, viewerId)}
         </span>
         <span className="block truncate text-xs text-muted-foreground">
-          {isGroup ? `${conversation.memberCount} members` : "Direct message"}
+          {isGroup ? memberCount(t, conversation.memberCount) : t("messages.direct")}
         </span>
       </span>
       {conversation.unreadCount > 0 ? (
@@ -107,6 +116,7 @@ function ConversationRow({
 function ConversationStarter({ onStarted }: { onStarted: (id: string) => void }) {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [studentId, setStudentId] = useState("");
   const contacts = useQuery({
@@ -128,21 +138,19 @@ function ConversationStarter({ onStarted }: { onStarted: (id: string) => void })
       <DialogTrigger asChild>
         <Button size="sm" className="h-9">
           <Plus className="size-4" />
-          New
+          {t("messages.new")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Start a conversation</DialogTitle>
-          <DialogDescription>
-            Choose a current student with a public TAKKA profile.
-          </DialogDescription>
+          <DialogTitle>{t("messages.start.title")}</DialogTitle>
+          <DialogDescription>{t("messages.start.description")}</DialogDescription>
         </DialogHeader>
-        {contacts.isLoading ? <Loading label="Loading students" /> : null}
+        {contacts.isLoading ? <Loading label={t("messages.loadingStudents")} /> : null}
         {contacts.error ? <Failure error={contacts.error} /> : null}
         <Select value={studentId} onValueChange={setStudentId}>
           <SelectTrigger>
-            <SelectValue placeholder="Choose a student" />
+            <SelectValue placeholder={t("messages.chooseStudent")} />
           </SelectTrigger>
           <SelectContent>
             {contacts.data?.map((contact) => (
@@ -154,10 +162,7 @@ function ConversationStarter({ onStarted }: { onStarted: (id: string) => void })
           </SelectContent>
         </Select>
         {contacts.isSuccess && !contacts.data.length ? (
-          <Empty
-            title="No students available"
-            text="Current students with public profiles will appear here."
-          />
+          <Empty title={t("messages.noStudents.title")} text={t("messages.noStudents.text")} />
         ) : null}
         {start.error ? <Failure error={start.error} /> : null}
         <Button
@@ -165,7 +170,7 @@ function ConversationStarter({ onStarted }: { onStarted: (id: string) => void })
           disabled={!studentId || start.isPending}
           onClick={() => start.mutate()}
         >
-          {start.isPending ? "Starting..." : "Start conversation"}
+          {start.isPending ? t("messages.starting") : t("messages.startConversation")}
         </Button>
       </DialogContent>
     </Dialog>
@@ -175,6 +180,7 @@ function ConversationStarter({ onStarted }: { onStarted: (id: string) => void })
 function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string) => void }) {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
 
   const groups = useQuery({
     queryKey: ["university-groups", user!.id],
@@ -192,7 +198,7 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
         client.invalidateQueries({ queryKey: ["university-groups", user!.id] }),
         client.invalidateQueries({ queryKey: ["conversations", user!.id] }),
       ]);
-      toast.success("Joined the group");
+      toast.success(t("messages.joined"));
       if (conversationId) onOpenGroup(conversationId);
     },
     onError: (error: Error) => toast.error(error.message),
@@ -205,7 +211,7 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
         client.invalidateQueries({ queryKey: ["university-groups", user!.id] }),
         client.invalidateQueries({ queryKey: ["conversations", user!.id] }),
       ]);
-      toast.success("Left the group");
+      toast.success(t("messages.left"));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -222,7 +228,7 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
     });
   }, [groups.data, homeUniversityId]);
 
-  if (groups.isLoading) return <Loading label="Loading groups" />;
+  if (groups.isLoading) return <Loading label={t("messages.loadingGroups")} />;
   if (groups.error) return <Failure error={groups.error} onRetry={() => void groups.refetch()} />;
 
   return (
@@ -238,8 +244,8 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{group.university.name}</p>
             <p className="text-xs text-muted-foreground">
-              {group.memberCount} {group.memberCount === 1 ? "member" : "members"}
-              {group.university.id === homeUniversityId ? " · Your university" : ""}
+              {memberCount(t, group.memberCount)}
+              {group.university.id === homeUniversityId ? ` · ${t("messages.yourUniversity")}` : ""}
             </p>
           </div>
           {group.joined && group.conversationId ? (
@@ -249,13 +255,13 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
                 variant="outline"
                 onClick={() => onOpenGroup(group.conversationId!)}
               >
-                Open
+                {t("common.open")}
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 className="size-9"
-                aria-label={`Leave ${group.university.name} group`}
+                aria-label={t("messages.leaveGroup", { name: group.university.name })}
                 disabled={leave.isPending}
                 onClick={() => leave.mutate(group.conversationId!)}
               >
@@ -269,13 +275,13 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
               disabled={join.isPending}
               onClick={() => join.mutate(group.university.id)}
             >
-              Join
+              {t("messages.join")}
             </Button>
           )}
         </div>
       ))}
       {!ordered.length ? (
-        <Empty title="No groups yet" text="University groups appear once universities publish." />
+        <Empty title={t("messages.noGroups.title")} text={t("messages.noGroups.text")} />
       ) : null}
     </div>
   );
@@ -290,6 +296,7 @@ function MessageThread({
 }) {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
   const [draft, setDraft] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
   const isGroup = conversation.conversationType === "UNIVERSITY_GROUP";
@@ -404,17 +411,17 @@ function MessageThread({
           variant="ghost"
           size="icon"
           className="size-9 md:hidden"
-          aria-label="Back to conversations"
+          aria-label={t("messages.back")}
           onClick={onBack}
         >
           <ArrowLeft className="size-4" />
         </Button>
         <h2 className="truncate text-sm font-semibold">
-          {conversationLabel(conversation, user!.id)}
+          {conversationLabel(t, conversation, user!.id)}
         </h2>
         {isGroup ? (
           <Badge variant="secondary" className="ml-auto shrink-0 font-normal">
-            {conversation.memberCount} members
+            {memberCount(t, conversation.memberCount)}
           </Badge>
         ) : null}
       </header>
@@ -428,12 +435,12 @@ function MessageThread({
               disabled={history.isFetchingNextPage}
               onClick={() => void history.fetchNextPage()}
             >
-              {history.isFetchingNextPage ? "Loading..." : "Load older messages"}
+              {history.isFetchingNextPage ? t("common.loading") : t("messages.loadOlder")}
             </Button>
           </div>
         ) : null}
 
-        {history.isLoading ? <Loading label="Loading messages" /> : null}
+        {history.isLoading ? <Loading label={t("messages.loadingMessages")} /> : null}
         {history.error ? <Failure error={history.error} /> : null}
 
         {messages.map((message) => {
@@ -482,7 +489,7 @@ function MessageThread({
               submit();
             }
           }}
-          placeholder="Write a message"
+          placeholder={t("messages.draftPlaceholder")}
           className="min-h-11 resize-none"
         />
         <Button
@@ -490,7 +497,7 @@ function MessageThread({
           className="size-11 shrink-0"
           disabled={!draft.trim()}
           onClick={submit}
-          aria-label="Send message"
+          aria-label={t("messages.send")}
         >
           <Send className="size-4" />
         </Button>
@@ -502,6 +509,7 @@ function MessageThread({
 export function MessagesPage() {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
   const [tab, setTab] = useState<"direct" | "groups">("direct");
   const [selectedId, setSelectedId] = useState("");
 
@@ -531,22 +539,22 @@ export function MessagesPage() {
 
   if (conversations.isLoading) {
     return (
-      <AppShell title="Messages">
-        <Loading label="Loading conversations" />
+      <AppShell title={t("messages.title")}>
+        <Loading label={t("messages.loadingConversations")} />
       </AppShell>
     );
   }
 
   if (conversations.error) {
     return (
-      <AppShell title="Messages">
+      <AppShell title={t("messages.title")}>
         <Failure error={conversations.error} onRetry={() => void conversations.refetch()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Messages">
+    <AppShell title={t("messages.title")}>
       <div className="card-soft grid overflow-hidden md:grid-cols-[300px_1fr]">
         <aside
           className={cn("border-b p-3 md:border-b-0 md:border-r", selected && "hidden md:block")}
@@ -554,8 +562,8 @@ export function MessagesPage() {
           <Tabs value={tab} onValueChange={(next) => setTab(next as "direct" | "groups")}>
             <div className="flex items-center gap-2">
               <TabsList className="grid flex-1 grid-cols-2">
-                <TabsTrigger value="direct">Direct</TabsTrigger>
-                <TabsTrigger value="groups">Groups</TabsTrigger>
+                <TabsTrigger value="direct">{t("messages.tab.direct")}</TabsTrigger>
+                <TabsTrigger value="groups">{t("messages.tab.groups")}</TabsTrigger>
               </TabsList>
               {tab === "direct" ? <ConversationStarter onStarted={openConversation} /> : null}
             </div>
@@ -571,10 +579,7 @@ export function MessagesPage() {
                 />
               ))}
               {!direct.length ? (
-                <Empty
-                  title="No direct messages"
-                  text="Start a conversation with a current student."
-                />
+                <Empty title={t("messages.noDirect.title")} text={t("messages.noDirect.text")} />
               ) : null}
             </TabsContent>
 
@@ -594,7 +599,7 @@ export function MessagesPage() {
               ) : null}
               <div>
                 <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Discover groups
+                  {t("messages.discoverGroups")}
                 </h3>
                 <div className="mt-2">
                   <GroupDirectory onOpenGroup={openConversation} />
@@ -608,7 +613,7 @@ export function MessagesPage() {
           <MessageThread conversation={selected} onBack={() => setSelectedId("")} />
         ) : (
           <div className="hidden items-center justify-center p-10 text-sm text-muted-foreground md:flex">
-            Choose a conversation to start reading.
+            {t("messages.chooseConversation")}
           </div>
         )}
       </div>

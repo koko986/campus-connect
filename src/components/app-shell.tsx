@@ -17,15 +17,16 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { avatarUrl, getMemberProfile } from "@/lib/data";
 import { initials } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/dashboard", label: "Home", icon: Home },
-  { to: "/universities", label: "Universities", icon: GraduationCap },
-  { to: "/questions", label: "Questions", icon: HelpCircle },
-  { to: "/messages", label: "Messages", icon: MessagesSquare },
-  { to: "/profile", label: "Profile", icon: User },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard", label: "nav.home", icon: Home },
+  { to: "/universities", label: "nav.universities", icon: GraduationCap },
+  { to: "/questions", label: "nav.questions", icon: HelpCircle },
+  { to: "/messages", label: "nav.messages", icon: MessagesSquare },
+  { to: "/profile", label: "nav.profile", icon: User },
+  { to: "/settings", label: "nav.settings", icon: Settings },
 ] as const;
 
 export function Logo({ className }: { className?: string }) {
@@ -50,6 +51,7 @@ export function AppShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut, user } = useAuth();
+  const t = useT();
 
   const member = useQuery({
     queryKey: ["member-profile", user?.id],
@@ -79,16 +81,16 @@ export function AppShell({
                 )}
               >
                 <item.icon className="size-[18px]" />
-                {item.label}
+                {t(item.label)}
               </Link>
             ))}
           </nav>
           {verified ? (
             <div className="rounded-lg bg-primary-soft p-4">
-              <p className="text-sm font-semibold text-primary-soft-foreground">Verified student</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Your badge helps prospective students trust your answers.
+              <p className="text-sm font-semibold text-primary-soft-foreground">
+                {t("shell.verified.title")}
               </p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("shell.verified.text")}</p>
             </div>
           ) : null}
         </aside>
@@ -99,18 +101,18 @@ export function AppShell({
               <div className="lg:hidden">
                 <Logo />
               </div>
-              <h1 className="hidden text-base font-semibold lg:block">{title ?? "Home"}</h1>
+              <h1 className="hidden text-base font-semibold lg:block">{title ?? t("nav.home")}</h1>
               <div className="ml-auto" />
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Log out"
+                aria-label={t("shell.logOut")}
                 onClick={() => void signOut()}
                 className="rounded-full"
               >
                 <LogOut className="size-[18px]" />
               </Button>
-              <Link to="/profile" aria-label="Open your profile">
+              <Link to="/profile" aria-label={t("shell.openProfile")}>
                 <Avatar className="size-9 border border-border">
                   {profile?.avatar_path ? (
                     <AvatarImage
@@ -146,7 +148,7 @@ export function AppShell({
                 )}
               >
                 <item.icon className="size-5" />
-                {item.label}
+                {t(item.label)}
               </Link>
             ))}
           </div>

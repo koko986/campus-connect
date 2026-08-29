@@ -31,10 +31,13 @@ public class ConsoleUniversitiesController {
 
   private final UniversityDirectoryService universities;
   private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
-  public ConsoleUniversitiesController(UniversityDirectoryService universities, ConsoleLayout layout) {
+  public ConsoleUniversitiesController(
+      UniversityDirectoryService universities, ConsoleLayout layout, ConsoleMessages messages) {
     this.universities = universities;
     this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping
@@ -75,7 +78,7 @@ public class ConsoleUniversitiesController {
     }
 
     universities.create(administrator, form);
-    Flash.success(attributes, form.getName() + " added to the directory.");
+    Flash.success(attributes, messages.get("flash.university.created", form.getName()));
     return LIST;
   }
 
@@ -93,7 +96,7 @@ public class ConsoleUniversitiesController {
     }
 
     universities.update(administrator, id, form);
-    Flash.success(attributes, form.getName() + " updated.");
+    Flash.success(attributes, messages.get("flash.university.updated", form.getName()));
     return LIST;
   }
 
@@ -106,13 +109,13 @@ public class ConsoleUniversitiesController {
       BindingResult binding,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) {
-      Flash.error(attributes, Flash.firstMessage(binding));
+      Flash.error(attributes, messages.invalidSubmission(binding));
       return LIST;
     }
 
     UniversityStateChange requested = UniversityStateChange.require(change);
     String name = universities.changeState(administrator, id, requested, form);
-    Flash.success(attributes, name + " is now " + pastTense(requested) + ".");
+    Flash.success(attributes, messages.get(requested.appliedKey(), name));
     return LIST;
   }
 
@@ -122,13 +125,5 @@ public class ConsoleUniversitiesController {
     model.addAttribute("universityId", id);
     model.addAttribute("editing", id != null);
     model.addAttribute("types", UniversityForm.TYPES);
-  }
-
-  private static String pastTense(UniversityStateChange change) {
-    return switch (change) {
-      case PUBLISH -> "published";
-      case UNPUBLISH -> "unpublished";
-      case ARCHIVE -> "archived";
-    };
   }
 }

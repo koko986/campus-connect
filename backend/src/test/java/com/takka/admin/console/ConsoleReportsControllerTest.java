@@ -18,6 +18,7 @@ import com.takka.admin.Fixtures;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.ReportStatus;
 import com.takka.admin.service.ReportModerationService;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import java.util.Optional;
@@ -30,8 +31,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 class ConsoleReportsControllerTest {
   private final ReportModerationService reports = mock(ReportModerationService.class);
-  private final MockMvc mvc =
-      ConsoleMvc.forController(new ConsoleReportsController(reports, new ConsoleLayout()));
+  private final MockMvc mvc = ConsoleMvc.forController(
+      new ConsoleReportsController(reports, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final AdminIdentity administrator = Fixtures.moderator();
   private final UUID reportId = UUID.randomUUID();
@@ -91,10 +92,33 @@ class ConsoleReportsControllerTest {
   }
 
   @Test
+  void aDecisionIsConfirmedInTheRequestedLanguage() throws Exception {
+    when(reports.decide(any(), eq(reportId), any())).thenReturn(ReportStatus.DISMISSED);
+
+    mvc.perform(post("/admin/reports/{id}/decision", reportId)
+            .param("status", "DISMISSED")
+            .param("notes", "Not a violation")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute(
+            "flashSuccess", "တိုင်ကြားချက်ကို ပယ်ချပြီးအဖြစ် မှတ်လိုက်ပါပြီ။"));
+  }
+
+  /** Constraint messages are keys, so a refused form explains itself in the chosen language too. */
+  @Test
+  void aValidationMessageIsWrittenInTheRequestedLanguage() throws Exception {
+    mvc.perform(post("/admin/reports/{id}/decision", reportId)
+            .param("status", "RESOLVED")
+            .param("notes", "no")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute(
+            "flashError", "မှတ်ချက်သည် အက္ခရာ 3 လုံးမှ 2000 လုံး အတွင်း ဖြစ်ရပါမည်။"));
+  }
+
+  @Test
   void missingNotesAreRejectedBeforeTheServiceIsCalled() throws Exception {
     mvc.perform(post("/admin/reports/{id}/decision", reportId).param("status", "RESOLVED").param("notes", "no"))
         .andExpect(redirectedUrl("/admin/reports"))
-        .andExpect(flash().attribute("flashError", "Notes must be between 3 and 2000 characters"));
+        .andExpect(flash().attribute("flashError", "Notes must be between 3 and 2000 characters."));
 
     verify(reports, never()).decide(any(), any(), any());
   }
@@ -110,18 +134,19 @@ class ConsoleReportsControllerTest {
 
   @Test
   void aRejectedActionSendsTheAdministratorBackWithAnExplanation() throws Exception {
-    when(reports.decide(any(), any(), any())).thenThrow(new IllegalArgumentException("Report not found"));
+    when(reports.decide(any(), any(), any())).thenThrow(new MessageException("error.report.notFound"));
 
     mvc.perform(post("/admin/reports/{id}/decision", reportId)
             .param("status", "RESOLVED")
             .param("notes", "Handled it")
             .header("Referer", "http://localhost:8080/admin/reports?status=OPEN"))
-        .andExpect(redirectedUrl("/admin/reports?status=OPEN"));
+        .andExpect(redirectedUrl("/admin/reports?status=OPEN"))
+        .andExpect(flash().attribute("flashError", "Report not found."));
   }
 
   @Test
   void aDeniedActionFallsBackToTheOverviewWhenThereIsNoReferer() throws Exception {
-    when(reports.decide(any(), any(), any())).thenThrow(new AccessDeniedException("Super admin access required"));
+    when(reports.decide(any(), any(), any())).thenThrow(new AccessDeniedException("error.access.superAdmin"));
 
     mvc.perform(post("/admin/reports/{id}/decision", reportId)
             .param("status", "RESOLVED")

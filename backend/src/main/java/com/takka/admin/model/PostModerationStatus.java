@@ -5,18 +5,12 @@ import java.util.Optional;
 
 /** Moderation state of a community post, mirroring {@code posts.moderation_status}. */
 public enum PostModerationStatus {
-  PUBLISHED("Published"),
-  REMOVED("Removed"),
-  ARCHIVED("Archived");
+  PUBLISHED,
+  REMOVED,
+  ARCHIVED;
 
-  private final String label;
-
-  PostModerationStatus(String label) {
-    this.label = label;
-  }
-
-  public String label() {
-    return label;
+  public String labelKey() {
+    return "enum.postStatus." + name();
   }
 
   public boolean isVisible() {

@@ -19,6 +19,7 @@ import com.takka.admin.Fixtures;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.PostModerationStatus;
 import com.takka.admin.service.PostModerationService;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import java.util.Optional;
@@ -30,7 +31,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 class ConsolePostsControllerTest {
   private final PostModerationService posts = mock(PostModerationService.class);
-  private final MockMvc mvc = ConsoleMvc.forController(new ConsolePostsController(posts, new ConsoleLayout()));
+  private final MockMvc mvc = ConsoleMvc.forController(
+      new ConsolePostsController(posts, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final AdminIdentity administrator = Fixtures.moderator();
   private final UUID postId = UUID.randomUUID();
@@ -95,12 +97,21 @@ class ConsolePostsControllerTest {
 
   @Test
   void aMissingPostIsReportedOnTheReferringPage() throws Exception {
-    doThrow(new IllegalArgumentException("Post not found")).when(posts).remove(any(), any(), any());
+    doThrow(new MessageException("error.post.notFound")).when(posts).remove(any(), any(), any());
 
     mvc.perform(post("/admin/posts/{id}/remove", postId)
             .param("reason", "Spam link")
             .header("Referer", "http://localhost/admin/posts?status=PUBLISHED"))
         .andExpect(redirectedUrl("/admin/posts?status=PUBLISHED"))
-        .andExpect(flash().attribute("flashError", "Post not found"));
+        .andExpect(flash().attribute("flashError", "Post not found."));
+  }
+
+  @Test
+  void aRemovalIsConfirmedInTheRequestedLanguage() throws Exception {
+    mvc.perform(post("/admin/posts/{id}/remove", postId)
+            .param("reason", "Spam link")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute(
+            "flashSuccess", "ပို့စ်ကို အသိုက်အဝန်း ဖိဒ်မှ ဖယ်ရှားလိုက်ပါပြီ။"));
   }
 }

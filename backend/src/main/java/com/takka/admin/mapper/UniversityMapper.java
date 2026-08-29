@@ -45,6 +45,10 @@ public final class UniversityMapper {
     form.setAbout(Json.text(row, "about"));
     form.setWebsiteUrl(Json.text(row, "website_url"));
     form.setLogoPath(Json.text(row, "logo_path"));
+    form.setCoverImagePath(Json.text(row, "cover_image_path"));
+    form.setCoverImageCredit(Json.text(row, "cover_image_credit"));
+    form.setCoverImageSourceUrl(Json.text(row, "cover_image_source_url"));
+    form.setCoverImageLicense(Json.text(row, "cover_image_license"));
     form.setContactEmail(Json.text(row, "contact_email"));
     form.setContactPhone(Json.text(row, "contact_phone"));
     form.setDataSourceUrl(Json.text(row, "data_source_url"));

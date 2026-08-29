@@ -22,15 +22,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/admin")
 public class AdminLoginController {
   private final AdminSessionService sessions;
+  private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
-  public AdminLoginController(AdminSessionService sessions) {
+  public AdminLoginController(
+      AdminSessionService sessions, ConsoleLayout layout, ConsoleMessages messages) {
     this.sessions = sessions;
+    this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping("/login")
   String loginPage(HttpServletRequest request, Model model) {
     if (sessions.read(request).isPresent()) return "redirect:" + ConsoleSection.OVERVIEW.href();
     if (!model.containsAttribute("form")) model.addAttribute("form", new AdminLoginForm());
+    layout.applyLanguage(model);
     return "admin/login";
   }
 
@@ -40,14 +46,14 @@ public class AdminLoginController {
       BindingResult binding,
       HttpServletRequest request,
       Model model) {
-    if (binding.hasErrors()) return rejected(model, Flash.firstMessage(binding));
+    if (binding.hasErrors()) return rejected(model, messages.invalidSubmission(binding));
 
     try {
       AdminIdentity identity = sessions.signIn(form);
       sessions.begin(request, identity);
       return "redirect:" + ConsoleSection.OVERVIEW.href();
-    } catch (AdminSignInException rejected) {
-      return rejected(model, rejected.getMessage());
+    } catch (AdminSignInException refused) {
+      return rejected(model, messages.explain(refused, "error.signIn.rejected"));
     }
   }
 
@@ -59,13 +65,15 @@ public class AdminLoginController {
 
   @GetMapping("/forbidden")
   String forbidden(Model model) {
-    model.addAttribute("errorTitle", "Not permitted");
-    model.addAttribute("errorDetail", "Your administrator role does not allow that action.");
+    model.addAttribute("errorTitle", messages.get("error.forbidden.title"));
+    model.addAttribute("errorDetail", messages.get("error.forbidden.detail"));
+    layout.applyLanguage(model);
     return "admin/error";
   }
 
-  private static String rejected(Model model, String message) {
+  private String rejected(Model model, String message) {
     model.addAttribute("signInError", message);
+    layout.applyLanguage(model);
     return "admin/login";
   }
 }

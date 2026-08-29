@@ -74,7 +74,7 @@ class ApplicationContextTest {
   void everyConsoleTemplateAndTheStylesheetArePackaged() {
     for (String template : List.of(
         "fragments", "login", "overview", "reports", "members", "posts", "universities",
-        "university-form", "catalog", "audit", "error")) {
+        "university-form", "university-photos", "catalog", "audit", "error")) {
       assertTrue(
           new ClassPathResource("templates/admin/" + template + ".html").exists(),
           "Missing console template: " + template);

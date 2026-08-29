@@ -33,8 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class ConsoleCatalogControllerTest {
   private final CatalogService catalog = mock(CatalogService.class);
   private final UniversityDirectoryService universities = mock(UniversityDirectoryService.class);
-  private final MockMvc mvc = ConsoleMvc.forController(
-      new ConsoleCatalogController(catalog, universities, new ConsoleLayout()));
+  private final MockMvc mvc = ConsoleMvc.forController(new ConsoleCatalogController(
+      catalog, universities, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final AdminIdentity superAdmin = Fixtures.superAdmin();
   private final UUID universityId = UUID.randomUUID();
@@ -124,7 +124,7 @@ class ConsoleCatalogControllerTest {
   void aMissingUniversityIsRejectedBeforeTheServiceIsCalled() throws Exception {
     mvc.perform(post("/admin/catalog/departments").param("name", "Computer Science"))
         .andExpect(redirectedUrl("/admin/catalog?resource=departments"))
-        .andExpect(flash().attribute("flashError", "Choose a university"));
+        .andExpect(flash().attribute("flashError", "Choose a university."));
 
     verify(catalog, never()).save(any(), any(), any());
   }
@@ -136,19 +136,32 @@ class ConsoleCatalogControllerTest {
             .param("name", "Hlaing Campus")
             .param("city", "Yangon")
             .param("latitude", "120"))
-        .andExpect(flash().attribute("flashError", "Latitude must be between -90 and 90"));
+        .andExpect(flash().attribute("flashError", "Latitude must be between -90 and 90."));
 
     verify(catalog, never()).save(any(), any(), any());
   }
 
   @Test
   void aModeratorIsRefusedCatalogWrites() throws Exception {
-    when(catalog.save(any(), any(), any())).thenThrow(new AccessDeniedException("Super admin access required"));
+    when(catalog.save(any(), any(), any())).thenThrow(new AccessDeniedException("error.access.superAdmin"));
 
     mvc.perform(post("/admin/catalog/departments")
             .param("universityId", universityId.toString())
             .param("name", "Computer Science"))
         .andExpect(redirectedUrl("/admin"))
-        .andExpect(flash().attribute("flashError", "Super admin access required"));
+        .andExpect(flash().attribute("flashError", "That action is limited to super admins."));
+  }
+
+  @Test
+  void aSaveIsConfirmedInTheRequestedLanguage() throws Exception {
+    when(catalog.save(any(), any(), any())).thenReturn("Hlaing Campus");
+
+    mvc.perform(post("/admin/catalog/campuses")
+            .param("universityId", universityId.toString())
+            .param("name", "Hlaing Campus")
+            .param("city", "Yangon")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute(
+            "flashSuccess", "Hlaing Campus ကို ကက်တလော့တွင် ထည့်လိုက်ပါပြီ။"));
   }
 }

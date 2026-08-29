@@ -7,6 +7,7 @@ import com.takka.admin.model.ModerationAction;
 import com.takka.admin.model.ReportStatus;
 import com.takka.admin.model.ReportView;
 import com.takka.admin.repository.ReportRepository;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import java.util.List;
@@ -48,7 +49,7 @@ public class ReportModerationService {
 
     JsonNode updated = reportRepository
         .applyDecision(reportId, status, administrator.userId(), form.getNotes())
-        .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+        .orElseThrow(() -> new MessageException("error.report.notFound"));
 
     if (status.isClosed()) {
       ModerationAction action =

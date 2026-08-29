@@ -6,10 +6,12 @@ import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { getAccountStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { initialized, signOut, user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const status = useQuery({
     queryKey: ["account-status", user?.id],
     queryFn: getAccountStatus,
@@ -25,7 +27,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   if (!initialized || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <LoaderCircle className="size-6 animate-spin text-primary" aria-label="Loading account" />
+        <LoaderCircle
+          className="size-6 animate-spin text-primary"
+          aria-label={t("guard.loadingAccount")}
+        />
       </div>
     );
   }
@@ -35,12 +40,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
         <div className="w-full max-w-md border bg-background p-8 text-center">
           <ShieldBan className="mx-auto size-10 text-destructive" />
-          <h1 className="mt-4 text-2xl font-bold">Account suspended</h1>
+          <h1 className="mt-4 text-2xl font-bold">{t("guard.suspended.title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {status.data.reason || "This account has been suspended by a TAKKA administrator."}
+            {status.data.reason || t("guard.suspended.text")}
           </p>
           <Button className="mt-6" variant="outline" onClick={() => void signOut()}>
-            Log out
+            {t("shell.logOut")}
           </Button>
         </div>
       </div>

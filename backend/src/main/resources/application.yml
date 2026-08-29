@@ -1,6 +1,11 @@
 spring:
   application:
     name: takka-api
+  messages:
+    basename: messages
+    encoding: UTF-8
+    # An unsupported locale must fall back to the English bundle, never to the server's own locale.
+    fallback-to-system-locale: false
 management:
   endpoints:
     web:

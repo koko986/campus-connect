@@ -17,8 +17,10 @@ const POST_RELATIONS = `author:profiles!posts_author_id_fkey(${PROFILE_SUMMARY})
 
 export const FEED_PAGE_SIZE = 10;
 export const MESSAGE_PAGE_SIZE = 30;
+export const UNIVERSITY_PAGE_SIZE = 18;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 export const POST_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const UNIVERSITY_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export type FeedSort = "best" | "newest";
@@ -30,6 +32,38 @@ export type University = Tables<"universities"> & {
     programs: Pick<Tables<"programs">, "id" | "name" | "degree_level">[];
   })[];
   programs: Pick<Tables<"programs">, "id" | "name" | "degree_level">[];
+};
+
+export type UniversitySummary = Pick<
+  Tables<"universities">,
+  | "id"
+  | "name"
+  | "short_name"
+  | "city"
+  | "region"
+  | "university_type"
+  | "description"
+  | "cover_image_path"
+  | "cover_image_credit"
+  | "cover_image_source_url"
+  | "cover_image_license"
+> & {
+  departments: { count: number }[];
+};
+
+export type UniversitySummaryPage = {
+  nextPage: number | null;
+  universities: UniversitySummary[];
+};
+
+export type UniversityFilters = {
+  regions: string[];
+  types: Enums<"university_type">[];
+};
+
+export type RecommendedUniversity = UniversitySummary & {
+  matchReasons: string[];
+  score: number;
 };
 
 type VerificationEmbed = Pick<Tables<"student_profiles">, "verification_status">;
@@ -154,7 +188,7 @@ function assertOk(result: { error: { message: string } | null }) {
  * Storage columns hold bucket relative paths, but older rows and seed data hold
  * absolute URLs. Both have to render.
  */
-function publicUrl(bucket: "avatars" | "post-media", path: string | null) {
+function publicUrl(bucket: "avatars" | "post-media" | "university-media", path: string | null) {
   if (!path) return null;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
@@ -168,12 +202,19 @@ export function postImageUrl(path: string | null) {
   return publicUrl("post-media", path);
 }
 
-export function validateImage(file: File, maxBytes: number) {
+export function universityImageUrl(path: string | null) {
+  return publicUrl("university-media", path);
+}
+
+/** Named rather than worded, so the caller can report it in the member's language. */
+export type ImageProblem = { reason: "type" } | { reason: "size"; megabytes: number };
+
+export function validateImage(file: File, maxBytes: number): ImageProblem | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return "Choose a JPG, PNG or WebP image.";
+    return { reason: "type" };
   }
   if (file.size > maxBytes) {
-    return `Choose an image under ${Math.round(maxBytes / (1024 * 1024))} MB.`;
+    return { reason: "size", megabytes: Math.round(maxBytes / (1024 * 1024)) };
   }
   return null;
 }
@@ -184,7 +225,11 @@ function fileExtension(file: File) {
   return "jpg";
 }
 
-async function uploadImage(bucket: "avatars" | "post-media", userId: string, file: File) {
+async function uploadImage(
+  bucket: "avatars" | "post-media" | "university-media",
+  userId: string,
+  file: File,
+) {
   const path = `${userId}/${crypto.randomUUID()}.${fileExtension(file)}`;
   const { error } = await supabase.storage
     .from(bucket)
@@ -201,6 +246,26 @@ export function uploadPostImage(userId: string, file: File) {
   return uploadImage("post-media", userId, file);
 }
 
+export async function submitUniversityPhoto(options: {
+  caption: string;
+  file: File;
+  universityId: string;
+  userId: string;
+}) {
+  const path = await uploadImage("university-media", options.userId, options.file);
+  const result = await supabase.from("university_photos").insert({
+    caption: options.caption.trim() || null,
+    image_path: path,
+    status: "PENDING",
+    university_id: options.universityId,
+    uploader_id: options.userId,
+  });
+  if (result.error) {
+    await supabase.storage.from("university-media").remove([path]);
+    throw new Error(result.error.message);
+  }
+}
+
 export async function listUniversities(): Promise<University[]> {
   const result = await supabase
     .from("universities")
@@ -208,6 +273,7 @@ export async function listUniversities(): Promise<University[]> {
       "*, departments(id,name,programs(id,name,degree_level)), campuses(id,name,city,address), programs(id,name,degree_level)",
     )
     .eq("is_published", true)
+    .is("archived_at", null)
     .order("name");
   return (unwrap(result) ?? []) as University[];
 }
@@ -220,8 +286,131 @@ export async function getUniversity(id: string): Promise<University> {
     )
     .eq("id", id)
     .eq("is_published", true)
+    .is("archived_at", null)
     .single();
   return unwrap(result) as University;
+}
+
+const UNIVERSITY_SUMMARY_COLUMNS =
+  "id,name,short_name,city,region,university_type,description,cover_image_path,cover_image_credit,cover_image_source_url,cover_image_license,departments(count)";
+
+export async function listUniversitySummaries(options: {
+  page: number;
+  region?: string | undefined;
+  search?: string | undefined;
+  type?: Enums<"university_type"> | undefined;
+}): Promise<UniversitySummaryPage> {
+  const from = options.page * UNIVERSITY_PAGE_SIZE;
+  const to = from + UNIVERSITY_PAGE_SIZE - 1;
+  let query = supabase
+    .from("universities")
+    .select(UNIVERSITY_SUMMARY_COLUMNS, { count: "exact" })
+    .eq("is_published", true)
+    .is("archived_at", null)
+    .order("name")
+    .range(from, to);
+
+  if (options.region) query = query.eq("region", options.region);
+  if (options.type) query = query.eq("university_type", options.type);
+  const search = options.search?.trim().replace(/[,%()]/g, " ");
+  if (search) {
+    query = query.or(
+      `name.ilike.%${search}%,short_name.ilike.%${search}%,city.ilike.%${search}%,region.ilike.%${search}%`,
+    );
+  }
+
+  const result = await query;
+  const universities = (unwrap(result) ?? []) as unknown as UniversitySummary[];
+  return {
+    universities,
+    nextPage: from + universities.length < (result.count ?? 0) ? options.page + 1 : null,
+  };
+}
+
+export async function listUniversityFilters(): Promise<UniversityFilters> {
+  const result = await supabase
+    .from("universities")
+    .select("region,university_type")
+    .eq("is_published", true)
+    .is("archived_at", null);
+  const rows = unwrap(result) ?? [];
+  return {
+    regions: [...new Set(rows.flatMap((row) => (row.region ? [row.region] : [])))].sort(),
+    types: [...new Set(rows.map((row) => row.university_type))].sort(),
+  };
+}
+
+export async function listFieldOfStudyOptions() {
+  const [departments, programs] = await Promise.all([
+    supabase.from("departments").select("name").order("name"),
+    supabase.from("programs").select("name").order("name"),
+  ]);
+  assertOk(departments);
+  assertOk(programs);
+  return [
+    ...new Set(
+      [...(departments.data ?? []), ...(programs.data ?? [])]
+        .map((row) => row.name.trim())
+        .filter(Boolean),
+    ),
+  ].sort((left, right) => left.localeCompare(right));
+}
+
+export async function listRecommendedUniversities(
+  userId: string,
+): Promise<RecommendedUniversity[]> {
+  const preferences = unwrap(
+    await supabase
+      .from("prospective_profiles")
+      .select("preferred_field,preferred_city,preferred_degree_level")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ) as Pick<
+    Tables<"prospective_profiles">,
+    "preferred_city" | "preferred_degree_level" | "preferred_field"
+  > | null;
+  if (
+    !preferences?.preferred_field &&
+    !preferences?.preferred_city &&
+    !preferences?.preferred_degree_level
+  ) {
+    return [];
+  }
+
+  const ranked = unwrap(
+    await supabase.rpc("recommend_universities", {
+      p_limit: 6,
+      ...(preferences.preferred_city ? { p_preferred_city: preferences.preferred_city } : {}),
+      ...(preferences.preferred_degree_level
+        ? { p_preferred_degree_level: preferences.preferred_degree_level }
+        : {}),
+      ...(preferences.preferred_field ? { p_preferred_field: preferences.preferred_field } : {}),
+    }),
+  );
+  if (!ranked?.length) return [];
+
+  const summaries = unwrap(
+    await supabase
+      .from("universities")
+      .select(UNIVERSITY_SUMMARY_COLUMNS)
+      .in(
+        "id",
+        ranked.map((item) => item.university_id),
+      ),
+  ) as unknown as UniversitySummary[] | null;
+  const byId = new Map((summaries ?? []).map((university) => [university.id, university]));
+  return ranked.flatMap((item) => {
+    const university = byId.get(item.university_id);
+    return university
+      ? [
+          {
+            ...university,
+            matchReasons: item.match_reasons,
+            score: item.score,
+          },
+        ]
+      : [];
+  });
 }
 
 /**

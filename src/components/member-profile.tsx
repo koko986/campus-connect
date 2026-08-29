@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import type { FeedPost, MemberProfile } from "@/lib/data";
 import { getMemberProfile, listProfilePosts, startDirectConversation } from "@/lib/data";
-import { accountTypeLabel, formatDate } from "@/lib/format";
+import { accountTypeKey, formatDate } from "@/lib/format";
+import { useLanguage, useT } from "@/lib/i18n";
 
 function Detail({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null;
@@ -24,14 +25,15 @@ function Detail({ label, value }: { label: string; value: string | null | undefi
 }
 
 function StudentDetails({ student }: { student: NonNullable<MemberProfile["student"]> }) {
+  const t = useT();
   return (
     <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Detail label="Campus" value={student.campus?.name} />
-      <Detail label="Department" value={student.department?.name} />
-      <Detail label="Program" value={student.program?.name} />
+      <Detail label={t("field.campus")} value={student.campus?.name} />
+      <Detail label={t("field.department")} value={student.department?.name} />
+      <Detail label={t("field.program")} value={student.program?.name} />
       <Detail
-        label="Academic year"
-        value={student.academic_year ? `Year ${student.academic_year}` : null}
+        label={t("field.academicYear")}
+        value={student.academic_year ? t("profile.year", { year: student.academic_year }) : null}
       />
     </dl>
   );
@@ -42,12 +44,13 @@ function ProspectiveDetails({
 }: {
   prospective: NonNullable<MemberProfile["prospective"]>;
 }) {
+  const t = useT();
   return (
     <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Detail label="Preferred field" value={prospective.preferred_field} />
-      <Detail label="Preferred city" value={prospective.preferred_city} />
-      <Detail label="Degree level" value={prospective.preferred_degree_level} />
-      <Detail label="Interests" value={prospective.preferences} />
+      <Detail label={t("field.preferredField")} value={prospective.preferred_field} />
+      <Detail label={t("field.preferredCity")} value={prospective.preferred_city} />
+      <Detail label={t("field.degreeLevel")} value={prospective.preferred_degree_level} />
+      <Detail label={t("field.interests")} value={prospective.preferences} />
     </dl>
   );
 }
@@ -80,6 +83,7 @@ function PostSection({
 export function MemberProfilePage({ profileId }: { profileId: string }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
   const isSelf = profileId === user!.id;
 
   const member = useQuery({
@@ -101,21 +105,18 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
 
   if (member.isLoading) {
     return (
-      <AppShell title="Profile">
-        <Loading label="Loading profile" />
+      <AppShell title={t("profile.title")}>
+        <Loading label={t("profile.loading")} />
       </AppShell>
     );
   }
 
   if (member.error) {
     return (
-      <AppShell title="Profile">
+      <AppShell title={t("profile.title")}>
         <Failure error={member.error} onRetry={() => void member.refetch()} />
         <div className="mt-6">
-          <Empty
-            title="Profile unavailable"
-            text="This member keeps their profile private, or the account no longer exists."
-          />
+          <Empty title={t("profile.unavailable.title")} text={t("profile.unavailable.text")} />
         </div>
       </AppShell>
     );
@@ -128,7 +129,7 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
   const community = posts.data?.filter((post) => post.scope === "COMMUNITY") ?? [];
 
   return (
-    <AppShell title="Profile">
+    <AppShell title={t("profile.title")}>
       <div className="card-soft p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <UserAvatar profile={profile} className="size-20 sm:size-24" />
@@ -138,7 +139,8 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
               {verified ? <VerifiedBadge /> : null}
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {accountTypeLabel(profile.account_type)} · Joined {formatDate(profile.created_at)}
+              {t(accountTypeKey(profile.account_type))} ·{" "}
+              {t("profile.joined", { date: formatDate(profile.created_at, language) })}
             </p>
 
             {isCurrentStudent && student?.university ? (
@@ -154,7 +156,7 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
 
             {!isCurrentStudent ? (
               <Badge variant="secondary" className="mt-3 font-normal">
-                Exploring universities
+                {t("profile.exploring")}
               </Badge>
             ) : null}
           </div>
@@ -162,7 +164,7 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
           <div className="flex gap-2 sm:flex-col">
             {isSelf ? (
               <Button asChild variant="outline" className="h-11">
-                <Link to="/profile">Edit profile</Link>
+                <Link to="/profile">{t("profile.edit")}</Link>
               </Button>
             ) : (
               <Button
@@ -171,7 +173,7 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
                 onClick={() => message.mutate()}
               >
                 <MessageSquare className="size-4" />
-                Message
+                {t("profile.message")}
               </Button>
             )}
           </div>
@@ -195,18 +197,18 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
         ) : null}
       </div>
 
-      {posts.isLoading ? <Loading label="Loading posts" /> : null}
+      {posts.isLoading ? <Loading label={t("profile.loadingPosts")} /> : null}
       {posts.error ? <Failure error={posts.error} onRetry={() => void posts.refetch()} /> : null}
 
       <PostSection
-        title="Profile posts"
-        description="Shared only on this profile."
+        title={t("profile.profilePosts")}
+        description={t("profile.profilePostsNote")}
         posts={profileOnly}
         viewerId={user!.id}
       />
       <PostSection
-        title="Community posts"
-        description="Also visible in Home and university feeds."
+        title={t("profile.communityPosts")}
+        description={t("profile.communityPostsNote")}
         posts={community}
         viewerId={user!.id}
       />
@@ -214,8 +216,8 @@ export function MemberProfilePage({ profileId }: { profileId: string }) {
       {posts.isSuccess && !posts.data.length ? (
         <div className="mt-8">
           <Empty
-            title="No posts yet"
-            text={isSelf ? "Share your first post from Home." : "This member has not posted yet."}
+            title={t("profile.noPosts.title")}
+            text={isSelf ? t("profile.noPosts.self") : t("profile.noPosts.other")}
           />
         </div>
       ) : null}

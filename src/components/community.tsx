@@ -45,7 +45,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { submitReport } from "@/lib/api";
-import type { CommunityProfile, FeedPost, University } from "@/lib/data";
+import type { CommunityProfile, FeedPost, University, UniversitySummary } from "@/lib/data";
 import {
   avatarUrl,
   deletePost,
@@ -53,17 +53,20 @@ import {
   postImageUrl,
   setPostLiked,
   setPostSaved,
+  universityImageUrl,
 } from "@/lib/data";
-import { accountTypeLabel, formatDate, initials } from "@/lib/format";
+import { accountTypeKey, formatDate, initials } from "@/lib/format";
+import { useLanguage, useT, type Translate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function VerifiedBadge() {
+  const t = useT();
   return (
     <span
-      title="Verified current student"
+      title={t("community.verifiedTitle")}
       className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary-soft-foreground"
     >
-      <BadgeCheck className="size-3" /> Verified
+      <BadgeCheck className="size-3" /> {t("community.verified")}
     </span>
   );
 }
@@ -120,11 +123,14 @@ export function AuthorLine({
   showReport?: boolean;
 }) {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   if (!profile) {
     return (
       <div className="min-w-0">
-        <span className="text-sm font-semibold">TAKKA member</span>
-        {time ? <p className="text-xs text-muted-foreground">{formatDate(time)}</p> : null}
+        <span className="text-sm font-semibold">{t("community.member")}</span>
+        {time ? (
+          <p className="text-xs text-muted-foreground">{formatDate(time, language)}</p>
+        ) : null}
       </div>
     );
   }
@@ -141,12 +147,12 @@ export function AuthorLine({
           {isVerifiedStudent(profile) ? <VerifiedBadge /> : null}
         </div>
         <p className="truncate text-xs text-muted-foreground">
-          {accountTypeLabel(profile.account_type)}
-          {time ? ` · ${formatDate(time)}` : ""}
+          {t(accountTypeKey(profile.account_type))}
+          {time ? ` · ${formatDate(time, language)}` : ""}
         </p>
       </div>
       {showReport && user?.id !== profile.id ? (
-        <ReportButton targetType="ACCOUNT" targetId={profile.id} label="Report account" />
+        <ReportButton targetType="ACCOUNT" targetId={profile.id} label={t("report.account")} />
       ) : null}
     </div>
   );
@@ -161,6 +167,7 @@ export function ReportButton({
   targetId: string;
   label: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
@@ -170,7 +177,7 @@ export function ReportButton({
       setOpen(false);
       setReason("");
       setDetails("");
-      toast.success("Report sent to TAKKA moderators");
+      toast.success(t("report.sent"));
     },
   });
   return (
@@ -189,29 +196,27 @@ export function ReportButton({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{label}</DialogTitle>
-          <DialogDescription>
-            Reports are private and reviewed by TAKKA administrators.
-          </DialogDescription>
+          <DialogDescription>{t("report.description")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <Select value={reason} onValueChange={setReason}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose a reason" />
+              <SelectValue placeholder={t("report.chooseReason")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="SPAM">Spam</SelectItem>
-              <SelectItem value="HARASSMENT">Harassment</SelectItem>
-              <SelectItem value="IMPERSONATION">Impersonation</SelectItem>
-              <SelectItem value="MISINFORMATION">Misinformation</SelectItem>
-              <SelectItem value="INAPPROPRIATE">Inappropriate content</SelectItem>
-              <SelectItem value="OTHER">Other</SelectItem>
+              <SelectItem value="SPAM">{t("report.reason.SPAM")}</SelectItem>
+              <SelectItem value="HARASSMENT">{t("report.reason.HARASSMENT")}</SelectItem>
+              <SelectItem value="IMPERSONATION">{t("report.reason.IMPERSONATION")}</SelectItem>
+              <SelectItem value="MISINFORMATION">{t("report.reason.MISINFORMATION")}</SelectItem>
+              <SelectItem value="INAPPROPRIATE">{t("report.reason.INAPPROPRIATE")}</SelectItem>
+              <SelectItem value="OTHER">{t("report.reason.OTHER")}</SelectItem>
             </SelectContent>
           </Select>
           <Textarea
             value={details}
             onChange={(event) => setDetails(event.target.value)}
             maxLength={2000}
-            placeholder="Add details (optional)"
+            placeholder={t("report.detailsPlaceholder")}
           />
           {report.error ? <p className="text-sm text-destructive">{report.error.message}</p> : null}
           <Button
@@ -220,7 +225,7 @@ export function ReportButton({
             }
             onClick={() => report.mutate()}
           >
-            {report.isPending ? "Sending..." : "Submit report"}
+            {report.isPending ? t("report.sending") : t("report.submit")}
           </Button>
         </div>
       </DialogContent>
@@ -232,9 +237,9 @@ export function ReportButton({
  * The device share sheet is only available over HTTPS on supported browsers, so
  * the clipboard is always kept as a fallback.
  */
-async function sharePost(postId: string) {
+async function sharePost(t: Translate, postId: string) {
   const url = `${window.location.origin}/posts/${postId}`;
-  const payload = { title: "TAKKA post", text: "Read this on TAKKA", url };
+  const payload = { title: t("post.share.title"), text: t("post.share.text"), url };
   if (navigator.share && navigator.canShare?.(payload) !== false) {
     try {
       await navigator.share(payload);
@@ -245,9 +250,9 @@ async function sharePost(postId: string) {
   }
   try {
     await navigator.clipboard.writeText(url);
-    toast.success("Link copied");
+    toast.success(t("post.linkCopied"));
   } catch {
-    toast.error("Copy this link: " + url);
+    toast.error(t("post.copyLink", { url }));
   }
 }
 
@@ -275,6 +280,7 @@ export function PostCard({
   linkToThread?: boolean;
 }) {
   const queryClient = useQueryClient();
+  const t = useT();
   const owned = post.author_id === userId;
 
   const refresh = () =>
@@ -294,7 +300,7 @@ export function PostCard({
     mutationFn: () => setPostSaved(post.id, userId, !post.saved),
     onSuccess: async () => {
       await refresh();
-      toast.success(post.saved ? "Removed from saved" : "Saved");
+      toast.success(post.saved ? t("post.unsavedToast") : t("post.savedToast"));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -302,7 +308,7 @@ export function PostCard({
     mutationFn: () => deletePost(post.id),
     onSuccess: async () => {
       await refresh();
-      toast.success("Post deleted");
+      toast.success(t("post.deletedToast"));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -318,7 +324,9 @@ export function PostCard({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {post.university ? <UniversityTagLink university={post.university} /> : null}
         {post.topic ? <Badge variant="secondary">{post.topic}</Badge> : null}
-        {post.scope === "PROFILE_ONLY" ? <Badge variant="outline">Profile only</Badge> : null}
+        {post.scope === "PROFILE_ONLY" ? (
+          <Badge variant="outline">{t("post.profileOnly")}</Badge>
+        ) : null}
       </div>
 
       <p className="mt-3 break-words whitespace-pre-wrap text-[15px] leading-relaxed text-foreground/90">
@@ -328,7 +336,7 @@ export function PostCard({
       {image ? (
         <img
           src={image}
-          alt="Post attachment"
+          alt={t("post.imageAlt")}
           loading="lazy"
           className="mt-4 max-h-[70vh] w-full rounded-lg object-cover"
         />
@@ -367,21 +375,21 @@ export function PostCard({
           disabled={save.isPending}
           onClick={() => save.mutate()}
           aria-pressed={post.saved}
-          aria-label={post.saved ? "Remove from saved" : "Save post"}
+          aria-label={post.saved ? t("post.removeFromSaved") : t("post.savePost")}
           className={cn("h-9 gap-2 rounded-full", post.saved && "text-primary")}
         >
           <Bookmark className={cn("size-4", post.saved && "fill-current")} />
-          <span className="hidden sm:inline">{post.saved ? "Saved" : "Save"}</span>
+          <span className="hidden sm:inline">{post.saved ? t("post.saved") : t("post.save")}</span>
         </Button>
 
         <Button
           variant="ghost"
           size="sm"
           className="h-9 gap-2 rounded-full"
-          onClick={() => void sharePost(post.id)}
+          onClick={() => void sharePost(t, post.id)}
         >
           <Share2 className="size-4" />
-          <span className="hidden sm:inline">Share</span>
+          <span className="hidden sm:inline">{t("post.share")}</span>
         </Button>
 
         <div className="ml-auto flex items-center">
@@ -392,29 +400,26 @@ export function PostCard({
                   variant="ghost"
                   size="icon"
                   className="size-9 text-muted-foreground hover:text-destructive"
-                  aria-label="Delete post"
+                  aria-label={t("post.delete")}
                 >
                   <Trash2 className="size-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this post?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    It disappears from every feed and thread. TAKKA administrators keep a copy for
-                    moderation records.
-                  </AlertDialogDescription>
+                  <AlertDialogTitle>{t("post.delete.title")}</AlertDialogTitle>
+                  <AlertDialogDescription>{t("post.delete.text")}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Keep post</AlertDialogCancel>
+                  <AlertDialogCancel>{t("post.delete.keep")}</AlertDialogCancel>
                   <AlertDialogAction disabled={remove.isPending} onClick={() => remove.mutate()}>
-                    Delete
+                    {t("common.delete")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           ) : (
-            <ReportButton targetType="POST" targetId={post.id} label="Report post" />
+            <ReportButton targetType="POST" targetId={post.id} label={t("report.post")} />
           )}
         </div>
       </div>
@@ -422,35 +427,71 @@ export function PostCard({
   );
 }
 
-export function UniversityCard({ university }: { university: University }) {
+function departmentCount(university: University | UniversitySummary) {
+  const first = university.departments[0];
+  return first && "count" in first ? first.count : university.departments.length;
+}
+
+function hasDetailedDepartments(
+  university: University | UniversitySummary,
+): university is University {
+  const first = university.departments[0];
+  return Boolean(first && "name" in first);
+}
+
+export function UniversityCard({ university }: { university: University | UniversitySummary }) {
+  const t = useT();
+  const image = universityImageUrl(university.cover_image_path);
+  const count = departmentCount(university);
   return (
-    <article className="card-soft flex flex-col p-5 transition-shadow hover:shadow-[var(--shadow-lift)]">
-      <div className="flex items-start gap-3">
-        <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-sm font-bold text-primary-soft-foreground">
+    <article className="card-soft flex flex-col overflow-hidden transition-shadow hover:shadow-[var(--shadow-lift)]">
+      {image ? (
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          className="aspect-video w-full bg-muted object-cover"
+        />
+      ) : (
+        <div className="flex aspect-video w-full items-center justify-center bg-primary-soft text-2xl font-bold text-primary-soft-foreground">
           {university.short_name}
-        </span>
+        </div>
+      )}
+      <div className="flex flex-1 flex-col p-5">
         <div className="min-w-0">
           <h3 className="text-base font-semibold">{university.name}</h3>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="size-3" /> {university.city} · {university.university_type}
+            <MapPin className="size-3" /> {university.city}
           </p>
         </div>
-      </div>
-      <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{university.description}</p>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {university.departments.slice(0, 3).map((department) => (
-          <Badge key={department.id} variant="secondary" className="font-normal">
-            {department.name}
-          </Badge>
-        ))}
-      </div>
-      <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
-        <p className="text-xs text-muted-foreground">{university.departments.length} departments</p>
-        <Button asChild size="sm">
-          <Link to="/universities/$id" params={{ id: university.id }}>
-            View
-          </Link>
-        </Button>
+        <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{university.description}</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {count > 0 && hasDetailedDepartments(university)
+            ? university.departments.slice(0, 3).map((department) => (
+                <Badge key={department.id} variant="secondary" className="font-normal">
+                  {department.name}
+                </Badge>
+              ))
+            : null}
+          {count === 0 ? (
+            <>
+              {university.region ? <Badge variant="secondary">{university.region}</Badge> : null}
+              <Badge variant="outline">{university.university_type}</Badge>
+            </>
+          ) : null}
+        </div>
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
+          <p className="text-xs text-muted-foreground">
+            {count > 0
+              ? t("university.departmentCount", { count })
+              : t("university.directoryListing")}
+          </p>
+          <Button asChild size="sm">
+            <Link to="/universities/$id" params={{ id: university.id }}>
+              {t("common.view")}
+            </Link>
+          </Button>
+        </div>
       </div>
     </article>
   );

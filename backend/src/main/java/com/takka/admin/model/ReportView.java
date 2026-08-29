@@ -1,5 +1,6 @@
 package com.takka.admin.model;
 
+import com.takka.admin.support.Age;
 import java.util.UUID;
 
 /** A row in the report queue, pre-formatted for the console table. */
@@ -13,7 +14,7 @@ public record ReportView(
     String targetLabel,
     String resolutionNotes,
     String submitted,
-    String age,
+    Age age,
     boolean assigned) {
 
   public boolean hasDetails() {

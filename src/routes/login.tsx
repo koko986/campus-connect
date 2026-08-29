@@ -2,26 +2,32 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/app-shell";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
+import { initialLanguage, translate, useT } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Log in - TAKKA" },
-      { name: "description", content: "Log in to your TAKKA account." },
-    ],
-  }),
+  head: () => {
+    const language = initialLanguage();
+    return {
+      meta: [
+        { title: translate(language, "login.meta.title") },
+        { name: "description", content: translate(language, "login.meta.description") },
+      ],
+    };
+  },
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
   const { initialized, user } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -48,20 +54,21 @@ function LoginPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
         <Logo />
-        <Link
-          to="/get-started"
-          className="text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Create account
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
+            to="/get-started"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            {t("login.createAccount")}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-10">
         <div className="card-soft p-7">
-          <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Log in to continue your university research.
-          </p>
+          <h1 className="text-2xl font-bold">{t("login.heading")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("login.text")}</p>
 
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             {error ? (
@@ -70,7 +77,7 @@ function LoginPage() {
               </Alert>
             ) : null}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("field.email")}</Label>
               <Input
                 id="email"
                 name="email"
@@ -79,12 +86,12 @@ function LoginPage() {
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="student@demo.test"
+                placeholder={t("login.emailPlaceholder")}
                 className="rounded-xl"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("field.password")}</Label>
               <Input
                 id="password"
                 name="password"
@@ -93,19 +100,19 @@ function LoginPage() {
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="At least 8 characters"
+                placeholder={t("login.passwordPlaceholder")}
                 className="rounded-xl"
               />
             </div>
             <Button type="submit" disabled={pending} className="w-full rounded-full" size="lg">
-              {pending ? "Logging in..." : "Log in"}
+              {pending ? t("login.submitting") : t("auth.logIn")}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            New here?{" "}
+            {t("login.newHere")}{" "}
             <Link to="/get-started" className="font-semibold text-primary">
-              Create an account
+              {t("login.createAnAccount")}
             </Link>
           </p>
         </div>

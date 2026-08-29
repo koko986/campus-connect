@@ -73,7 +73,7 @@ class CatalogServiceTest {
         IllegalArgumentException.class,
         () -> service.save(superAdmin(), CatalogResource.CAMPUSES, campusForm("  ")));
 
-    assertEquals("A city is required for a campus", error.getMessage());
+    assertEquals("error.catalog.cityRequired", error.getMessage());
     verify(repository, never()).insert(any(), any());
   }
 
@@ -153,7 +153,7 @@ class CatalogServiceTest {
         IllegalArgumentException.class,
         () -> service.editForm(CatalogResource.PROGRAMS, itemId, universityId));
 
-    assertEquals("Program not found", error.getMessage());
+    assertEquals("error.catalog.notFound.PROGRAMS", error.getMessage());
   }
 
   @Test

@@ -101,7 +101,7 @@ class ReportModerationServiceTest {
     var error = assertThrows(
         IllegalArgumentException.class, () -> service.decide(administrator, reportId, form("RESOLVED", "notes")));
 
-    assertEquals("Report not found", error.getMessage());
+    assertEquals("error.report.notFound", error.getMessage());
   }
 
   @Test

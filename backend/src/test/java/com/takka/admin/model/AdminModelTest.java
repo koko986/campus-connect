@@ -41,7 +41,7 @@ class AdminModelTest {
   @Test
   void catalogResourcesMapToTables() {
     assertEquals("campuses", CatalogResource.CAMPUSES.table());
-    assertEquals("Program", CatalogResource.PROGRAMS.singular());
+    assertEquals("enum.catalog.singular.PROGRAMS", CatalogResource.PROGRAMS.singularKey());
     assertTrue(CatalogResource.require("departments") == CatalogResource.DEPARTMENTS);
     assertThrows(IllegalArgumentException.class, () -> CatalogResource.require("faculties"));
   }
@@ -98,9 +98,9 @@ class AdminModelTest {
     var published = universityView(true, false);
     var archived = universityView(true, true);
 
-    assertEquals("Draft", draft.state());
-    assertEquals("Published", published.state());
-    assertEquals("Archived", archived.state());
+    assertEquals("enum.directoryState.DRAFT", draft.stateKey());
+    assertEquals("enum.directoryState.PUBLISHED", published.stateKey());
+    assertEquals("enum.directoryState.ARCHIVED", archived.stateKey());
     assertTrue(draft.canPublish());
     assertFalse(draft.canUnpublish());
     assertTrue(published.canUnpublish());
@@ -135,6 +135,6 @@ class AdminModelTest {
         2,
         4,
         8,
-        "29 Aug 2026 12:00 UTC");
+        "2026-08-29 12:00 UTC");
   }
 }

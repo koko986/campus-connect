@@ -18,7 +18,7 @@ public final class AuditMapper {
         Json.uuid(row, "id"),
         Json.text(row, "admin_email"),
         action,
-        action == null ? rawAction : action.label(),
+        rawAction,
         Json.text(row, "target_type"),
         Json.optionalUuid(row, "target_id").orElse(null),
         SnapshotLabel.of(row.path("target_snapshot")),

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
  * email. The typed value is compared against the stored account inside the service.
  */
 public class MemberDeleteForm extends ModerationReasonForm {
-  @NotBlank(message = "Retype the member email to confirm deletion")
+  @NotBlank(message = "{validation.member.confirmEmail.required}")
   private String confirmEmail = "";
 
   public String getConfirmEmail() {

@@ -30,8 +30,9 @@ public final class Json {
     return array.isEmpty() ? Optional.empty() : Optional.of(array.get(0));
   }
 
-  public static JsonNode requireFirstRow(JsonNode node, String missingMessage) {
-    return firstRow(node).orElseThrow(() -> new IllegalArgumentException(missingMessage));
+  /** {@code missingKey} names a message in the console bundle, not the sentence itself. */
+  public static JsonNode requireFirstRow(JsonNode node, String missingKey) {
+    return firstRow(node).orElseThrow(() -> new MessageException(missingKey));
   }
 
   public static String text(JsonNode node, String field) {

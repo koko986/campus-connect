@@ -40,14 +40,12 @@ public class CatalogRepository {
 
   public JsonNode insert(CatalogResource resource, Map<String, Object> attributes) {
     var query = Query.from(resource.table()).select("*");
-    return Json.requireFirstRow(
-        supabase.post(query.build(), attributes, RETURN_ROW), resource.singular() + " was not saved");
+    return Json.requireFirstRow(supabase.post(query.build(), attributes, RETURN_ROW), resource.notSavedKey());
   }
 
   public JsonNode update(CatalogResource resource, UUID id, Map<String, Object> attributes) {
     var query = Query.from(resource.table()).select("*").eq("id", id);
-    return Json.requireFirstRow(
-        supabase.patch(query.build(), attributes, RETURN_ROW), resource.singular() + " was not saved");
+    return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), resource.notSavedKey());
   }
 
   /** Departments of one university, used to populate the program form's parent selector. */

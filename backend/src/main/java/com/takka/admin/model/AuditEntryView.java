@@ -7,7 +7,7 @@ public record AuditEntryView(
     UUID id,
     String adminEmail,
     ModerationAction action,
-    String actionLabel,
+    String rawAction,
     String targetType,
     UUID targetId,
     String targetLabel,
@@ -17,6 +17,18 @@ public record AuditEntryView(
 
   public boolean hasTargetLabel() {
     return targetLabel != null && !targetLabel.isBlank();
+  }
+
+  /**
+   * The audit trail is immutable and older than the current action list, so an entry may name an
+   * action this build no longer knows. Those keep their stored value; the rest are translated.
+   */
+  public boolean isTranslatable() {
+    return action != null;
+  }
+
+  public String actionKey() {
+    return action == null ? "" : action.labelKey();
   }
 
   public String actionTone() {

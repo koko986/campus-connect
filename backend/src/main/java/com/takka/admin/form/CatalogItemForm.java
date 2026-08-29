@@ -18,36 +18,36 @@ public class CatalogItemForm {
   /** Present when editing, absent when creating. */
   private UUID id;
 
-  @NotNull(message = "Choose a university")
+  @NotNull(message = "{validation.catalog.university.required}")
   private UUID universityId;
 
-  @NotBlank(message = "A name is required")
-  @Size(max = 200, message = "Name is too long")
+  @NotBlank(message = "{validation.catalog.name.required}")
+  @Size(max = 200, message = "{validation.catalog.name.tooLong}")
   private String name = "";
 
-  @Size(max = 120, message = "City is too long")
+  @Size(max = 120, message = "{validation.catalog.city.tooLong}")
   private String city = "";
 
-  @Size(max = 300, message = "Address is too long")
+  @Size(max = 300, message = "{validation.catalog.address.tooLong}")
   private String address = "";
 
-  @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
-  @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+  @DecimalMin(value = "-90.0", message = "{validation.catalog.latitude.range}")
+  @DecimalMax(value = "90.0", message = "{validation.catalog.latitude.range}")
   private Double latitude;
 
-  @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
-  @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+  @DecimalMin(value = "-180.0", message = "{validation.catalog.longitude.range}")
+  @DecimalMax(value = "180.0", message = "{validation.catalog.longitude.range}")
   private Double longitude;
 
-  @Size(max = 60, message = "Degree level is too long")
+  @Size(max = 60, message = "{validation.catalog.degreeLevel.tooLong}")
   private String degreeLevel = "";
 
-  @Size(max = 2000, message = "Description is too long")
+  @Size(max = 2000, message = "{validation.catalog.description.tooLong}")
   private String description = "";
 
   private UUID departmentId;
 
-  @Size(max = 500, message = "Source URL is too long")
+  @Size(max = 500, message = "{validation.catalog.sourceUrl.tooLong}")
   private String sourceUrl = "";
 
   public Map<String, Object> toAttributes(CatalogResource resource) {

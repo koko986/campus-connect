@@ -6,7 +6,6 @@ import com.takka.admin.model.ReportStatus;
 import com.takka.admin.service.ReportModerationService;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,10 +26,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ConsoleReportsController {
   private final ReportModerationService reports;
   private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
-  public ConsoleReportsController(ReportModerationService reports, ConsoleLayout layout) {
+  public ConsoleReportsController(
+      ReportModerationService reports, ConsoleLayout layout, ConsoleMessages messages) {
     this.reports = reports;
     this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping
@@ -61,12 +63,12 @@ public class ConsoleReportsController {
       @RequestParam(defaultValue = "") String returnStatus,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) {
-      Flash.error(attributes, Flash.firstMessage(binding));
+      Flash.error(attributes, messages.invalidSubmission(binding));
       return redirect(returnStatus);
     }
 
     ReportStatus applied = reports.decide(administrator, id, form);
-    Flash.success(attributes, "Report marked as " + applied.label().toLowerCase(Locale.ROOT) + ".");
+    Flash.success(attributes, messages.get(applied.decidedKey()));
     return redirect(returnStatus);
   }
 

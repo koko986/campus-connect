@@ -25,7 +25,7 @@ class ConsoleOverviewControllerTest {
   private final ReportModerationService reports = mock(ReportModerationService.class);
   private final AuditTrailService auditTrail = mock(AuditTrailService.class);
   private final MockMvc mvc = ConsoleMvc.forController(
-      new ConsoleOverviewController(overview, reports, auditTrail, new ConsoleLayout()));
+      new ConsoleOverviewController(overview, reports, auditTrail, ConsoleMvc.layout()));
 
   private final OverviewMetrics metrics = new OverviewMetrics(4, 2, 1, 120, 3, 40, 12);
 
@@ -62,9 +62,19 @@ class ConsoleOverviewControllerTest {
 
     mvc.perform(get("/admin"))
         .andExpect(model().attribute("administrator", administrator))
-        .andExpect(model().attribute("pageTitle", ConsoleSection.OVERVIEW.title()))
+        .andExpect(model().attribute("pageTitle", "Console overview"))
         .andExpect(model().attribute("superAdmin", true))
-        .andExpect(model().attribute("navigation", ConsoleSection.navigationFor(administrator)));
+        .andExpect(model().attribute("navigation", ConsoleSection.navigationFor(administrator)))
+        .andExpect(model().attribute("language", ConsoleLanguage.EN));
+  }
+
+  @Test
+  void theSectionTitleIsTranslatedForAMyanmarRequest() throws Exception {
+    ConsoleMvc.signIn(Fixtures.superAdmin());
+
+    mvc.perform(get("/admin").locale(ConsoleMvc.MYANMAR))
+        .andExpect(model().attribute("pageTitle", "ကွန်ဆိုးလ် အနှစ်ချုပ်"))
+        .andExpect(model().attribute("language", ConsoleLanguage.MY));
   }
 
   @Test

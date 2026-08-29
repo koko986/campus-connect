@@ -27,10 +27,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ConsoleMembersController {
   private final AccountModerationService accounts;
   private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
-  public ConsoleMembersController(AccountModerationService accounts, ConsoleLayout layout) {
+  public ConsoleMembersController(
+      AccountModerationService accounts, ConsoleLayout layout, ConsoleMessages messages) {
     this.accounts = accounts;
     this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping
@@ -62,7 +65,7 @@ public class ConsoleMembersController {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
     String member = accounts.block(administrator, id, form);
-    Flash.success(attributes, member + " is now blocked and signed out of every device.");
+    Flash.success(attributes, messages.get("flash.member.blocked", member));
     return redirect(search, status);
   }
 
@@ -78,7 +81,7 @@ public class ConsoleMembersController {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
     String member = accounts.unblock(administrator, id, form);
-    Flash.success(attributes, member + " can sign in again.");
+    Flash.success(attributes, messages.get("flash.member.unblocked", member));
     return redirect(search, status);
   }
 
@@ -94,13 +97,13 @@ public class ConsoleMembersController {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
     String email = accounts.delete(administrator, id, form);
-    Flash.success(attributes, email + " has been permanently deleted.");
+    Flash.success(attributes, messages.get("flash.member.deleted", email));
     return redirect(search, status);
   }
 
-  private static String rejected(
+  private String rejected(
       BindingResult binding, RedirectAttributes attributes, String search, String status) {
-    Flash.error(attributes, Flash.firstMessage(binding));
+    Flash.error(attributes, messages.invalidSubmission(binding));
     return redirect(search, status);
   }
 

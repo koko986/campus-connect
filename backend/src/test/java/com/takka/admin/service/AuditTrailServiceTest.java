@@ -50,7 +50,7 @@ class AuditTrailServiceTest {
 
     var page = service.entries(request);
 
-    assertEquals("Removed post", page.items().get(0).actionLabel());
+    assertEquals("enum.moderationAction.REMOVE_POST", page.items().get(0).actionKey());
     assertEquals("Buy followers", page.items().get(0).targetLabel());
     assertEquals(true, page.hasNext());
   }

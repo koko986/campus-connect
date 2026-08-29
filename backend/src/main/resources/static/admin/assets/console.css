@@ -18,7 +18,13 @@
   --warning: #d9a13b;
   --danger: #e05a5a;
   --rail-width: 232px;
-  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  /*
+   * Monospace first, because the console is a dense operations table. No monospace family covers the
+   * Myanmar block, so Noto Sans Myanmar follows as the fallback the browser reaches for Burmese
+   * glyphs; the Latin text in the same sentence still renders monospaced.
+   */
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace,
+    "Noto Sans Myanmar";
 }
 
 * {
@@ -588,6 +594,95 @@ textarea {
 .console-pagination-controls {
   display: flex;
   gap: 8px;
+}
+
+/* Language switch */
+
+.console-languages {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.console-language {
+  padding: 5px 9px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.console-language + .console-language {
+  border-left: 1px solid var(--border);
+}
+
+.console-language:hover {
+  background: var(--surface-inset);
+  color: var(--text);
+}
+
+.console-language.is-active {
+  background: var(--surface-inset);
+  color: var(--accent);
+}
+
+.console-login .console-languages {
+  width: fit-content;
+  margin: 0 auto 20px;
+}
+
+/*
+ * Burmese in a console built for Latin micro-type.
+ *
+ * Myanmar script stacks marks above and below the baseline, so 10px uppercase labels at tight
+ * tracking become unreadable: the tracking pulls stacked clusters apart and the case transform does
+ * nothing, since Myanmar has no letter case. These rules give the script the room it needs and drop
+ * the two treatments that only make sense for Latin.
+ */
+
+html:lang(my) body {
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+html:lang(my) .console-brand-text small,
+html:lang(my) .console-nav-link,
+html:lang(my) .console-heading p,
+html:lang(my) .console-metric-label,
+html:lang(my) .console-panel-head h2,
+html:lang(my) .console-table th,
+html:lang(my) .console-pill,
+html:lang(my) .console-button,
+html:lang(my) label > span {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+html:lang(my) .console-brand-text small,
+html:lang(my) .console-nav-link,
+html:lang(my) .console-heading p,
+html:lang(my) .console-metric-label,
+html:lang(my) .console-table th,
+html:lang(my) .console-pill,
+html:lang(my) .console-button,
+html:lang(my) label > span {
+  font-size: 12px;
+}
+
+html:lang(my) .console-muted,
+html:lang(my) .console-scope {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+html:lang(my) .console-pill {
+  padding: 3px 8px;
+}
+
+html:lang(my) .console-table th,
+html:lang(my) .console-table td {
+  padding: 10px 12px;
 }
 
 /* Sign-in and error card */

@@ -22,9 +22,9 @@ public final class MemberMapper {
         id,
         Json.text(row, "full_name"),
         Json.text(row, "email"),
-        accountTypeLabel(Json.text(row, "account_type")),
+        accountTypeKey(Json.text(row, "account_type")),
         Json.text(university, "name"),
-        verificationLabel(Json.text(student, "verification_status")),
+        verificationKey(Json.text(student, "verification_status")),
         AccountStatus.parse(Json.text(moderation, "status")).orElse(AccountStatus.ACTIVE),
         Json.text(moderation, "reason"),
         Timestamps.format(Json.optionalInstant(row, "created_at")),
@@ -32,22 +32,23 @@ public final class MemberMapper {
         administratorIds.contains(id));
   }
 
-  private static String accountTypeLabel(String value) {
+  /**
+   * A message key rather than a label, so the accounts table reads in the administrator's language.
+   * Values the check constraint does not allow still resolve, to a key meaning "unknown", because a
+   * console row must never render a raw column value.
+   */
+  private static String accountTypeKey(String value) {
     return switch (value) {
-      case "current_student" -> "Current student";
-      case "prospective_student" -> "Prospective student";
-      case "" -> "Unknown";
-      default -> value.replace('_', ' ');
+      case "current_student", "prospective_student" -> "enum.accountType." + value;
+      default -> "enum.accountType.unknown";
     };
   }
 
-  private static String verificationLabel(String value) {
+  /** Empty when the member is not a student at all, which the template renders as a blank cell. */
+  private static String verificationKey(String value) {
     return switch (value) {
-      case "verified" -> "Verified";
-      case "pending" -> "Pending";
-      case "rejected" -> "Rejected";
-      case "" -> "";
-      default -> value;
+      case "verified", "pending", "rejected" -> "enum.verification." + value;
+      default -> "";
     };
   }
 }

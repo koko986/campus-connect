@@ -1,18 +1,20 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments :: head('Problem')}"></head>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.problem')}"></head>
   <body class="console-body console-body--centered">
     <main class="console-login">
       <div class="console-brand console-brand--stacked">
         <span class="console-brand-mark">TK</span>
         <span class="console-brand-text">
           <strong>TAKKA</strong>
-          <small>Administration</small>
+          <small th:text="#{console.brand.tagline}">Administration</small>
         </span>
       </div>
       <h1 th:text="${errorTitle}">Something went wrong</h1>
       <p class="console-login-note" th:text="${errorDetail}">Please try again.</p>
-      <a th:href="@{/admin}" class="console-button console-button--primary">Back to the console</a>
+      <a th:href="@{/admin}" class="console-button console-button--primary" th:text="#{action.backToConsole}"
+        >Back to the console</a
+      >
     </main>
   </body>
 </html>

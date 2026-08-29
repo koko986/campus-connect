@@ -7,9 +7,9 @@ public record MemberView(
     UUID id,
     String fullName,
     String email,
-    String accountType,
+    String accountTypeKey,
     String university,
-    String verification,
+    String verificationKey,
     AccountStatus status,
     String blockReason,
     String joined,
@@ -22,6 +22,10 @@ public record MemberView(
 
   public boolean hasUniversity() {
     return university != null && !university.isBlank();
+  }
+
+  public boolean hasVerification() {
+    return verificationKey != null && !verificationKey.isBlank();
   }
 
   public boolean hasBlockReason() {

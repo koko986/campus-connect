@@ -19,7 +19,7 @@ import org.springframework.web.client.RestClientResponseException;
 @Service
 public class AdminSessionService {
   static final String SESSION_ATTRIBUTE = "takka.admin.session";
-  private static final String REJECTED = "Invalid email or password";
+  private static final String REJECTED = "error.signIn.rejected";
 
   private final SupabaseGateway supabase;
   private final AdminUserRepository adminUserRepository;
@@ -33,7 +33,7 @@ public class AdminSessionService {
     TakkaPrincipal principal = authenticate(form);
     AdminRole role = adminUserRepository
         .findActiveRole(principal.id())
-        .orElseThrow(() -> new AdminSignInException("This account is not a TAKKA administrator"));
+        .orElseThrow(() -> new AdminSignInException("error.signIn.notAdministrator"));
     return new AdminIdentity(principal.id(), principal.email(), role);
   }
 
@@ -45,9 +45,7 @@ public class AdminSessionService {
     } catch (RestClientResponseException upstream) {
       // Supabase answers 400 for bad credentials and 429 when rate limiting sign-in attempts.
       throw new AdminSignInException(
-          upstream.getStatusCode().value() == 429
-              ? "Too many sign-in attempts. Please wait and try again."
-              : REJECTED);
+          upstream.getStatusCode().value() == 429 ? "error.signIn.rateLimited" : REJECTED);
     }
   }
 

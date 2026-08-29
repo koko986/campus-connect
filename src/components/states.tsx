@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useT, type Translate } from "@/lib/i18n";
 
 export function Loading({ label }: { label: string }) {
   return (
@@ -15,27 +16,30 @@ export function Loading({ label }: { label: string }) {
 
 /**
  * Row level security denials arrive as ordinary Postgres errors, so they are
- * translated into something a member can act on.
+ * translated into something a member can act on. Anything else is a message from
+ * Supabase, which only speaks English; it is shown as-is rather than hidden.
  */
-function readableMessage(error: Error) {
-  const message = error.message || "Something went wrong.";
+function readableMessage(t: Translate, error: Error) {
+  const message = error.message;
+  if (!message) return t("states.error.unknown");
   if (/row-level security|permission denied|not authorized/i.test(message)) {
-    return "You do not have access to this content.";
+    return t("states.error.noAccess");
   }
   if (/fetch|network|failed to fetch/i.test(message)) {
-    return "You appear to be offline. Check your connection and try again.";
+    return t("states.error.offline");
   }
   return message;
 }
 
 export function Failure({ error, onRetry }: { error: Error; onRetry?: () => void }) {
+  const t = useT();
   return (
     <Alert variant="destructive">
       <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
-        <span>{readableMessage(error)}</span>
+        <span>{readableMessage(t, error)}</span>
         {onRetry ? (
           <Button variant="outline" size="sm" onClick={onRetry}>
-            Try again
+            {t("common.tryAgain")}
           </Button>
         ) : null}
       </AlertDescription>

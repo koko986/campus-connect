@@ -5,17 +5,11 @@ import java.util.Optional;
 
 /** Administrator privilege level, mirroring the {@code admin_users.role} check constraint. */
 public enum AdminRole {
-  SUPER_ADMIN("Super admin"),
-  MODERATOR("Moderator");
+  SUPER_ADMIN,
+  MODERATOR;
 
-  private final String label;
-
-  AdminRole(String label) {
-    this.label = label;
-  }
-
-  public String label() {
-    return label;
+  public String labelKey() {
+    return "enum.role." + name();
   }
 
   public boolean isSuperAdmin() {

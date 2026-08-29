@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments :: head('University')}"></head>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.universityForm')}"></head>
   <body class="console-body">
     <aside th:replace="~{admin/fragments :: sidebar}"></aside>
     <main class="console-main">
@@ -8,8 +8,13 @@
       <div th:replace="~{admin/fragments :: flash}"></div>
 
       <div class="console-panel-head">
-        <h2 th:text="${editing} ? 'Edit university' : 'Add university'">University</h2>
-        <a th:href="@{/admin/universities}" class="console-button console-button--ghost">Back to directory</a>
+        <h2 th:text="${editing} ? #{page.universityForm.edit} : #{page.universityForm.add}">University</h2>
+        <a
+          th:href="@{/admin/universities}"
+          class="console-button console-button--ghost"
+          th:text="#{action.backToDirectory}"
+          >Back to directory</a
+        >
       </div>
 
       <form
@@ -22,72 +27,100 @@
 
         <div class="console-form-grid">
           <label>
-            <span>Name</span>
+            <span th:text="#{field.name}">Name</span>
             <input type="text" th:field="*{name}" required />
             <em class="console-field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></em>
           </label>
           <label>
-            <span>Short name</span>
+            <span th:text="#{field.shortName}">Short name</span>
             <input type="text" th:field="*{shortName}" required />
             <em class="console-field-error" th:if="${#fields.hasErrors('shortName')}" th:errors="*{shortName}"></em>
           </label>
           <label>
-            <span>URL slug</span>
+            <span th:text="#{field.slug}">URL slug</span>
             <input type="text" th:field="*{slug}" required placeholder="yangon-university" />
             <em class="console-field-error" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></em>
           </label>
           <label>
-            <span>Type</span>
+            <span th:text="#{field.type}">Type</span>
             <select th:field="*{universityType}">
-              <option th:each="type : ${types}" th:value="${type}" th:text="${type}"></option>
+              <option
+                th:each="type : ${types}"
+                th:value="${type}"
+                th:text="${#messages.msg('enum.universityType.' + ${type})}"
+              ></option>
             </select>
             <em class="console-field-error" th:if="${#fields.hasErrors('universityType')}"
               th:errors="*{universityType}"></em>
           </label>
           <label>
-            <span>City</span>
+            <span th:text="#{field.city}">City</span>
             <input type="text" th:field="*{city}" required />
             <em class="console-field-error" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></em>
           </label>
           <label>
-            <span>Region</span>
+            <span th:text="#{field.region}">Region</span>
             <input type="text" th:field="*{region}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('region')}" th:errors="*{region}"></em>
           </label>
           <label>
-            <span>Country code</span>
+            <span th:text="#{field.countryCode}">Country code</span>
             <input type="text" th:field="*{countryCode}" maxlength="2" />
             <em class="console-field-error" th:if="${#fields.hasErrors('countryCode')}" th:errors="*{countryCode}"></em>
           </label>
           <label>
-            <span>Founded year</span>
+            <span th:text="#{field.foundedYear}">Founded year</span>
             <input type="number" th:field="*{foundedYear}" min="1500" max="2100" />
             <em class="console-field-error" th:if="${#fields.hasErrors('foundedYear')}" th:errors="*{foundedYear}"></em>
           </label>
           <label>
-            <span>Website</span>
+            <span th:text="#{field.website}">Website</span>
             <input type="url" th:field="*{websiteUrl}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('websiteUrl')}" th:errors="*{websiteUrl}"></em>
           </label>
           <label>
-            <span>Logo path</span>
+            <span th:text="#{field.logoPath}">Logo path</span>
             <input type="text" th:field="*{logoPath}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('logoPath')}" th:errors="*{logoPath}"></em>
           </label>
           <label>
-            <span>Contact email</span>
+            <span th:text="#{field.coverImagePath}">Cover image path</span>
+            <input type="text" th:field="*{coverImagePath}" />
+            <em class="console-field-error" th:if="${#fields.hasErrors('coverImagePath')}"
+              th:errors="*{coverImagePath}"></em>
+          </label>
+          <label>
+            <span th:text="#{field.coverImageCredit}">Cover image credit</span>
+            <input type="text" th:field="*{coverImageCredit}" />
+            <em class="console-field-error" th:if="${#fields.hasErrors('coverImageCredit')}"
+              th:errors="*{coverImageCredit}"></em>
+          </label>
+          <label>
+            <span th:text="#{field.coverImageSourceUrl}">Cover image source URL</span>
+            <input type="url" th:field="*{coverImageSourceUrl}" />
+            <em class="console-field-error" th:if="${#fields.hasErrors('coverImageSourceUrl')}"
+              th:errors="*{coverImageSourceUrl}"></em>
+          </label>
+          <label>
+            <span th:text="#{field.coverImageLicense}">Cover image license</span>
+            <input type="text" th:field="*{coverImageLicense}" />
+            <em class="console-field-error" th:if="${#fields.hasErrors('coverImageLicense')}"
+              th:errors="*{coverImageLicense}"></em>
+          </label>
+          <label>
+            <span th:text="#{field.contactEmail}">Contact email</span>
             <input type="email" th:field="*{contactEmail}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('contactEmail')}"
               th:errors="*{contactEmail}"></em>
           </label>
           <label>
-            <span>Contact phone</span>
+            <span th:text="#{field.contactPhone}">Contact phone</span>
             <input type="text" th:field="*{contactPhone}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('contactPhone')}"
               th:errors="*{contactPhone}"></em>
           </label>
           <label>
-            <span>Data source URL</span>
+            <span th:text="#{field.dataSourceUrl}">Data source URL</span>
             <input type="url" th:field="*{dataSourceUrl}" />
             <em class="console-field-error" th:if="${#fields.hasErrors('dataSourceUrl')}"
               th:errors="*{dataSourceUrl}"></em>
@@ -95,26 +128,33 @@
         </div>
 
         <label>
-          <span>Short description</span>
+          <span th:text="#{field.shortDescription}">Short description</span>
           <textarea th:field="*{description}" rows="3" maxlength="500" required></textarea>
           <em class="console-field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></em>
         </label>
 
         <label>
-          <span>About</span>
+          <span th:text="#{field.about}">About</span>
           <textarea th:field="*{about}" rows="8"></textarea>
           <em class="console-field-error" th:if="${#fields.hasErrors('about')}" th:errors="*{about}"></em>
         </label>
 
         <label class="console-checkbox">
           <input type="checkbox" th:field="*{published}" />
-          <span>Published to students</span>
+          <span th:text="#{field.publishedToStudents}">Published to students</span>
         </label>
 
         <div class="console-form-actions">
-          <button type="submit" class="console-button console-button--primary"
-            th:text="${editing} ? 'Save changes' : 'Create university'">Save</button>
-          <a th:href="@{/admin/universities}" class="console-button console-button--ghost">Cancel</a>
+          <button
+            type="submit"
+            class="console-button console-button--primary"
+            th:text="${editing} ? #{action.saveChanges} : #{action.createUniversity}"
+          >
+            Save
+          </button>
+          <a th:href="@{/admin/universities}" class="console-button console-button--ghost" th:text="#{action.cancel}"
+            >Cancel</a
+          >
         </div>
       </form>
     </main>

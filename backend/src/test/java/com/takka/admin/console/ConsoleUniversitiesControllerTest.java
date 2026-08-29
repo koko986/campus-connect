@@ -33,8 +33,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 class ConsoleUniversitiesControllerTest {
   private final UniversityDirectoryService universities = mock(UniversityDirectoryService.class);
-  private final MockMvc mvc =
-      ConsoleMvc.forController(new ConsoleUniversitiesController(universities, new ConsoleLayout()));
+  private final MockMvc mvc = ConsoleMvc.forController(
+      new ConsoleUniversitiesController(universities, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final AdminIdentity superAdmin = Fixtures.superAdmin();
   private final UUID universityId = UUID.randomUUID();
@@ -178,10 +178,19 @@ class ConsoleUniversitiesControllerTest {
   @Test
   void aModeratorIsRefusedDirectoryWrites() throws Exception {
     when(universities.changeState(any(), any(), any(), any()))
-        .thenThrow(new AccessDeniedException("Super admin access required"));
+        .thenThrow(new AccessDeniedException("error.access.superAdmin"));
 
     mvc.perform(post("/admin/universities/{id}/state/publish", universityId).param("reason", "Data verified"))
         .andExpect(redirectedUrl("/admin"))
-        .andExpect(flash().attribute("flashError", "Super admin access required"));
+        .andExpect(flash().attribute("flashError", "That action is limited to super admins."));
+  }
+
+  /** The unknown-operation message takes the attempted slug as an argument in either language. */
+  @Test
+  void anUnknownStateChangeIsReportedInTheRequestedLanguage() throws Exception {
+    mvc.perform(post("/admin/universities/{id}/state/destroy", universityId)
+            .param("reason", "Because")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute("flashError", "မသိရသော တက္ကသိုလ် လုပ်ဆောင်ချက်: destroy"));
   }
 }

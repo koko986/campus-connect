@@ -11,6 +11,7 @@ import com.takka.admin.repository.AccountModerationRepository;
 import com.takka.admin.repository.AdminUserRepository;
 import com.takka.admin.repository.ProfileRepository;
 import com.takka.admin.support.Json;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import com.takka.supabase.SupabaseGateway;
@@ -109,7 +110,7 @@ public class AccountModerationService {
 
     String email = Json.text(profile, "email");
     if (!form.matches(email)) {
-      throw new IllegalArgumentException("The confirmation email does not match this member");
+      throw new MessageException("error.member.emailMismatch");
     }
 
     supabase.deleteAuthUser(userId);
@@ -127,10 +128,10 @@ public class AccountModerationService {
   /** Blocks the two targets that must never be moderated: yourself and another live administrator. */
   private JsonNode requireModeratableMember(AdminIdentity administrator, UUID userId) {
     if (administrator.userId().equals(userId)) {
-      throw new IllegalArgumentException("You cannot moderate your own account");
+      throw new MessageException("error.member.selfModeration");
     }
     if (adminUserRepository.isActiveAdmin(userId)) {
-      throw new AccessDeniedException("Active administrator accounts cannot be moderated");
+      throw new AccessDeniedException("error.member.administratorProtected");
     }
     return profileRepository.requireById(userId);
   }

@@ -1064,6 +1064,10 @@ export type Database = {
           contact_email: string | null;
           contact_phone: string | null;
           country_code: string;
+          cover_image_credit: string | null;
+          cover_image_license: string | null;
+          cover_image_path: string | null;
+          cover_image_source_url: string | null;
           created_at: string;
           data_source_url: string | null;
           data_verified_at: string | null;
@@ -1088,6 +1092,10 @@ export type Database = {
           contact_email?: string | null;
           contact_phone?: string | null;
           country_code?: string;
+          cover_image_credit?: string | null;
+          cover_image_license?: string | null;
+          cover_image_path?: string | null;
+          cover_image_source_url?: string | null;
           created_at?: string;
           data_source_url?: string | null;
           data_verified_at?: string | null;
@@ -1112,6 +1120,10 @@ export type Database = {
           contact_email?: string | null;
           contact_phone?: string | null;
           country_code?: string;
+          cover_image_credit?: string | null;
+          cover_image_license?: string | null;
+          cover_image_path?: string | null;
+          cover_image_source_url?: string | null;
           created_at?: string;
           data_source_url?: string | null;
           data_verified_at?: string | null;
@@ -1138,6 +1150,67 @@ export type Database = {
           },
         ];
       };
+      university_photos: {
+        Row: {
+          caption: string | null;
+          created_at: string;
+          id: string;
+          image_path: string;
+          review_note: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+          university_id: string;
+          uploader_id: string | null;
+        };
+        Insert: {
+          caption?: string | null;
+          created_at?: string;
+          id?: string;
+          image_path: string;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+          university_id: string;
+          uploader_id?: string | null;
+        };
+        Update: {
+          caption?: string | null;
+          created_at?: string;
+          id?: string;
+          image_path?: string;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+          university_id?: string;
+          uploader_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_photos_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "admin_users";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "university_photos_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: false;
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "university_photos_uploader_id_fkey";
+            columns: ["uploader_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1146,6 +1219,19 @@ export type Database = {
       join_university_group: {
         Args: { target_university_id: string };
         Returns: string;
+      };
+      recommend_universities: {
+        Args: {
+          p_limit?: number;
+          p_preferred_city?: string;
+          p_preferred_degree_level?: string;
+          p_preferred_field?: string;
+        };
+        Returns: {
+          match_reasons: string[];
+          score: number;
+          university_id: string;
+        }[];
       };
       soft_delete_comment: {
         Args: { target_comment_id: string };

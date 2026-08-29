@@ -6,6 +6,7 @@ import com.takka.security.TakkaPrincipal;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,6 +100,14 @@ public class SupabaseGateway {
 
   public JsonNode object(Object value) {
     return mapper.valueToTree(value);
+  }
+
+  public String publicStorageUrl(String bucket, String path) {
+    if (path == null || path.isBlank()) return "";
+    if (path.startsWith("https://") || path.startsWith("http://")) return path;
+    String encodedPath =
+        Arrays.stream(path.split("/")).map(SupabaseGateway::encode).reduce((a, b) -> a + "/" + b).orElse("");
+    return url + "/storage/v1/object/public/" + encode(bucket) + "/" + encodedPath;
   }
 
   public static String encode(String value) {

@@ -28,10 +28,11 @@ class JsonTest {
   }
 
   @Test
-  void requiringAMissingRowFails() {
-    var error = assertThrows(IllegalArgumentException.class, () -> Json.requireFirstRow(json("[]"), "Nope"));
+  void requiringAMissingRowFailsWithTheGivenMessageKey() {
+    var error =
+        assertThrows(MessageException.class, () -> Json.requireFirstRow(json("[]"), "error.post.notFound"));
 
-    assertEquals("Nope", error.getMessage());
+    assertEquals("error.post.notFound", error.key());
   }
 
   @Test

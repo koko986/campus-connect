@@ -64,7 +64,7 @@ class AdminSessionServiceTest {
 
     var error = assertThrows(AdminSignInException.class, () -> service.signIn(credentials()));
 
-    assertEquals("This account is not a TAKKA administrator", error.getMessage());
+    assertEquals("error.signIn.notAdministrator", error.key());
   }
 
   @Test
@@ -74,7 +74,7 @@ class AdminSessionServiceTest {
 
     var error = assertThrows(AdminSignInException.class, () -> service.signIn(credentials()));
 
-    assertEquals("Invalid email or password", error.getMessage());
+    assertEquals("error.signIn.rejected", error.key());
   }
 
   @Test
@@ -84,7 +84,7 @@ class AdminSessionServiceTest {
 
     var error = assertThrows(AdminSignInException.class, () -> service.signIn(credentials()));
 
-    assertEquals("Invalid email or password", error.getMessage());
+    assertEquals("error.signIn.rejected", error.key());
   }
 
   @Test
@@ -94,7 +94,7 @@ class AdminSessionServiceTest {
 
     var error = assertThrows(AdminSignInException.class, () -> service.signIn(credentials()));
 
-    assertTrue(error.getMessage().startsWith("Too many sign-in attempts"));
+    assertEquals("error.signIn.rateLimited", error.key());
   }
 
   @Test

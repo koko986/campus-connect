@@ -15,43 +15,57 @@ import org.springframework.web.client.RestClientResponseException;
  * from with an explanation; infrastructure failures render a plain console error page.
  *
  * <p>Scoped to console controllers so the JSON API keeps returning JSON errors.
+ *
+ * <p>Every explanation is resolved from the message bundle. An exception carrying text that is not a
+ * known key is reported with a generic phrase instead, so an internal failure cannot leak a
+ * technical sentence onto an administrator's screen in the wrong language.
  */
 @Order(10)
 @ControllerAdvice(basePackageClasses = ConsoleExceptionHandler.class)
 public class ConsoleExceptionHandler {
   private static final String FALLBACK = ConsoleSection.OVERVIEW.href();
 
+  private final ConsoleMessages messages;
+  private final ConsoleLayout layout;
+
+  public ConsoleExceptionHandler(ConsoleMessages messages, ConsoleLayout layout) {
+    this.messages = messages;
+    this.layout = layout;
+  }
+
   @ExceptionHandler(AccessDeniedException.class)
   String denied(AccessDeniedException error, HttpServletRequest request) {
-    Flash.error(request, message(error, "You do not have permission to do that"));
+    Flash.error(request, messages.explain(error, "error.access.generic"));
     return "redirect:" + returnPath(request);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   String rejected(IllegalArgumentException error, HttpServletRequest request) {
-    Flash.error(request, message(error, "That action could not be completed"));
+    Flash.error(request, messages.explain(error, "error.action.generic"));
     return "redirect:" + returnPath(request);
   }
 
   @ExceptionHandler(IllegalStateException.class)
   String misconfigured(IllegalStateException error, Model model) {
-    model.addAttribute("errorTitle", "The console is not fully configured");
-    model.addAttribute("errorDetail", message(error, "A required server setting is missing."));
-    return "admin/error";
+    return errorPage(
+        model,
+        messages.get("error.configuration.title"),
+        messages.explain(error, "error.configuration.detail"));
   }
 
   @ExceptionHandler(RestClientResponseException.class)
   String upstream(RestClientResponseException error, Model model) {
-    model.addAttribute("errorTitle", "Supabase could not be reached");
-    model.addAttribute(
-        "errorDetail",
-        "The database rejected or dropped the request (status " + error.getStatusCode().value() + ").");
-    return "admin/error";
+    return errorPage(
+        model,
+        messages.get("error.upstream.title"),
+        messages.get("error.upstream.detail", error.getStatusCode().value()));
   }
 
-  private static String message(Exception error, String fallback) {
-    String message = error.getMessage();
-    return message == null || message.isBlank() ? fallback : message;
+  private String errorPage(Model model, String title, String detail) {
+    model.addAttribute("errorTitle", title);
+    model.addAttribute("errorDetail", detail);
+    layout.applyLanguage(model);
+    return "admin/error";
   }
 
   /**

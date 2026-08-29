@@ -93,7 +93,7 @@ class AccountModerationServiceTest {
         IllegalArgumentException.class,
         () -> service.block(administrator, administrator.userId(), reason("Testing")));
 
-    assertEquals("You cannot moderate your own account", error.getMessage());
+    assertEquals("error.member.selfModeration", error.getMessage());
     verify(supabase, never()).updateAuthUser(any(), any());
   }
 
@@ -123,7 +123,7 @@ class AccountModerationServiceTest {
         IllegalArgumentException.class,
         () -> service.delete(superAdmin(), memberId, deleteForm("Fraud", "someone@else.test")));
 
-    assertEquals("The confirmation email does not match this member", error.getMessage());
+    assertEquals("error.member.emailMismatch", error.getMessage());
     verify(supabase, never()).deleteAuthUser(any());
   }
 

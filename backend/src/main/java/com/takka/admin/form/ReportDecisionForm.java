@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Size;
 
 /** A decision applied to a queued report. */
 public class ReportDecisionForm {
-  @NotBlank(message = "Choose a decision")
+  @NotBlank(message = "{validation.report.status.required}")
   private String status = "";
 
-  @NotBlank(message = "Explain the decision")
-  @Size(min = 3, max = 2000, message = "Notes must be between 3 and 2000 characters")
+  @NotBlank(message = "{validation.report.notes.required}")
+  @Size(min = 3, max = 2000, message = "{validation.report.notes.length}")
   private String notes = "";
 
   public String getStatus() {

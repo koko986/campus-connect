@@ -1,27 +1,29 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments :: head('Audit log')}"></head>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.audit')}"></head>
   <body class="console-body">
     <aside th:replace="~{admin/fragments :: sidebar}"></aside>
     <main class="console-main">
       <header th:replace="~{admin/fragments :: topbar}"></header>
       <div th:replace="~{admin/fragments :: flash}"></div>
 
-      <p class="console-scope-note">
+      <p class="console-scope-note" th:text="#{page.audit.note}">
         Every administrator action is appended here. A database trigger rejects edits and deletions, so
         this record cannot be altered from the console.
       </p>
 
-      <p th:if="${entries.isEmpty()}" class="console-empty">No moderation actions recorded yet.</p>
+      <p th:if="${entries.isEmpty()}" class="console-empty" th:text="#{page.audit.empty}">
+        No moderation actions recorded yet.
+      </p>
 
       <table th:unless="${entries.isEmpty()}" class="console-table">
         <thead>
           <tr>
-            <th>When</th>
-            <th>Administrator</th>
-            <th>Action</th>
-            <th>Target</th>
-            <th>Reason</th>
+            <th th:text="#{column.when}">When</th>
+            <th th:text="#{column.administrator}">Administrator</th>
+            <th th:text="#{column.action}">Action</th>
+            <th th:text="#{column.target}">Target</th>
+            <th th:text="#{column.reason}">Reason</th>
           </tr>
         </thead>
         <tbody>
@@ -32,10 +34,12 @@
               <span
                 class="console-pill"
                 th:classappend="'console-pill--' + ${entry.actionTone()}"
-                th:text="${entry.actionLabel()}"
+                th:text="${entry.isTranslatable()} ? ${#messages.msg(entry.actionKey())} : ${entry.rawAction()}"
                 >Action</span
               >
-              <span class="console-muted" th:if="${entry.linkedToReport()}">from a report</span>
+              <span class="console-muted" th:if="${entry.linkedToReport()}" th:text="#{page.audit.fromReport}"
+                >from a report</span
+              >
             </td>
             <td>
               <span class="console-strong" th:if="${entry.hasTargetLabel()}" th:text="${entry.targetLabel()}">Target</span>

@@ -33,8 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 class ConsoleMembersControllerTest {
   private final AccountModerationService accounts = mock(AccountModerationService.class);
-  private final MockMvc mvc =
-      ConsoleMvc.forController(new ConsoleMembersController(accounts, new ConsoleLayout()));
+  private final MockMvc mvc = ConsoleMvc.forController(
+      new ConsoleMembersController(accounts, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final AdminIdentity superAdmin = Fixtures.superAdmin();
   private final UUID memberId = UUID.randomUUID();
@@ -98,7 +98,7 @@ class ConsoleMembersControllerTest {
   void aTooShortReasonIsRejectedBeforeTheServiceIsCalled() throws Exception {
     mvc.perform(post("/admin/members/{id}/block", memberId).param("reason", "x"))
         .andExpect(redirectedUrl("/admin/members"))
-        .andExpect(flash().attribute("flashError", "A reason must be between 3 and 2000 characters"));
+        .andExpect(flash().attribute("flashError", "A reason must be between 3 and 2000 characters."));
 
     verify(accounts, never()).block(any(), any(), any());
   }
@@ -116,7 +116,7 @@ class ConsoleMembersControllerTest {
   void deletingRequiresBothAReasonAndTheRetypedEmail() throws Exception {
     mvc.perform(post("/admin/members/{id}/delete", memberId).param("reason", "Fraudulent account"))
         .andExpect(redirectedUrl("/admin/members"))
-        .andExpect(flash().attribute("flashError", "Retype the member email to confirm deletion"));
+        .andExpect(flash().attribute("flashError", "Retype the member email to confirm deletion."));
 
     verify(accounts, never()).delete(any(), any(), any());
   }
@@ -135,14 +135,39 @@ class ConsoleMembersControllerTest {
   @Test
   void aModeratorAttemptingADeletionIsSentBackWithAnExplanation() throws Exception {
     when(accounts.delete(any(), any(), any()))
-        .thenThrow(new AccessDeniedException("Super admin access required"));
+        .thenThrow(new AccessDeniedException("error.access.superAdmin"));
 
     mvc.perform(post("/admin/members/{id}/delete", memberId)
             .param("reason", "Fraudulent account")
             .param("confirmEmail", "ada@takka.test")
             .header("Referer", "http://localhost/admin/members?status=BLOCKED"))
         .andExpect(redirectedUrl("/admin/members?status=BLOCKED"))
-        .andExpect(flash().attribute("flashError", "Super admin access required"));
+        .andExpect(flash().attribute("flashError", "That action is limited to super admins."));
+  }
+
+  /**
+   * A refusal raised deep in the stack carries technical text, not a key. The banner has to fall back
+   * to something written for an administrator rather than print the internal message.
+   */
+  @Test
+  void anInternalFailureIsReportedGenericallyRatherThanVerbatim() throws Exception {
+    when(accounts.delete(any(), any(), any()))
+        .thenThrow(new IllegalArgumentException("column profiles.deleted_at does not exist"));
+
+    mvc.perform(post("/admin/members/{id}/delete", memberId)
+            .param("reason", "Fraudulent account")
+            .param("confirmEmail", "ada@takka.test"))
+        .andExpect(flash().attribute("flashError", "That action could not be completed."));
+  }
+
+  @Test
+  void aFlashBannerIsWrittenInTheRequestedLanguage() throws Exception {
+    when(accounts.unblock(any(), eq(memberId), any())).thenReturn("Ada Lovelace");
+
+    mvc.perform(post("/admin/members/{id}/unblock", memberId)
+            .param("reason", "Appeal accepted")
+            .locale(ConsoleMvc.MYANMAR))
+        .andExpect(flash().attribute("flashSuccess", "Ada Lovelace ပြန်ဝင်နိုင်ပါပြီ။"));
   }
 
   @Test

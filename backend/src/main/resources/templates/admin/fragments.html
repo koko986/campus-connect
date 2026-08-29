@@ -1,14 +1,23 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
   <!--
     Shared pieces of the console shell. Every console page includes these fragments, which is why
     the console chrome has no student navigation, avatar, or link into a member account.
+
+    Fragments that take a title receive a message key rather than a phrase, so the page name is
+    translated in one place.
   -->
-  <head th:fragment="head(title)">
+  <head th:fragment="head(titleKey)">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title th:text="'TAKKA Admin · ' + ${title}">TAKKA Admin</title>
+    <title th:text="#{console.documentTitle(${#messages.msg(titleKey)})}">TAKKA Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap"
+    />
     <link rel="stylesheet" th:href="@{/admin/assets/console.css}" />
   </head>
 
@@ -18,20 +27,20 @@
         <span class="console-brand-mark">TK</span>
         <span class="console-brand-text">
           <strong>TAKKA</strong>
-          <small>Administration</small>
+          <small th:text="#{console.brand.tagline}">Administration</small>
         </span>
       </div>
       <nav class="console-nav">
         <a
           th:each="item : ${navigation}"
           th:href="@{${item.href()}}"
-          th:text="${item.label()}"
+          th:text="${#messages.msg(item.labelKey())}"
           th:classappend="${item == section} ? 'is-active' : ''"
           class="console-nav-link"
           >Section</a
         >
       </nav>
-      <p class="console-scope">
+      <p class="console-scope" th:text="#{console.scope}">
         Moderation console. Member pages are served by the TAKKA app and are not reachable from here.
       </p>
     </aside>
@@ -39,22 +48,41 @@
     <header th:fragment="topbar" class="console-topbar">
       <div class="console-heading">
         <h1 th:text="${pageTitle}">Console</h1>
-        <p th:text="${section.label()}">Section</p>
+        <p th:text="${#messages.msg(section.labelKey())}">Section</p>
       </div>
       <div class="console-identity">
+        <nav th:replace="~{admin/fragments :: languages}"></nav>
         <span class="console-email" th:text="${administrator.email()}">admin@takka</span>
         <span
           class="console-pill"
           th:classappend="${superAdmin} ? 'console-pill--info' : 'console-pill--muted'"
-          th:text="${administrator.role().label()}"
+          th:text="${#messages.msg(administrator.role().labelKey())}"
           >Role</span
         >
         <form th:action="@{/admin/logout}" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button type="submit" class="console-button console-button--ghost">Sign out</button>
+          <button type="submit" class="console-button console-button--ghost" th:text="#{console.signOut}">
+            Sign out
+          </button>
         </form>
       </div>
     </header>
+
+    <!--
+      Each option is written in its own language, so the switch is readable whichever language is
+      currently active. The links are built server-side and keep the current filters.
+    -->
+    <nav th:fragment="languages" class="console-languages" th:attr="aria-label=#{console.language.label}">
+      <a
+        th:each="choice : ${languageChoices}"
+        th:href="${choice.href()}"
+        th:text="${choice.nativeName()}"
+        th:lang="${choice.tag()}"
+        th:classappend="${choice.active()} ? 'is-active' : ''"
+        class="console-language"
+        >English</a
+      >
+    </nav>
 
     <div th:fragment="flash" class="console-flash">
       <p th:if="${flashSuccess}" class="console-banner console-banner--success" th:text="${flashSuccess}"></p>
@@ -63,23 +91,25 @@
 
     <!-- Page links keep the active filter by re-using the encoded query the controller built. -->
     <nav th:fragment="pagination(pageData, path)" class="console-pagination">
-      <span class="console-pagination-range">
-        Rows <strong th:text="${pageData.firstRowNumber()}">0</strong>–<strong
-          th:text="${pageData.lastRowNumber()}"
-          >0</strong
-        >
+      <span
+        class="console-pagination-range"
+        th:text="#{console.pagination.rows(${pageData.firstRowNumber()}, ${pageData.lastRowNumber()})}"
+      >
+        Rows 1-25
       </span>
       <span class="console-pagination-controls">
         <a
           th:if="${pageData.hasPrevious()}"
           th:href="${path + '?' + (#strings.isEmpty(filterQuery) ? '' : filterQuery + '&amp;') + 'page=' + pageData.previousPage()}"
           class="console-button console-button--ghost"
+          th:text="#{console.pagination.previous}"
           >Previous</a
         >
         <a
           th:if="${pageData.hasNext()}"
           th:href="${path + '?' + (#strings.isEmpty(filterQuery) ? '' : filterQuery + '&amp;') + 'page=' + pageData.nextPage()}"
           class="console-button console-button--ghost"
+          th:text="#{console.pagination.next}"
           >Next</a
         >
       </span>

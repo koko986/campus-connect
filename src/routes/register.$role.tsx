@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/app-shell";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,20 +16,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { listUniversities } from "@/lib/data";
+import { initialLanguage, translate, useT } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/register/$role")({
-  head: () => ({
-    meta: [
-      { title: "Create your account - TAKKA" },
-      {
-        name: "description",
-        content: "Create a current-student or prospective-student TAKKA account.",
-      },
-    ],
-  }),
+  head: () => {
+    const language = initialLanguage();
+    return {
+      meta: [
+        { title: translate(language, "register.meta.title") },
+        { name: "description", content: translate(language, "register.meta.description") },
+      ],
+    };
+  },
   component: RegisterPage,
 });
+
+/** The stored value stays English because it is written to the profile row. */
+const cities = [
+  { value: "Yangon", label: "register.city.Yangon" },
+  { value: "Mandalay", label: "register.city.Mandalay" },
+  { value: "Nay Pyi Taw", label: "register.city.NayPyiTaw" },
+  { value: "Taunggyi", label: "register.city.Taunggyi" },
+  { value: "Any", label: "register.city.Any" },
+] as const;
 
 function Field({
   id,
@@ -46,6 +57,7 @@ function Field({
 function RegisterPage() {
   const { role } = Route.useParams();
   const navigate = useNavigate();
+  const t = useT();
   const isStudent = role === "student";
   const universitiesQuery = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
   const [universityId, setUniversityId] = useState("");
@@ -67,9 +79,9 @@ function RegisterPage() {
     const email = String(form.get("email") ?? "").trim();
     const password = String(form.get("password") ?? "");
     const confirm = String(form.get("confirm") ?? "");
-    if (password.length < 8) return setError("Use a password with at least 8 characters.");
-    if (password !== confirm) return setError("Passwords do not match.");
-    if (isStudent && !universityId) return setError("Select your university.");
+    if (password.length < 8) return setError(t("register.error.password"));
+    if (password !== confirm) return setError(t("register.error.mismatch"));
+    if (isStudent && !universityId) return setError(t("register.error.university"));
 
     setError("");
     setPending(true);
@@ -98,9 +110,7 @@ function RegisterPage() {
     if (result.error) return setError(result.error.message);
     if (result.data.session) await navigate({ to: "/dashboard", replace: true });
     else {
-      setError(
-        "Instant signup is not enabled in Supabase yet. Turn off Confirm email in Authentication > Sign In / Providers > Email, then try again.",
-      );
+      setError(t("register.error.confirmEmail"));
     }
   }
 
@@ -108,21 +118,22 @@ function RegisterPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
         <Logo />
-        <Link
-          to="/get-started"
-          className="text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Change account type
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
+            to="/get-started"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            {t("register.changeType")}
+          </Link>
+        </div>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         <p className="text-sm font-semibold text-primary">
-          {isStudent ? "University student" : "Looking for a university"}
+          {isStudent ? t("register.role.student") : t("register.role.prospective")}
         </p>
-        <h1 className="mt-2 text-3xl font-extrabold">Create your TAKKA account</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Use accurate details. They shape your profile and what the community can see.
-        </p>
+        <h1 className="mt-2 text-3xl font-extrabold">{t("register.heading")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("register.text")}</p>
         <form onSubmit={onSubmit} className="card-soft mt-7 space-y-5 p-6">
           {error ? (
             <Alert variant="destructive">
@@ -132,7 +143,7 @@ function RegisterPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               id="name"
-              label="Full name"
+              label={t("field.fullName")}
               minLength={2}
               maxLength={120}
               required
@@ -140,15 +151,15 @@ function RegisterPage() {
             />
             <Field
               id="email"
-              label="Email"
+              label={t("field.email")}
               type="email"
               required
               autoComplete="email"
-              placeholder="student@demo.test"
+              placeholder={t("login.emailPlaceholder")}
             />
             <Field
               id="password"
-              label="Password"
+              label={t("field.password")}
               type="password"
               minLength={8}
               required
@@ -156,7 +167,7 @@ function RegisterPage() {
             />
             <Field
               id="confirm"
-              label="Confirm password"
+              label={t("field.confirmPassword")}
               type="password"
               minLength={8}
               required
@@ -166,7 +177,7 @@ function RegisterPage() {
           {isStudent ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>University</Label>
+                <Label>{t("field.university")}</Label>
                 <Select
                   value={universityId}
                   onValueChange={(value) => {
@@ -178,8 +189,8 @@ function RegisterPage() {
                     <SelectValue
                       placeholder={
                         universitiesQuery.isLoading
-                          ? "Loading universities..."
-                          : "Select university"
+                          ? t("register.loadingUniversities")
+                          : t("register.selectUniversity")
                       }
                     />
                   </SelectTrigger>
@@ -193,14 +204,14 @@ function RegisterPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Department</Label>
+                <Label>{t("field.department")}</Label>
                 <Select
                   value={departmentId}
                   onValueChange={setDepartmentId}
                   disabled={!universityId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select department" />
+                    <SelectValue placeholder={t("register.selectDepartment")} />
                   </SelectTrigger>
                   <SelectContent>
                     {departments.map((department) => (
@@ -212,15 +223,15 @@ function RegisterPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Academic year</Label>
+                <Label>{t("field.academicYear")}</Label>
                 <Select value={academicYear} onValueChange={setAcademicYear}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select year" />
+                    <SelectValue placeholder={t("register.selectYear")} />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 6 }, (_, index) => String(index + 1)).map((year) => (
                       <SelectItem key={year} value={year}>
-                        Year {year}
+                        {t("register.year", { year })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -229,24 +240,24 @@ function RegisterPage() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id="field" label="Preferred field" maxLength={160} />
-              <Field id="degree" label="Preferred degree level" maxLength={120} />
+              <Field id="field" label={t("field.preferredField")} maxLength={160} />
+              <Field id="degree" label={t("field.preferredDegreeLevel")} maxLength={120} />
               <div className="space-y-1.5">
-                <Label>Preferred city</Label>
+                <Label>{t("field.preferredCity")}</Label>
                 <Select value={preferredCity} onValueChange={setPreferredCity}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Any city" />
+                    <SelectValue placeholder={t("register.anyCity")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {["Yangon", "Mandalay", "Nay Pyi Taw", "Taunggyi", "Any"].map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
+                    {cities.map((city) => (
+                      <SelectItem key={city.value} value={city.value}>
+                        {t(city.label)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Field id="preferences" label="Other preferences" maxLength={1000} />
+              <Field id="preferences" label={t("field.otherPreferences")} maxLength={1000} />
             </div>
           )}
           <Button
@@ -255,11 +266,9 @@ function RegisterPage() {
             disabled={pending || universitiesQuery.isError}
             className="w-full rounded-full"
           >
-            {pending ? "Creating account..." : "Create account"}
+            {pending ? t("register.submitting") : t("register.submit")}
           </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Demo mode accepts any valid email format and signs you in immediately.
-          </p>
+          <p className="text-center text-xs text-muted-foreground">{t("register.demoNote")}</p>
         </form>
       </main>
     </div>

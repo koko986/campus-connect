@@ -29,12 +29,17 @@ public class ConsoleCatalogController {
   private final CatalogService catalog;
   private final UniversityDirectoryService universities;
   private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
   public ConsoleCatalogController(
-      CatalogService catalog, UniversityDirectoryService universities, ConsoleLayout layout) {
+      CatalogService catalog,
+      UniversityDirectoryService universities,
+      ConsoleLayout layout,
+      ConsoleMessages messages) {
     this.catalog = catalog;
     this.universities = universities;
     this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping
@@ -69,13 +74,13 @@ public class ConsoleCatalogController {
       RedirectAttributes attributes) {
     CatalogResource selected = CatalogResource.require(resource);
     if (binding.hasErrors()) {
-      Flash.error(attributes, Flash.firstMessage(binding));
+      Flash.error(attributes, messages.invalidSubmission(binding));
       return redirect(selected, form.getUniversityId());
     }
 
     boolean editing = form.isEditing();
     String name = catalog.save(administrator, selected, form);
-    Flash.success(attributes, name + (editing ? " updated." : " added to the catalog."));
+    Flash.success(attributes, messages.get(editing ? "flash.catalog.updated" : "flash.catalog.added", name));
     return redirect(selected, form.getUniversityId());
   }
 

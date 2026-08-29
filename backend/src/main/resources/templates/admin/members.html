@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments :: head('Accounts')}"></head>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.accounts')}"></head>
   <body class="console-body">
     <aside th:replace="~{admin/fragments :: sidebar}"></aside>
     <main class="console-main">
@@ -9,35 +9,48 @@
 
       <form th:action="@{/admin/members}" method="get" class="console-filters">
         <label class="console-filters-grow">
-          <span>Search</span>
-          <input type="search" name="search" th:value="${filter.search()}" placeholder="Name or email" />
+          <span th:text="#{field.search}">Search</span>
+          <input
+            type="search"
+            name="search"
+            th:value="${filter.search()}"
+            th:placeholder="#{field.searchPlaceholder}"
+          />
         </label>
         <label>
-          <span>Status</span>
+          <span th:text="#{field.status}">Status</span>
           <select name="status">
-            <option value="" th:selected="${#strings.isEmpty(filter.statusValue())}">All accounts</option>
+            <option
+              value=""
+              th:selected="${#strings.isEmpty(filter.statusValue())}"
+              th:text="#{filter.allAccounts}"
+            >
+              All accounts
+            </option>
             <option
               th:each="status : ${statuses}"
               th:value="${status.name()}"
-              th:text="${status.label()}"
+              th:text="${#messages.msg(status.labelKey())}"
               th:selected="${status.name() == filter.statusValue()}"
             ></option>
           </select>
         </label>
-        <button type="submit" class="console-button console-button--ghost">Search</button>
+        <button type="submit" class="console-button console-button--ghost" th:text="#{action.search}">Search</button>
       </form>
 
-      <p th:if="${members.isEmpty()}" class="console-empty">No accounts match this search.</p>
+      <p th:if="${members.isEmpty()}" class="console-empty" th:text="#{page.accounts.empty}">
+        No accounts match this search.
+      </p>
 
       <table th:unless="${members.isEmpty()}" class="console-table console-table--roomy">
         <thead>
           <tr>
-            <th>Member</th>
-            <th>Type</th>
-            <th>University</th>
-            <th>Status</th>
-            <th>Joined</th>
-            <th>Actions</th>
+            <th th:text="#{column.member}">Member</th>
+            <th th:text="#{column.type}">Type</th>
+            <th th:text="#{column.university}">University</th>
+            <th th:text="#{column.status}">Status</th>
+            <th th:text="#{column.joined}">Joined</th>
+            <th th:text="#{column.actions}">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -47,9 +60,13 @@
               <span class="console-muted" th:text="${member.email()}">email</span>
             </td>
             <td>
-              <span th:text="${member.accountType()}">Type</span>
-              <span class="console-muted" th:if="${!#strings.isEmpty(member.verification())}"
-                th:text="${member.verification()}">Verified</span>
+              <span th:text="${#messages.msg(member.accountTypeKey())}">Type</span>
+              <span
+                class="console-muted"
+                th:if="${member.hasVerification()}"
+                th:text="${#messages.msg(member.verificationKey())}"
+                >Verified</span
+              >
             </td>
             <td>
               <span th:if="${member.hasUniversity()}" th:text="${member.university()}">University</span>
@@ -59,17 +76,22 @@
               <span
                 class="console-pill"
                 th:classappend="'console-pill--' + ${member.statusTone()}"
-                th:text="${member.status().label()}"
+                th:text="${#messages.msg(member.status().labelKey())}"
                 >Active</span
               >
               <p class="console-detail" th:if="${member.hasBlockReason()}" th:text="${member.blockReason()}"></p>
             </td>
             <td th:text="${member.joined()}">date</td>
             <td class="console-actions">
-              <span th:unless="${member.isModeratable()}" class="console-muted">Administrator</span>
+              <span
+                th:unless="${member.isModeratable()}"
+                class="console-muted"
+                th:text="#{page.accounts.administrator}"
+                >Administrator</span
+              >
 
               <details th:if="${member.isModeratable() and !member.isBlocked()}" class="console-action">
-                <summary class="console-button console-button--danger">Block</summary>
+                <summary class="console-button console-button--danger" th:text="#{action.block}">Block</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/block'}"
                   method="post"
@@ -79,17 +101,21 @@
                   <input type="hidden" name="search" th:value="${filter.search()}" />
                   <input type="hidden" name="status" th:value="${filter.statusValue()}" />
                   <label>
-                    <span>Reason</span>
+                    <span th:text="#{field.reason}">Reason</span>
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
-                      placeholder="Recorded in the audit trail"></textarea>
+                      th:placeholder="#{field.auditPlaceholder}"></textarea>
                   </label>
-                  <p class="console-detail">Blocking signs the member out everywhere and stops all posting.</p>
-                  <button type="submit" class="console-button console-button--danger">Confirm block</button>
+                  <p class="console-detail" th:text="#{page.accounts.blockNote}">
+                    Blocking signs the member out everywhere and stops all posting.
+                  </p>
+                  <button type="submit" class="console-button console-button--danger" th:text="#{action.confirmBlock}">
+                    Confirm block
+                  </button>
                 </form>
               </details>
 
               <details th:if="${member.isModeratable() and member.isBlocked()}" class="console-action">
-                <summary class="console-button console-button--primary">Unblock</summary>
+                <summary class="console-button console-button--primary" th:text="#{action.unblock}">Unblock</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/unblock'}"
                   method="post"
@@ -99,17 +125,23 @@
                   <input type="hidden" name="search" th:value="${filter.search()}" />
                   <input type="hidden" name="status" th:value="${filter.statusValue()}" />
                   <label>
-                    <span>Reason</span>
+                    <span th:text="#{field.reason}">Reason</span>
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
-                      placeholder="Recorded in the audit trail"></textarea>
+                      th:placeholder="#{field.auditPlaceholder}"></textarea>
                   </label>
-                  <button type="submit" class="console-button console-button--primary">Confirm unblock</button>
+                  <button
+                    type="submit"
+                    class="console-button console-button--primary"
+                    th:text="#{action.confirmUnblock}"
+                  >
+                    Confirm unblock
+                  </button>
                 </form>
               </details>
 
               <!-- Deletion is irreversible, so only super admins see it and the email must be retyped. -->
               <details th:if="${superAdmin and member.isModeratable()}" class="console-action">
-                <summary class="console-button console-button--danger">Delete</summary>
+                <summary class="console-button console-button--danger" th:text="#{action.delete}">Delete</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/delete'}"
                   method="post"
@@ -119,17 +151,23 @@
                   <input type="hidden" name="search" th:value="${filter.search()}" />
                   <input type="hidden" name="status" th:value="${filter.statusValue()}" />
                   <label>
-                    <span>Reason</span>
+                    <span th:text="#{field.reason}">Reason</span>
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required></textarea>
                   </label>
                   <label>
-                    <span>Retype <strong th:text="${member.email()}">email</strong> to confirm</span>
+                    <span th:text="#{field.confirmEmail(${member.email()})}">Retype the email to confirm</span>
                     <input type="text" name="confirmEmail" autocomplete="off" required />
                   </label>
-                  <p class="console-detail">
+                  <p class="console-detail" th:text="#{page.accounts.deleteNote}">
                     This deletes the Supabase account permanently. Their posts remain but lose their author.
                   </p>
-                  <button type="submit" class="console-button console-button--danger">Delete permanently</button>
+                  <button
+                    type="submit"
+                    class="console-button console-button--danger"
+                    th:text="#{action.confirmDelete}"
+                  >
+                    Delete permanently
+                  </button>
                 </form>
               </details>
             </td>

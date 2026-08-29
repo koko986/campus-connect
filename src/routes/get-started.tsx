@@ -2,22 +2,24 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Backpack, GraduationCap } from "lucide-react";
 
 import { Logo } from "@/components/app-shell";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { initialLanguage, translate, useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/get-started")({
-  head: () => ({
-    meta: [
-      { title: "Get started - TAKKA" },
-      {
-        name: "description",
-        content: "Tell us whether you're a current university student or looking for a university.",
-      },
-      { property: "og:title", content: "Get started - TAKKA" },
-      {
-        property: "og:description",
-        content: "Choose your account type and join the student community.",
-      },
-    ],
-  }),
+  head: () => {
+    const language = initialLanguage();
+    return {
+      meta: [
+        { title: translate(language, "getStarted.meta.title") },
+        { name: "description", content: translate(language, "getStarted.meta.description") },
+        { property: "og:title", content: translate(language, "getStarted.meta.ogTitle") },
+        {
+          property: "og:description",
+          content: translate(language, "getStarted.meta.ogDescription"),
+        },
+      ],
+    };
+  },
   component: GetStarted,
 });
 
@@ -26,36 +28,40 @@ const options = [
     role: "student",
     icon: GraduationCap,
     emoji: "🎓",
-    title: "I'm a University Student",
-    text: "I am currently studying at a university and want to share my experience.",
+    title: "getStarted.student.title",
+    text: "getStarted.student.text",
   },
   {
     role: "prospective",
     icon: Backpack,
     emoji: "🎒",
-    title: "I'm Looking for a University",
-    text: "I want to explore universities and learn from current students.",
+    title: "getStarted.prospective.title",
+    text: "getStarted.prospective.text",
   },
 ] as const;
 
 function GetStarted() {
+  const t = useT();
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
         <Logo />
-        <Link
-          to="/login"
-          className="text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Log in
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
+            to="/login"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            {t("auth.logIn")}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center px-4 py-12">
-        <h1 className="text-center text-3xl font-extrabold sm:text-4xl">What brings you here?</h1>
-        <p className="mt-3 text-center text-sm text-muted-foreground">
-          Pick the option that fits you — you can change details later in settings.
-        </p>
+        <h1 className="text-center text-3xl font-extrabold sm:text-4xl">
+          {t("getStarted.heading")}
+        </h1>
+        <p className="mt-3 text-center text-sm text-muted-foreground">{t("getStarted.text")}</p>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {options.map((o) => (
@@ -72,11 +78,11 @@ function GetStarted() {
                 <span aria-hidden className="mr-1">
                   {o.emoji}
                 </span>
-                {o.title}
+                {t(o.title)}
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{o.text}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(o.text)}</p>
               <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Continue{" "}
+                {t("common.continue")}{" "}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </span>
             </Link>

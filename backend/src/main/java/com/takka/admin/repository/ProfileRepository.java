@@ -3,6 +3,7 @@ package com.takka.admin.repository;
 import com.takka.admin.model.AccountStatus;
 import com.takka.admin.model.MemberFilter;
 import com.takka.admin.support.Json;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import com.takka.admin.support.Query;
@@ -60,7 +61,7 @@ public class ProfileRepository {
   }
 
   public JsonNode requireById(UUID userId) {
-    return findById(userId).orElseThrow(() -> new IllegalArgumentException("Member not found"));
+    return findById(userId).orElseThrow(() -> new MessageException("error.member.notFound"));
   }
 
   public long countAll() {

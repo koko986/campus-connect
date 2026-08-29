@@ -1,6 +1,7 @@
 package com.takka.admin.repository;
 
 import com.takka.admin.support.Json;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import com.takka.admin.support.Query;
@@ -19,6 +20,8 @@ public class UniversityRepository {
   private static final String DIRECTORY_SELECT =
       "*,campuses(count),departments(count),programs(count)";
   private static final String STATE_SELECT = "id,name,is_published,archived_at";
+  private static final String NOT_FOUND = "error.university.notFound";
+  private static final String NOT_SAVED = "error.university.notSaved";
 
   private final SupabaseGateway supabase;
 
@@ -40,12 +43,12 @@ public class UniversityRepository {
   }
 
   public JsonNode requireById(UUID universityId) {
-    return findById(universityId).orElseThrow(() -> new IllegalArgumentException("University not found"));
+    return findById(universityId).orElseThrow(() -> new MessageException(NOT_FOUND));
   }
 
   public JsonNode requireStateById(UUID universityId) {
     var query = Query.from("universities").select(STATE_SELECT).eq("id", universityId).limit(1);
-    return Json.requireFirstRow(supabase.get(query.build()), "University not found");
+    return Json.requireFirstRow(supabase.get(query.build()), NOT_FOUND);
   }
 
   /** Every university, newest naming first, for the catalog page selector. */
@@ -58,12 +61,12 @@ public class UniversityRepository {
 
   public JsonNode insert(Map<String, Object> attributes) {
     var query = Query.from("universities").select("*");
-    return Json.requireFirstRow(supabase.post(query.build(), attributes, RETURN_ROW), "University was not saved");
+    return Json.requireFirstRow(supabase.post(query.build(), attributes, RETURN_ROW), NOT_SAVED);
   }
 
   public JsonNode update(UUID universityId, Map<String, Object> attributes) {
     var query = Query.from("universities").select("*").eq("id", universityId);
-    return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), "University was not saved");
+    return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), NOT_SAVED);
   }
 
   public void applyState(UUID universityId, Map<String, Object> attributes) {

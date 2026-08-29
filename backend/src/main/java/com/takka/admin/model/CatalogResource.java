@@ -1,34 +1,40 @@
 package com.takka.admin.model;
 
+import com.takka.admin.support.MessageException;
 import java.util.Locale;
 import java.util.Optional;
 
 /** The three catalog tables an administrator can curate under a university. */
 public enum CatalogResource {
-  CAMPUSES("campuses", "Campuses", "Campus"),
-  DEPARTMENTS("departments", "Departments", "Department"),
-  PROGRAMS("programs", "Programs", "Program");
+  CAMPUSES("campuses"),
+  DEPARTMENTS("departments"),
+  PROGRAMS("programs");
 
   private final String table;
-  private final String label;
-  private final String singular;
 
-  CatalogResource(String table, String label, String singular) {
+  CatalogResource(String table) {
     this.table = table;
-    this.label = label;
-    this.singular = singular;
   }
 
   public String table() {
     return table;
   }
 
-  public String label() {
-    return label;
+  public String labelKey() {
+    return "enum.catalog.plural." + name();
   }
 
-  public String singular() {
-    return singular;
+  public String singularKey() {
+    return "enum.catalog.singular." + name();
+  }
+
+  /** Per-resource keys, so each sentence reads naturally rather than splicing in a noun. */
+  public String notFoundKey() {
+    return "error.catalog.notFound." + name();
+  }
+
+  public String notSavedKey() {
+    return "error.catalog.notSaved." + name();
   }
 
   /** Path segment used in console URLs, matching the existing catalog API vocabulary. */
@@ -54,6 +60,6 @@ public enum CatalogResource {
   }
 
   public static CatalogResource require(String value) {
-    return parse(value).orElseThrow(() -> new IllegalArgumentException("Unsupported catalog resource: " + value));
+    return parse(value).orElseThrow(() -> new MessageException("error.catalog.unsupportedResource", value));
   }
 }

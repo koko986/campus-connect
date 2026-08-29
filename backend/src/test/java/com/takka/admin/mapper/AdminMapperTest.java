@@ -90,8 +90,8 @@ class AdminMapperTest {
             """.formatted(ID)),
         Set.of());
 
-    assertEquals("Current student", view.accountType());
-    assertEquals("Verified", view.verification());
+    assertEquals("enum.accountType.current_student", view.accountTypeKey());
+    assertEquals("enum.verification.verified", view.verificationKey());
     assertEquals("Yangon University", view.university());
     assertEquals(AccountStatus.BLOCKED, view.status());
     assertTrue(view.isBlocked());
@@ -111,7 +111,8 @@ class AdminMapperTest {
         Set.of(ID));
 
     assertEquals(AccountStatus.ACTIVE, view.status());
-    assertEquals("Prospective student", view.accountType());
+    assertEquals("enum.accountType.prospective_student", view.accountTypeKey());
+    assertFalse(view.hasVerification());
     assertFalse(view.hasUniversity());
     assertFalse(view.isModeratable());
     assertEquals("success", view.statusTone());
@@ -171,7 +172,7 @@ class AdminMapperTest {
     assertEquals(2, view.campuses());
     assertEquals(12, view.departments());
     assertEquals(40, view.programs());
-    assertEquals("Published", view.state());
+    assertEquals("enum.directoryState.PUBLISHED", view.stateKey());
     assertEquals("Yangon, Yangon Region", view.location());
   }
 
@@ -241,12 +242,14 @@ class AdminMapperTest {
         """.formatted(ID, ID, ID)));
 
     assertEquals(ModerationAction.BLOCK_USER, view.action());
-    assertEquals("Blocked account", view.actionLabel());
+    assertTrue(view.isTranslatable());
+    assertEquals("enum.moderationAction.BLOCK_USER", view.actionKey());
     assertEquals("Ada Lovelace", view.targetLabel());
     assertEquals("danger", view.actionTone());
     assertTrue(view.linkedToReport());
   }
 
+  /** An action the console does not know cannot be translated, so the stored value is shown as-is. */
   @Test
   void anUnknownAuditActionKeepsItsRawLabel() {
     var view = AuditMapper.toView(json("""
@@ -255,7 +258,8 @@ class AdminMapperTest {
           "target_snapshot": {} }
         """.formatted(ID, ID)));
 
-    assertEquals("FUTURE_ACTION", view.actionLabel());
+    assertFalse(view.isTranslatable());
+    assertEquals("FUTURE_ACTION", view.rawAction());
     assertEquals("muted", view.actionTone());
     assertFalse(view.linkedToReport());
     assertFalse(view.hasTargetLabel());

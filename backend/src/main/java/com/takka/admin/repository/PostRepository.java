@@ -37,7 +37,7 @@ public class PostRepository {
 
   public JsonNode requireById(UUID postId) {
     var query = Query.from("posts").select(SNAPSHOT_SELECT).eq("id", postId).limit(1);
-    return Json.requireFirstRow(supabase.get(query.build()), "Post not found");
+    return Json.requireFirstRow(supabase.get(query.build()), "error.post.notFound");
   }
 
   public void applyModeration(UUID postId, PostModerationStatus status, String reason, UUID administratorId) {

@@ -1,24 +1,29 @@
 package com.takka.admin.model;
 
+import com.takka.admin.support.MessageException;
 import java.util.Locale;
 import java.util.Optional;
 
 /** Directory visibility transitions available on a university record. */
 public enum UniversityStateChange {
-  PUBLISH("Publish", ModerationAction.PUBLISH_UNIVERSITY),
-  UNPUBLISH("Unpublish", ModerationAction.UNPUBLISH_UNIVERSITY),
-  ARCHIVE("Archive", ModerationAction.ARCHIVE_UNIVERSITY);
+  PUBLISH(ModerationAction.PUBLISH_UNIVERSITY),
+  UNPUBLISH(ModerationAction.UNPUBLISH_UNIVERSITY),
+  ARCHIVE(ModerationAction.ARCHIVE_UNIVERSITY);
 
-  private final String label;
   private final ModerationAction auditAction;
 
-  UniversityStateChange(String label, ModerationAction auditAction) {
-    this.label = label;
+  UniversityStateChange(ModerationAction auditAction) {
     this.auditAction = auditAction;
   }
 
-  public String label() {
-    return label;
+  /** The button that starts the change. */
+  public String labelKey() {
+    return "enum.universityState." + name();
+  }
+
+  /** The state the university ends up in, used when confirming the change afterwards. */
+  public String appliedKey() {
+    return "enum.universityState.applied." + name();
   }
 
   public ModerationAction auditAction() {
@@ -39,6 +44,6 @@ public enum UniversityStateChange {
   }
 
   public static UniversityStateChange require(String value) {
-    return parse(value).orElseThrow(() -> new IllegalArgumentException("Unknown university operation: " + value));
+    return parse(value).orElseThrow(() -> new MessageException("error.university.unknownOperation", value));
   }
 }

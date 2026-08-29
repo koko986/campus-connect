@@ -1,0 +1,131 @@
+<!doctype html>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.universityPhotos')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <div class="console-panel-head">
+        <p class="console-scope-note" th:text="#{page.universityPhotos.note}">
+          Review campus photos submitted by verified students.
+        </p>
+        <a
+          th:href="@{/admin/universities}"
+          class="console-button console-button--ghost"
+          th:text="#{action.backToDirectory}"
+          >Back to directory</a
+        >
+      </div>
+
+      <form th:action="@{/admin/university-photos}" method="get" class="console-filters">
+        <label>
+          <span th:text="#{field.status}">Status</span>
+          <select name="status">
+            <option
+              th:each="status : ${statuses}"
+              th:value="${status}"
+              th:selected="${status == statusFilter}"
+              th:text="${#messages.msg('enum.photoStatus.' + ${status})}"
+            ></option>
+          </select>
+        </label>
+        <button type="submit" class="console-button console-button--ghost" th:text="#{action.apply}">
+          Apply
+        </button>
+      </form>
+
+      <p th:if="${photos.isEmpty()}" class="console-empty" th:text="#{page.universityPhotos.empty}">
+        No photos match this filter.
+      </p>
+
+      <table th:unless="${photos.isEmpty()}" class="console-table console-table--roomy">
+        <thead>
+          <tr>
+            <th th:text="#{column.photo}">Photo</th>
+            <th th:text="#{column.university}">University</th>
+            <th th:text="#{column.submittedBy}">Submitted by</th>
+            <th th:text="#{column.status}">Status</th>
+            <th th:text="#{column.decision}">Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="photo : ${photos.items()}">
+            <td>
+              <a th:href="${photo.imageUrl()}" target="_blank" rel="noreferrer">
+                <img
+                  th:src="${photo.imageUrl()}"
+                  th:alt="${photo.caption()}"
+                  style="width: 12rem; max-height: 8rem; border-radius: 0.6rem; object-fit: cover"
+                />
+              </a>
+              <p class="console-detail" th:if="${photo.hasCaption()}" th:text="${photo.caption()}"></p>
+            </td>
+            <td>
+              <span class="console-strong" th:text="${photo.universityName()}">University</span>
+            </td>
+            <td>
+              <span th:text="${photo.uploaderName()}">Student</span>
+              <span
+                class="console-muted"
+                th:with="elapsed=${#messages.msg(photo.age().messageKey(), photo.age().amount())}"
+                th:text="${photo.submitted()} + ' · ' + ${elapsed}"
+                >submitted</span
+              >
+            </td>
+            <td>
+              <span
+                class="console-pill"
+                th:classappend="'console-pill--' + ${photo.statusTone()}"
+                th:text="${#messages.msg('enum.photoStatus.' + ${photo.status()})}"
+                >Pending</span
+              >
+            </td>
+            <td>
+              <span th:unless="${photo.isPending()}" class="console-muted" th:text="#{page.reports.closed}">
+                Closed
+              </span>
+              <form
+                th:if="${photo.isPending()}"
+                th:action="@{'/admin/university-photos/' + ${photo.id()} + '/decision'}"
+                method="post"
+                class="console-action-form"
+              >
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <label>
+                  <span th:text="#{field.notes}">Notes</span>
+                  <textarea name="note" rows="3" maxlength="1000"></textarea>
+                </label>
+                <div class="console-inline-actions">
+                  <button
+                    type="submit"
+                    name="decision"
+                    value="APPROVED"
+                    class="console-button console-button--primary"
+                    th:text="#{action.approve}"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    type="submit"
+                    name="decision"
+                    value="REJECTED"
+                    class="console-button console-button--danger"
+                    th:text="#{action.reject}"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div th:unless="${photos.isEmpty()}">
+        <nav th:replace="~{admin/fragments :: pagination(${photos}, '/admin/university-photos')}"></nav>
+      </div>
+    </main>
+  </body>
+</html>

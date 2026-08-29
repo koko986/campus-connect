@@ -5,17 +5,11 @@ import java.util.Optional;
 
 /** Moderation state of a member account, mirroring {@code account_moderation.status}. */
 public enum AccountStatus {
-  ACTIVE("Active"),
-  BLOCKED("Blocked");
+  ACTIVE,
+  BLOCKED;
 
-  private final String label;
-
-  AccountStatus(String label) {
-    this.label = label;
-  }
-
-  public String label() {
-    return label;
+  public String labelKey() {
+    return "enum.accountStatus." + name();
   }
 
   public boolean isBlocked() {

@@ -11,63 +11,81 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** The university directory record as edited in the console. */
+/**
+ * The university directory record as edited in the console.
+ *
+ * <p>Constraint messages are message-bundle keys in braces, which the console's validator resolves
+ * against the same bundle the templates read, so a refused field explains itself in the
+ * administrator's language.
+ */
 public class UniversityForm {
   public static final List<String> TYPES = List.of("public", "private");
 
-  @NotBlank(message = "A URL slug is required")
-  @Pattern(regexp = "[a-z0-9]+(-[a-z0-9]+)*", message = "Use lowercase letters, numbers, and hyphens only")
-  @Size(max = 120, message = "Slug is too long")
+  @NotBlank(message = "{validation.university.slug.required}")
+  @Pattern(regexp = "[a-z0-9]+(-[a-z0-9]+)*", message = "{validation.university.slug.pattern}")
+  @Size(max = 120, message = "{validation.university.slug.tooLong}")
   private String slug = "";
 
-  @NotBlank(message = "A name is required")
-  @Size(max = 200, message = "Name is too long")
+  @NotBlank(message = "{validation.university.name.required}")
+  @Size(max = 200, message = "{validation.university.name.tooLong}")
   private String name = "";
 
-  @NotBlank(message = "A short name is required")
-  @Size(max = 40, message = "Short name is too long")
+  @NotBlank(message = "{validation.university.shortName.required}")
+  @Size(max = 40, message = "{validation.university.shortName.tooLong}")
   private String shortName = "";
 
-  @NotBlank(message = "Choose a university type")
-  @Pattern(regexp = "public|private", message = "Type must be public or private")
+  @NotBlank(message = "{validation.university.type.required}")
+  @Pattern(regexp = "public|private", message = "{validation.university.type.pattern}")
   private String universityType = "public";
 
-  @NotBlank(message = "A city is required")
-  @Size(max = 120, message = "City is too long")
+  @NotBlank(message = "{validation.university.city.required}")
+  @Size(max = 120, message = "{validation.university.city.tooLong}")
   private String city = "";
 
-  @Size(max = 120, message = "Region is too long")
+  @Size(max = 120, message = "{validation.university.region.tooLong}")
   private String region = "";
 
-  @NotBlank(message = "A country code is required")
-  @Pattern(regexp = "[A-Z]{2}", message = "Use a two-letter uppercase country code")
+  @NotBlank(message = "{validation.university.countryCode.required}")
+  @Pattern(regexp = "[A-Z]{2}", message = "{validation.university.countryCode.pattern}")
   private String countryCode = "MM";
 
-  @NotBlank(message = "A short description is required")
-  @Size(max = 500, message = "Description must be 500 characters or fewer")
+  @NotBlank(message = "{validation.university.description.required}")
+  @Size(max = 500, message = "{validation.university.description.tooLong}")
   private String description = "";
 
-  @Size(max = 8000, message = "About text is too long")
+  @Size(max = 8000, message = "{validation.university.about.tooLong}")
   private String about = "";
 
-  @Size(max = 500, message = "Website URL is too long")
+  @Size(max = 500, message = "{validation.university.websiteUrl.tooLong}")
   private String websiteUrl = "";
 
-  @Size(max = 500, message = "Logo path is too long")
+  @Size(max = 500, message = "{validation.university.logoPath.tooLong}")
   private String logoPath = "";
 
-  @Email(message = "Enter a valid contact email")
-  @Size(max = 200, message = "Contact email is too long")
+  @Size(max = 500, message = "{validation.university.coverImagePath.tooLong}")
+  private String coverImagePath = "";
+
+  @Size(max = 500, message = "{validation.university.coverImageCredit.tooLong}")
+  private String coverImageCredit = "";
+
+  @Size(max = 500, message = "{validation.university.coverImageSourceUrl.tooLong}")
+  private String coverImageSourceUrl = "";
+
+  @Size(max = 120, message = "{validation.university.coverImageLicense.tooLong}")
+  private String coverImageLicense = "";
+
+  @Email(message = "{validation.university.contactEmail.invalid}")
+  @Size(max = 200, message = "{validation.university.contactEmail.tooLong}")
   private String contactEmail = "";
 
-  @Size(max = 60, message = "Contact phone is too long")
+  @Size(max = 60, message = "{validation.university.contactPhone.tooLong}")
   private String contactPhone = "";
 
-  @Size(max = 500, message = "Data source URL is too long")
+  @Size(max = 500, message = "{validation.university.dataSourceUrl.tooLong}")
   private String dataSourceUrl = "";
 
-  @Min(value = 1500, message = "Founded year looks too early")
-  @Max(value = 2100, message = "Founded year looks too late")
+  @Min(value = 1500, message = "{validation.university.foundedYear.min}")
+  @Max(value = 2100, message = "{validation.university.foundedYear.max}")
   private Integer foundedYear;
 
   private boolean published;
@@ -86,6 +104,10 @@ public class UniversityForm {
     attributes.put("about", blankToNull(about));
     attributes.put("website_url", blankToNull(websiteUrl));
     attributes.put("logo_path", blankToNull(logoPath));
+    attributes.put("cover_image_path", blankToNull(coverImagePath));
+    attributes.put("cover_image_credit", blankToNull(coverImageCredit));
+    attributes.put("cover_image_source_url", blankToNull(coverImageSourceUrl));
+    attributes.put("cover_image_license", blankToNull(coverImageLicense));
     attributes.put("contact_email", blankToNull(contactEmail));
     attributes.put("contact_phone", blankToNull(contactPhone));
     attributes.put("data_source_url", blankToNull(dataSourceUrl));
@@ -187,6 +209,38 @@ public class UniversityForm {
 
   public void setLogoPath(String logoPath) {
     this.logoPath = logoPath == null ? "" : logoPath.trim();
+  }
+
+  public String getCoverImagePath() {
+    return coverImagePath;
+  }
+
+  public void setCoverImagePath(String coverImagePath) {
+    this.coverImagePath = coverImagePath == null ? "" : coverImagePath.trim();
+  }
+
+  public String getCoverImageCredit() {
+    return coverImageCredit;
+  }
+
+  public void setCoverImageCredit(String coverImageCredit) {
+    this.coverImageCredit = coverImageCredit == null ? "" : coverImageCredit.trim();
+  }
+
+  public String getCoverImageSourceUrl() {
+    return coverImageSourceUrl;
+  }
+
+  public void setCoverImageSourceUrl(String coverImageSourceUrl) {
+    this.coverImageSourceUrl = coverImageSourceUrl == null ? "" : coverImageSourceUrl.trim();
+  }
+
+  public String getCoverImageLicense() {
+    return coverImageLicense;
+  }
+
+  public void setCoverImageLicense(String coverImageLicense) {
+    this.coverImageLicense = coverImageLicense == null ? "" : coverImageLicense.trim();
   }
 
   public String getContactEmail() {

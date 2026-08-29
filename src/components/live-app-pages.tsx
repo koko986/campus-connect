@@ -1,7 +1,15 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Bookmark, ChevronRight, ExternalLink, ImagePlus, Plus } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Bookmark,
+  Camera,
+  ChevronRight,
+  ExternalLink,
+  ImagePlus,
+  Plus,
+  Sparkles,
+} from "lucide-react";
+import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -42,31 +50,41 @@ import {
   createQuestion,
   getMemberProfile,
   getUniversity,
+  listFieldOfStudyOptions,
   listFeedPosts,
   listQuestions,
+  listRecommendedUniversities,
   listSavedPosts,
   listSavedUniversities,
+  listUniversityFilters,
+  listUniversitySummaries,
   listUniversities,
   setUniversitySaved,
+  submitUniversityPhoto,
+  UNIVERSITY_IMAGE_MAX_BYTES,
+  universityImageUrl,
   updateProfile,
   updateProspectiveProfile,
   updateStudentProfile,
   uploadAvatar,
   validateImage,
 } from "@/lib/data";
+import type { Enums } from "@/lib/database.types";
 import { useTheme, type Appearance } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
-import { accountTypeLabel, formatDate } from "@/lib/format";
+import { accountTypeKey, formatDate, imageProblemMessage } from "@/lib/format";
+import { languages, useLanguage, useT, type Language, type Translate } from "@/lib/i18n";
 
 function SortControl({ value, onChange }: { value: FeedSort; onChange: (next: FeedSort) => void }) {
+  const t = useT();
   return (
     <Select value={value} onValueChange={(next) => onChange(next as FeedSort)}>
-      <SelectTrigger className="w-32" aria-label="Sort posts">
+      <SelectTrigger className="w-32" aria-label={t("feed.sortLabel")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="newest">Newest</SelectItem>
-        <SelectItem value="best">Best</SelectItem>
+        <SelectItem value="newest">{t("common.newest")}</SelectItem>
+        <SelectItem value="best">{t("common.best")}</SelectItem>
       </SelectContent>
     </Select>
   );
@@ -74,6 +92,7 @@ function SortControl({ value, onChange }: { value: FeedSort; onChange: (next: Fe
 
 export function DashboardPage({ universityId }: { universityId?: string | undefined }) {
   const { profile, user } = useAuth();
+  const t = useT();
   const [sort, setSort] = useState<FeedSort>("newest");
 
   const feed = useInfiniteQuery({
@@ -104,7 +123,7 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
   const side = (
     <>
       <div className="card-soft p-5">
-        <h3 className="font-semibold">Saved posts</h3>
+        <h3 className="font-semibold">{t("feed.savedPosts")}</h3>
         <div className="mt-3 space-y-3">
           {savedPosts.data?.slice(0, 5).map((post) => (
             <Link
@@ -117,12 +136,12 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
             </Link>
           ))}
           {savedPosts.isSuccess && !savedPosts.data.length ? (
-            <p className="text-sm text-muted-foreground">Nothing saved yet.</p>
+            <p className="text-sm text-muted-foreground">{t("feed.nothingSaved")}</p>
           ) : null}
         </div>
       </div>
       <div className="card-soft p-5">
-        <h3 className="font-semibold">Saved universities</h3>
+        <h3 className="font-semibold">{t("feed.savedUniversities")}</h3>
         <div className="mt-3 space-y-3">
           {savedUniversities.data?.map((university) => (
             <Link
@@ -138,7 +157,7 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
             </Link>
           ))}
           {savedUniversities.isSuccess && !savedUniversities.data.length ? (
-            <p className="text-sm text-muted-foreground">No saved universities.</p>
+            <p className="text-sm text-muted-foreground">{t("feed.noSavedUniversities")}</p>
           ) : null}
         </div>
       </div>
@@ -146,13 +165,13 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
   );
 
   return (
-    <AppShell title="Home" right={side}>
+    <AppShell title={t("nav.home")} right={side}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">
-            Welcome, {profile?.full_name.split(" ")[0]}
+            {t("feed.welcome", { name: profile?.full_name.split(" ")[0] ?? "" })}
           </p>
-          <h2 className="mt-1 text-2xl font-bold">Student community</h2>
+          <h2 className="mt-1 text-2xl font-bold">{t("feed.heading")}</h2>
         </div>
         <PostComposer defaultUniversityId={universityId} />
       </div>
@@ -161,16 +180,16 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
         <SortControl value={sort} onChange={setSort} />
         {universityId ? (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{filter.data?.name ?? "Filtered"}</Badge>
+            <Badge variant="secondary">{filter.data?.name ?? t("feed.filtered")}</Badge>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/dashboard">Clear filter</Link>
+              <Link to="/dashboard">{t("feed.clearFilter")}</Link>
             </Button>
           </div>
         ) : null}
       </div>
 
       <div className="mt-5 space-y-4">
-        {feed.isLoading ? <Loading label="Loading posts" /> : null}
+        {feed.isLoading ? <Loading label={t("feed.loadingPosts")} /> : null}
         {feed.error ? <Failure error={feed.error} onRetry={() => void feed.refetch()} /> : null}
 
         {posts.map((post) => (
@@ -178,7 +197,7 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
         ))}
 
         {feed.isSuccess && !posts.length ? (
-          <Empty title="No posts yet" text="Be the first to share something useful." />
+          <Empty title={t("feed.empty.title")} text={t("feed.empty.text")} />
         ) : null}
 
         {feed.hasNextPage ? (
@@ -189,7 +208,7 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
               disabled={feed.isFetchingNextPage}
               onClick={() => void feed.fetchNextPage()}
             >
-              {feed.isFetchingNextPage ? "Loading..." : "Load more posts"}
+              {feed.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
             </Button>
           </div>
         ) : null}
@@ -198,33 +217,111 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
   );
 }
 
+function recommendationReason(t: Translate, reason: string) {
+  if (reason === "Offers a related field of study") return t("universities.reason.field");
+  if (reason === "Matches your preferred city or region") return t("universities.reason.city");
+  if (reason === "Offers your preferred degree level") return t("universities.reason.degree");
+  return reason;
+}
+
 export function UniversitiesPage() {
+  const { profile, user } = useAuth();
+  const t = useT();
   const [search, setSearch] = useState("");
-  const query = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
-  const results = useMemo(
-    () =>
-      query.data?.filter(
-        (university) =>
-          !search.trim() ||
-          [university.name, university.short_name, university.city, university.region].some(
-            (value) => value?.toLowerCase().includes(search.toLowerCase()),
-          ),
-      ) ?? [],
-    [query.data, search],
-  );
+  const [region, setRegion] = useState("all");
+  const [type, setType] = useState<"all" | Enums<"university_type">>("all");
+  const deferredSearch = useDeferredValue(search.trim());
+  const filters = useQuery({
+    queryKey: ["university-filters"],
+    queryFn: listUniversityFilters,
+  });
+  const query = useInfiniteQuery({
+    queryKey: ["university-summaries", deferredSearch, region, type],
+    queryFn: ({ pageParam }) =>
+      listUniversitySummaries({
+        page: pageParam,
+        region: region === "all" ? undefined : region,
+        search: deferredSearch || undefined,
+        type: type === "all" ? undefined : type,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+  });
+  const recommendations = useQuery({
+    queryKey: ["university-recommendations", user!.id],
+    queryFn: () => listRecommendedUniversities(user!.id),
+    enabled: profile?.account_type === "prospective_student",
+  });
+  const results = query.data?.pages.flatMap((page) => page.universities) ?? [];
+
   return (
-    <AppShell title="Universities">
-      <p className="text-sm text-muted-foreground">
-        Published university records from the TAKKA database.
-      </p>
-      <h2 className="mt-1 text-2xl font-bold">Explore universities</h2>
-      <Input
-        className="mt-6 h-11 max-w-xl"
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder="Search by university or city"
-      />
-      {query.isLoading ? <Loading label="Loading universities" /> : null}
+    <AppShell title={t("nav.universities")}>
+      <p className="text-sm text-muted-foreground">{t("universities.note")}</p>
+      <h2 className="mt-1 text-2xl font-bold">{t("universities.heading")}</h2>
+
+      {recommendations.data?.length ? (
+        <section className="mt-7">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-5 text-primary" />
+            <h3 className="text-lg font-bold">{t("universities.recommended")}</h3>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{t("universities.recommendedNote")}</p>
+          <div className="scroll-rail mt-4 md:grid md:grid-cols-2 md:overflow-visible xl:grid-cols-3">
+            {recommendations.data.map((university) => (
+              <div key={university.id} className="w-72 shrink-0 md:w-auto">
+                <UniversityCard university={university} />
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {university.matchReasons.map((reason) => (
+                    <Badge key={reason} variant="secondary" className="font-normal">
+                      {recommendationReason(t, reason)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <div className="mt-7 grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem_11rem]">
+        <Input
+          className="h-11"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t("universities.searchPlaceholder")}
+        />
+        <Select value={region} onValueChange={setRegion}>
+          <SelectTrigger className="h-11" aria-label={t("universities.regionFilter")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("universities.allRegions")}</SelectItem>
+            {filters.data?.regions.map((item) => (
+              <SelectItem key={item} value={item}>
+                {item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={type}
+          onValueChange={(value) => setType(value as "all" | Enums<"university_type">)}
+        >
+          <SelectTrigger className="h-11" aria-label={t("universities.typeFilter")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("universities.allTypes")}</SelectItem>
+            {filters.data?.types.map((item) => (
+              <SelectItem key={item} value={item}>
+                {t(`universities.type.${item}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {query.isLoading ? <Loading label={t("universities.loading")} /> : null}
       {query.error ? (
         <div className="mt-6">
           <Failure error={query.error} onRetry={() => void query.refetch()} />
@@ -235,9 +332,21 @@ export function UniversitiesPage() {
           <UniversityCard key={university.id} university={university} />
         ))}
       </div>
+      {query.hasNextPage ? (
+        <div className="mt-6 flex justify-center">
+          <Button
+            variant="outline"
+            className="h-11"
+            disabled={query.isFetchingNextPage}
+            onClick={() => void query.fetchNextPage()}
+          >
+            {query.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
+          </Button>
+        </div>
+      ) : null}
       {query.isSuccess && !results.length ? (
         <div className="mt-6">
-          <Empty title="No universities found" text="Try another name or city." />
+          <Empty title={t("universities.empty.title")} text={t("universities.empty.text")} />
         </div>
       ) : null}
     </AppShell>
@@ -245,6 +354,7 @@ export function UniversitiesPage() {
 }
 
 function PostPreview({ post }: { post: FeedPost }) {
+  const t = useT();
   return (
     <Link
       to="/posts/$id"
@@ -253,20 +363,22 @@ function PostPreview({ post }: { post: FeedPost }) {
     >
       <p className="line-clamp-4 text-sm leading-relaxed">{post.body}</p>
       <p className="mt-3 text-xs text-muted-foreground">
-        {post.author?.full_name ?? "TAKKA member"} · {post.like_count} upvotes ·{" "}
-        {post.comment_count} comments
+        {post.author?.full_name ?? t("community.member")} ·{" "}
+        {t("post.upvotes", { count: post.like_count })} ·{" "}
+        {t("post.comments", { count: post.comment_count })}
       </p>
     </Link>
   );
 }
 
 function QuestionPreview({ question }: { question: CommunityQuestion }) {
+  const t = useT();
   return (
     <div className="card-soft w-64 shrink-0 p-4 md:w-auto">
       <h4 className="line-clamp-2 text-sm font-semibold">{question.title}</h4>
       <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{question.body}</p>
       <p className="mt-3 text-xs font-semibold text-primary">
-        {question.answers[0]?.count ?? 0} answers
+        {t("questions.answers", { count: question.answers[0]?.count ?? 0 })}
       </p>
     </div>
   );
@@ -286,6 +398,7 @@ function PreviewSection({
   emptyText: string;
   children: ReactNode;
 }) {
+  const t = useT();
   return (
     <section className="mt-8">
       <div className="flex items-center justify-between gap-3">
@@ -294,7 +407,7 @@ function PreviewSection({
       </div>
       {isEmpty ? (
         <div className="mt-4">
-          <Empty title="Nothing yet" text={emptyText} />
+          <Empty title={t("common.nothingYet")} text={emptyText} />
         </div>
       ) : (
         <div className="scroll-rail mt-4 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible xl:grid-cols-3">
@@ -305,9 +418,98 @@ function PreviewSection({
   );
 }
 
+function UniversityPhotoUpload({ universityId }: { universityId: string }) {
+  const { user } = useAuth();
+  const t = useT();
+  const input = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [caption, setCaption] = useState("");
+  const submit = useMutation({
+    mutationFn: () =>
+      submitUniversityPhoto({
+        caption,
+        file: file!,
+        universityId,
+        userId: user!.id,
+      }),
+    onSuccess: () => {
+      setOpen(false);
+      setFile(null);
+      setCaption("");
+      toast.success(t("university.photoSubmitted"));
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="h-11">
+          <Camera className="size-4" />
+          {t("university.addPhoto")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("university.addPhoto")}</DialogTitle>
+          <DialogDescription>{t("university.photoReviewNote")}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <input
+            ref={input}
+            type="file"
+            accept={ACCEPTED_IMAGE_TYPES.join(",")}
+            className="sr-only"
+            onChange={(event) => {
+              const selected = event.target.files?.[0] ?? null;
+              if (!selected) return;
+              const problem = validateImage(selected, UNIVERSITY_IMAGE_MAX_BYTES);
+              if (problem) {
+                toast.error(imageProblemMessage(t, problem));
+                event.target.value = "";
+                return;
+              }
+              setFile(selected);
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full"
+            onClick={() => input.current?.click()}
+          >
+            <ImagePlus className="size-4" />
+            {file?.name ?? t("university.choosePhoto")}
+          </Button>
+          <div>
+            <Label htmlFor="university-photo-caption">{t("university.photoCaption")}</Label>
+            <Textarea
+              id="university-photo-caption"
+              className="mt-1"
+              maxLength={280}
+              value={caption}
+              onChange={(event) => setCaption(event.target.value)}
+              placeholder={t("university.photoCaptionPlaceholder")}
+            />
+          </div>
+          <Button
+            className="h-11"
+            disabled={!file || submit.isPending}
+            onClick={() => submit.mutate()}
+          >
+            {submit.isPending ? t("university.uploadingPhoto") : t("university.submitPhoto")}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function UniversityDetailPage({ id }: { id: string }) {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
 
   const university = useQuery({ queryKey: ["university", id], queryFn: () => getUniversity(id) });
   const posts = useQuery({
@@ -322,6 +524,10 @@ export function UniversityDetailPage({ id }: { id: string }) {
     queryKey: ["saved-universities", user!.id],
     queryFn: () => listSavedUniversities(user!.id),
   });
+  const member = useQuery({
+    queryKey: ["member-profile", user!.id],
+    queryFn: () => getMemberProfile(user!.id),
+  });
 
   const isSaved = saved.data?.some((item) => item.id === id) ?? false;
   const save = useMutation({
@@ -331,27 +537,58 @@ export function UniversityDetailPage({ id }: { id: string }) {
 
   if (university.isLoading) {
     return (
-      <AppShell title="University">
-        <Loading label="Loading university" />
+      <AppShell title={t("university.title")}>
+        <Loading label={t("university.loading")} />
       </AppShell>
     );
   }
   if (university.error) {
     return (
-      <AppShell title="University">
+      <AppShell title={t("university.title")}>
         <Failure error={university.error} onRetry={() => void university.refetch()} />
       </AppShell>
     );
   }
 
   const record = university.data!;
+  const coverImage = universityImageUrl(record.cover_image_path);
+  const canSubmitPhoto =
+    member.data?.student?.verification_status === "verified" &&
+    member.data.student.university_id === id;
   return (
-    <AppShell title="University">
+    <AppShell title={t("university.title")}>
       <section className="border-b pb-8">
+        {coverImage ? (
+          <figure className="mb-6 overflow-hidden rounded-2xl border bg-muted">
+            <img
+              src={coverImage}
+              alt={record.name}
+              className="max-h-[28rem] aspect-[16/7] w-full object-cover"
+            />
+            {record.cover_image_credit ? (
+              <figcaption className="px-3 py-2 text-xs text-muted-foreground">
+                {record.cover_image_source_url ? (
+                  <a
+                    href={record.cover_image_source_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-foreground hover:underline"
+                  >
+                    {record.cover_image_credit}
+                  </a>
+                ) : (
+                  record.cover_image_credit
+                )}
+              </figcaption>
+            ) : null}
+          </figure>
+        ) : null}
         <div className="flex flex-wrap items-start gap-4">
-          <span className="flex size-16 items-center justify-center rounded-lg bg-primary-soft text-xl font-bold">
-            {record.short_name}
-          </span>
+          {!coverImage ? (
+            <span className="flex size-16 items-center justify-center rounded-lg bg-primary-soft text-xl font-bold">
+              {record.short_name}
+            </span>
+          ) : null}
           <div className="min-w-0 flex-1">
             <p className="text-sm text-muted-foreground">
               {record.city} · {record.university_type}
@@ -367,12 +604,14 @@ export function UniversityDetailPage({ id }: { id: string }) {
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary"
               >
-                Official website
+                {t("university.officialWebsite")}
                 <ExternalLink className="size-4" />
               </a>
             ) : null}
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-              {record.founded_year ? <span>Founded {record.founded_year}</span> : null}
+              {record.founded_year ? (
+                <span>{t("university.founded", { year: record.founded_year })}</span>
+              ) : null}
               {record.contact_email ? (
                 <a href={`mailto:${record.contact_email}`}>{record.contact_email}</a>
               ) : null}
@@ -385,26 +624,36 @@ export function UniversityDetailPage({ id }: { id: string }) {
             className="size-11"
             disabled={save.isPending}
             onClick={() => save.mutate()}
-            aria-label={isSaved ? "Remove saved university" : "Save university"}
+            aria-label={isSaved ? t("university.removeSaved") : t("university.save")}
           >
             <Bookmark className={isSaved ? "size-4 fill-current" : "size-4"} />
           </Button>
+          {canSubmitPhoto ? <UniversityPhotoUpload universityId={id} /> : null}
         </div>
         <div className="mt-7 grid gap-6 border-t pt-6 md:grid-cols-3">
-          <Details title="Departments" values={record.departments.map((item) => item.name)} />
-          <Details title="Programs" values={record.programs.map((item) => item.name)} />
-          <Details title="Campuses" values={record.campuses.map((item) => item.name)} />
+          <Details
+            title={t("university.departments")}
+            values={record.departments.map((item) => item.name)}
+          />
+          <Details
+            title={t("university.programs")}
+            values={record.programs.map((item) => item.name)}
+          />
+          <Details
+            title={t("university.campuses")}
+            values={record.campuses.map((item) => item.name)}
+          />
         </div>
       </section>
 
       <PreviewSection
-        title="Student posts"
+        title={t("university.studentPosts")}
         isEmpty={posts.isSuccess && !posts.data.posts.length}
-        emptyText="Students have not posted about this university."
+        emptyText={t("university.noPosts")}
         seeAll={
           <Button asChild variant="ghost" size="sm" className="gap-1">
             <Link to="/dashboard" search={{ university: id }}>
-              See all
+              {t("common.seeAll")}
               <ChevronRight className="size-4" />
             </Link>
           </Button>
@@ -416,13 +665,13 @@ export function UniversityDetailPage({ id }: { id: string }) {
       </PreviewSection>
 
       <PreviewSection
-        title="Questions"
+        title={t("university.questions")}
         isEmpty={questions.isSuccess && !questions.data.length}
-        emptyText="No one has asked about this university yet."
+        emptyText={t("university.noQuestions")}
         seeAll={
           <Button asChild variant="ghost" size="sm" className="gap-1">
             <Link to="/questions" search={{ university: id }}>
-              See all
+              {t("common.seeAll")}
               <ChevronRight className="size-4" />
             </Link>
           </Button>
@@ -437,6 +686,7 @@ export function UniversityDetailPage({ id }: { id: string }) {
 }
 
 function Details({ title, values }: { title: string; values: string[] }) {
+  const t = useT();
   return (
     <div>
       <h3 className="font-semibold">{title}</h3>
@@ -447,7 +697,7 @@ function Details({ title, values }: { title: string; values: string[] }) {
           </Badge>
         ))}
         {!values.length ? (
-          <p className="text-sm text-muted-foreground">No published records.</p>
+          <p className="text-sm text-muted-foreground">{t("university.noRecords")}</p>
         ) : null}
       </div>
     </div>
@@ -457,6 +707,7 @@ function Details({ title, values }: { title: string; values: string[] }) {
 function QuestionComposer() {
   const { user } = useAuth();
   const client = useQueryClient();
+  const t = useT();
   const universities = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -492,15 +743,13 @@ function QuestionComposer() {
       <DialogTrigger asChild>
         <Button className="h-11">
           <Plus className="size-4" />
-          Ask a question
+          {t("questions.ask")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Ask the community</DialogTitle>
-          <DialogDescription>
-            Use a specific title so the right students can answer.
-          </DialogDescription>
+          <DialogTitle>{t("questions.composer.title")}</DialogTitle>
+          <DialogDescription>{t("questions.composer.description")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <Input
@@ -508,17 +757,17 @@ function QuestionComposer() {
             maxLength={240}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Question title"
+            placeholder={t("questions.titlePlaceholder")}
           />
           <Textarea
             maxLength={4000}
             value={body}
             onChange={(event) => setBody(event.target.value)}
-            placeholder="Add useful context"
+            placeholder={t("questions.bodyPlaceholder")}
           />
           <Select value={universityId} onValueChange={setUniversityId}>
             <SelectTrigger>
-              <SelectValue placeholder="University (optional)" />
+              <SelectValue placeholder={t("questions.universityOptional")} />
             </SelectTrigger>
             <SelectContent>
               {universities.data?.map((university) => (
@@ -531,7 +780,7 @@ function QuestionComposer() {
           <Input
             value={tags}
             onChange={(event) => setTags(event.target.value)}
-            placeholder="Tags separated by commas"
+            placeholder={t("questions.tagsPlaceholder")}
           />
           {mutation.error ? <Failure error={mutation.error} /> : null}
           <Button
@@ -539,7 +788,7 @@ function QuestionComposer() {
             disabled={title.trim().length < 8 || !body.trim() || mutation.isPending}
             onClick={() => mutation.mutate()}
           >
-            {mutation.isPending ? "Posting..." : "Post question"}
+            {mutation.isPending ? t("questions.posting") : t("questions.post")}
           </Button>
         </div>
       </DialogContent>
@@ -548,6 +797,7 @@ function QuestionComposer() {
 }
 
 export function QuestionsPage({ universityId }: { universityId?: string | undefined }) {
+  const t = useT();
   const query = useQuery({
     queryKey: ["questions", universityId ?? null],
     queryFn: () => listQuestions(universityId),
@@ -559,28 +809,26 @@ export function QuestionsPage({ universityId }: { universityId?: string | undefi
   });
 
   return (
-    <AppShell title="Questions">
+    <AppShell title={t("questions.title")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground">
-            Get answers from students with direct experience.
-          </p>
-          <h2 className="mt-1 text-2xl font-bold">Questions and answers</h2>
+          <p className="text-sm text-muted-foreground">{t("questions.note")}</p>
+          <h2 className="mt-1 text-2xl font-bold">{t("questions.heading")}</h2>
         </div>
         <QuestionComposer />
       </div>
 
       {universityId ? (
         <div className="mt-4 flex items-center gap-2">
-          <Badge variant="secondary">{filter.data?.name ?? "Filtered"}</Badge>
+          <Badge variant="secondary">{filter.data?.name ?? t("feed.filtered")}</Badge>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/questions">Clear filter</Link>
+            <Link to="/questions">{t("feed.clearFilter")}</Link>
           </Button>
         </div>
       ) : null}
 
       <div className="mt-6 space-y-4">
-        {query.isLoading ? <Loading label="Loading questions" /> : null}
+        {query.isLoading ? <Loading label={t("questions.loading")} /> : null}
         {query.error ? <Failure error={query.error} onRetry={() => void query.refetch()} /> : null}
         {query.data?.map((question) => (
           <article key={question.id} className="card-soft p-4 sm:p-5">
@@ -592,7 +840,7 @@ export function QuestionsPage({ universityId }: { universityId?: string | undefi
                 </p>
               </div>
               <span className="shrink-0 text-sm font-semibold text-primary">
-                {question.answers[0]?.count ?? 0} answers
+                {t("questions.answers", { count: question.answers[0]?.count ?? 0 })}
               </span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -615,7 +863,7 @@ export function QuestionsPage({ universityId }: { universityId?: string | undefi
           </article>
         ))}
         {query.isSuccess && !query.data.length ? (
-          <Empty title="No questions yet" text="Ask the first question." />
+          <Empty title={t("questions.empty.title")} text={t("questions.empty.text")} />
         ) : null}
       </div>
     </AppShell>
@@ -634,6 +882,7 @@ function AvatarPicker({
   onUploaded: (path: string) => void;
 }) {
   const { user } = useAuth();
+  const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const upload = useMutation({
     mutationFn: (file: File) => uploadAvatar(user!.id, file),
@@ -663,7 +912,7 @@ function AvatarPicker({
             if (!file) return;
             const problem = validateImage(file, AVATAR_MAX_BYTES);
             if (problem) {
-              toast.error(problem);
+              toast.error(imageProblemMessage(t, problem));
               event.target.value = "";
               return;
             }
@@ -678,9 +927,9 @@ function AvatarPicker({
           onClick={() => input.current?.click()}
         >
           <ImagePlus className="size-4" />
-          {upload.isPending ? "Uploading..." : "Change photo"}
+          {upload.isPending ? t("profile.uploading") : t("profile.changePhoto")}
         </Button>
-        <p className="mt-1.5 text-xs text-muted-foreground">JPG, PNG or WebP up to 2 MB.</p>
+        <p className="mt-1.5 text-xs text-muted-foreground">{t("profile.imageNote")}</p>
       </div>
     </div>
   );
@@ -689,11 +938,16 @@ function AvatarPicker({
 export function ProfilePage() {
   const { refreshProfile, user } = useAuth();
   const client = useQueryClient();
+  const { language, t } = useLanguage();
   const query = useQuery({
     queryKey: ["member-profile", user!.id],
     queryFn: () => getMemberProfile(user!.id),
   });
   const universities = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
+  const fieldOptions = useQuery({
+    queryKey: ["field-of-study-options"],
+    queryFn: listFieldOfStudyOptions,
+  });
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -737,7 +991,7 @@ export function ProfilePage() {
         avatar_path: avatarPath,
       });
       if (isCurrentStudent) {
-        if (!universityId) throw new Error("Choose the university you attend.");
+        if (!universityId) throw new Error(t("profile.chooseUniversityError"));
         await updateStudentProfile(user!.id, {
           university_id: universityId,
           campus_id: campusId || null,
@@ -756,7 +1010,7 @@ export function ProfilePage() {
     },
     onSuccess: async () => {
       setEditing(false);
-      toast.success("Profile updated");
+      toast.success(t("profile.updated"));
       await Promise.all([
         refreshProfile(),
         client.invalidateQueries({ queryKey: ["member-profile", user!.id] }),
@@ -766,14 +1020,14 @@ export function ProfilePage() {
 
   if (query.isLoading) {
     return (
-      <AppShell title="Profile">
-        <Loading label="Loading profile" />
+      <AppShell title={t("profile.title")}>
+        <Loading label={t("profile.loading")} />
       </AppShell>
     );
   }
   if (query.error) {
     return (
-      <AppShell title="Profile">
+      <AppShell title={t("profile.title")}>
         <Failure error={query.error} onRetry={() => void query.refetch()} />
       </AppShell>
     );
@@ -782,7 +1036,7 @@ export function ProfilePage() {
   const { profile, student, prospective } = query.data!;
 
   return (
-    <AppShell title="Profile">
+    <AppShell title={t("profile.title")}>
       <div className="card-soft p-5 sm:p-6">
         {editing ? (
           <div className="max-w-xl space-y-5">
@@ -794,7 +1048,7 @@ export function ProfilePage() {
             />
 
             <div>
-              <Label htmlFor="profile-name">Full name</Label>
+              <Label htmlFor="profile-name">{t("field.fullName")}</Label>
               <Input
                 id="profile-name"
                 className="mt-1 h-11"
@@ -806,7 +1060,7 @@ export function ProfilePage() {
             </div>
 
             <div>
-              <Label htmlFor="profile-bio">Bio</Label>
+              <Label htmlFor="profile-bio">{t("field.bio")}</Label>
               <Textarea
                 id="profile-bio"
                 className="mt-1"
@@ -818,9 +1072,9 @@ export function ProfilePage() {
 
             {isCurrentStudent ? (
               <div className="space-y-4 border-t pt-5">
-                <h3 className="font-semibold">Study details</h3>
+                <h3 className="font-semibold">{t("profile.studyDetails")}</h3>
                 <div>
-                  <Label htmlFor="profile-university">University</Label>
+                  <Label htmlFor="profile-university">{t("field.university")}</Label>
                   <Select
                     value={universityId}
                     onValueChange={(next) => {
@@ -831,7 +1085,7 @@ export function ProfilePage() {
                     }}
                   >
                     <SelectTrigger id="profile-university" className="mt-1 h-11">
-                      <SelectValue placeholder="Choose your university" />
+                      <SelectValue placeholder={t("profile.chooseUniversity")} />
                     </SelectTrigger>
                     <SelectContent>
                       {universities.data?.map((university) => (
@@ -845,10 +1099,10 @@ export function ProfilePage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="profile-campus">Campus</Label>
+                    <Label htmlFor="profile-campus">{t("field.campus")}</Label>
                     <Select value={campusId} onValueChange={setCampusId}>
                       <SelectTrigger id="profile-campus" className="mt-1 h-11">
-                        <SelectValue placeholder="Optional" />
+                        <SelectValue placeholder={t("common.optional")} />
                       </SelectTrigger>
                       <SelectContent>
                         {chosenUniversity?.campuses.map((campus) => (
@@ -860,7 +1114,7 @@ export function ProfilePage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="profile-department">Department</Label>
+                    <Label htmlFor="profile-department">{t("field.department")}</Label>
                     <Select
                       value={departmentId}
                       onValueChange={(next) => {
@@ -869,7 +1123,7 @@ export function ProfilePage() {
                       }}
                     >
                       <SelectTrigger id="profile-department" className="mt-1 h-11">
-                        <SelectValue placeholder="Optional" />
+                        <SelectValue placeholder={t("common.optional")} />
                       </SelectTrigger>
                       <SelectContent>
                         {chosenUniversity?.departments.map((department) => (
@@ -881,10 +1135,10 @@ export function ProfilePage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="profile-program">Program</Label>
+                    <Label htmlFor="profile-program">{t("field.program")}</Label>
                     <Select value={programId} onValueChange={setProgramId}>
                       <SelectTrigger id="profile-program" className="mt-1 h-11">
-                        <SelectValue placeholder="Optional" />
+                        <SelectValue placeholder={t("common.optional")} />
                       </SelectTrigger>
                       <SelectContent>
                         {(
@@ -899,7 +1153,7 @@ export function ProfilePage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="profile-year">Academic year</Label>
+                    <Label htmlFor="profile-year">{t("field.academicYear")}</Label>
                     <Input
                       id="profile-year"
                       className="mt-1 h-11"
@@ -914,20 +1168,26 @@ export function ProfilePage() {
               </div>
             ) : (
               <div className="space-y-4 border-t pt-5">
-                <h3 className="font-semibold">What you are looking for</h3>
+                <h3 className="font-semibold">{t("profile.lookingFor")}</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="profile-field">Preferred field</Label>
+                    <Label htmlFor="profile-field">{t("field.preferredField")}</Label>
                     <Input
                       id="profile-field"
+                      list="field-of-study-options"
                       className="mt-1 h-11"
                       maxLength={120}
                       value={preferredField}
                       onChange={(event) => setPreferredField(event.target.value)}
                     />
+                    <datalist id="field-of-study-options">
+                      {fieldOptions.data?.map((option) => (
+                        <option key={option} value={option} />
+                      ))}
+                    </datalist>
                   </div>
                   <div>
-                    <Label htmlFor="profile-city">Preferred city</Label>
+                    <Label htmlFor="profile-city">{t("field.preferredCity")}</Label>
                     <Input
                       id="profile-city"
                       className="mt-1 h-11"
@@ -937,29 +1197,29 @@ export function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="profile-degree">Degree level</Label>
+                    <Label htmlFor="profile-degree">{t("field.degreeLevel")}</Label>
                     <Select value={degreeLevel} onValueChange={setDegreeLevel}>
                       <SelectTrigger id="profile-degree" className="mt-1 h-11">
-                        <SelectValue placeholder="Optional" />
+                        <SelectValue placeholder={t("common.optional")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Diploma">Diploma</SelectItem>
-                        <SelectItem value="Bachelor">Bachelor</SelectItem>
-                        <SelectItem value="Master">Master</SelectItem>
-                        <SelectItem value="Doctorate">Doctorate</SelectItem>
+                        <SelectItem value="Diploma">{t("profile.degree.Diploma")}</SelectItem>
+                        <SelectItem value="Bachelor">{t("profile.degree.Bachelor")}</SelectItem>
+                        <SelectItem value="Master">{t("profile.degree.Master")}</SelectItem>
+                        <SelectItem value="Doctorate">{t("profile.degree.Doctorate")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="profile-interests">Interests</Label>
+                  <Label htmlFor="profile-interests">{t("field.interests")}</Label>
                   <Textarea
                     id="profile-interests"
                     className="mt-1"
                     maxLength={500}
                     value={interests}
                     onChange={(event) => setInterests(event.target.value)}
-                    placeholder="Subjects, activities or goals"
+                    placeholder={t("profile.interestsPlaceholder")}
                   />
                 </div>
               </div>
@@ -972,10 +1232,10 @@ export function ProfilePage() {
                 disabled={name.trim().length < 2 || save.isPending}
                 onClick={() => save.mutate()}
               >
-                {save.isPending ? "Saving..." : "Save"}
+                {save.isPending ? t("common.saving") : t("common.save")}
               </Button>
               <Button variant="outline" className="h-11" onClick={() => setEditing(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
             </div>
           </div>
@@ -989,17 +1249,18 @@ export function ProfilePage() {
                   {student?.verification_status === "verified" ? <VerifiedBadge /> : null}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {accountTypeLabel(profile.account_type)} · Joined {formatDate(profile.created_at)}
+                  {t(accountTypeKey(profile.account_type))} ·{" "}
+                  {t("profile.joined", { date: formatDate(profile.created_at, language) })}
                 </p>
               </div>
               <div className="ml-auto flex gap-2">
                 <Button asChild variant="ghost" className="h-11">
                   <Link to="/profiles/$id" params={{ id: user!.id }}>
-                    Public view
+                    {t("profile.publicView")}
                   </Link>
                 </Button>
                 <Button variant="outline" className="h-11" onClick={() => setEditing(true)}>
-                  Edit profile
+                  {t("profile.edit")}
                 </Button>
               </div>
             </div>
@@ -1019,26 +1280,33 @@ export function ProfilePage() {
                 {profile.bio}
               </p>
             ) : (
-              <p className="mt-6 text-sm text-muted-foreground">No bio added.</p>
+              <p className="mt-6 text-sm text-muted-foreground">{t("profile.noBio")}</p>
             )}
 
             <dl className="mt-6 grid grid-cols-1 gap-4 border-t pt-6 sm:grid-cols-2">
               {isCurrentStudent ? (
                 <>
-                  <Field label="Campus" value={student?.campus?.name} />
-                  <Field label="Department" value={student?.department?.name} />
-                  <Field label="Program" value={student?.program?.name} />
+                  <Field label={t("field.campus")} value={student?.campus?.name} />
+                  <Field label={t("field.department")} value={student?.department?.name} />
+                  <Field label={t("field.program")} value={student?.program?.name} />
                   <Field
-                    label="Academic year"
-                    value={student?.academic_year ? `Year ${student.academic_year}` : null}
+                    label={t("field.academicYear")}
+                    value={
+                      student?.academic_year
+                        ? t("profile.year", { year: student.academic_year })
+                        : null
+                    }
                   />
                 </>
               ) : (
                 <>
-                  <Field label="Preferred field" value={prospective?.preferred_field} />
-                  <Field label="Preferred city" value={prospective?.preferred_city} />
-                  <Field label="Degree level" value={prospective?.preferred_degree_level} />
-                  <Field label="Interests" value={prospective?.preferences} />
+                  <Field label={t("field.preferredField")} value={prospective?.preferred_field} />
+                  <Field label={t("field.preferredCity")} value={prospective?.preferred_city} />
+                  <Field
+                    label={t("field.degreeLevel")}
+                    value={prospective?.preferred_degree_level}
+                  />
+                  <Field label={t("field.interests")} value={prospective?.preferences} />
                 </>
               )}
             </dl>
@@ -1050,10 +1318,11 @@ export function ProfilePage() {
 }
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
+  const t = useT();
   return (
     <div>
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium">{value || "Not added"}</dd>
+      <dd className="mt-0.5 text-sm font-medium">{value || t("common.notAdded")}</dd>
     </div>
   );
 }
@@ -1061,6 +1330,7 @@ function Field({ label, value }: { label: string; value: string | null | undefin
 export function SettingsPage() {
   const { profile, refreshProfile, signOut, user } = useAuth();
   const { appearance, setAppearance } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const visibility = useMutation({
     mutationFn: () => updateProfile(user!.id, { is_public: !profile!.is_public }),
     onSuccess: refreshProfile,
@@ -1072,53 +1342,70 @@ export function SettingsPage() {
     const { error } = await supabase.auth.resetPasswordForEmail(user!.email!, {
       redirectTo: window.location.origin + "/settings",
     });
-    setResetMessage(error?.message ?? "Password reset email sent.");
+    setResetMessage(error?.message ?? t("settings.resetSent"));
   }
 
   return (
-    <AppShell title="Settings">
+    <AppShell title={t("settings.title")}>
       <div className="max-w-2xl">
-        <h2 className="text-2xl font-bold">Account settings</h2>
+        <h2 className="text-2xl font-bold">{t("settings.heading")}</h2>
         <div className="mt-6 divide-y border-y">
           <div className="flex flex-wrap items-center justify-between gap-4 py-5">
             <div className="min-w-0">
-              <h3 className="font-semibold">Appearance</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                System follows your device setting.
-              </p>
+              <h3 className="font-semibold">{t("language.label")}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t("language.note")}</p>
             </div>
-            <Select value={appearance} onValueChange={(next) => setAppearance(next as Appearance)}>
-              <SelectTrigger className="h-11 w-36" aria-label="Appearance">
+            <Select value={language} onValueChange={(next) => setLanguage(next as Language)}>
+              <SelectTrigger className="h-11 w-36" aria-label={t("language.label")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="system">System</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
+                {languages.map((option) => (
+                  <SelectItem key={option.code} value={option.code} lang={option.code}>
+                    {option.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 py-5">
+            <div className="min-w-0">
+              <h3 className="font-semibold">{t("settings.appearance")}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t("settings.appearanceNote")}</p>
+            </div>
+            <Select value={appearance} onValueChange={(next) => setAppearance(next as Appearance)}>
+              <SelectTrigger className="h-11 w-36" aria-label={t("settings.appearance")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="system">{t("settings.appearance.system")}</SelectItem>
+                <SelectItem value="light">{t("settings.appearance.light")}</SelectItem>
+                <SelectItem value="dark">{t("settings.appearance.dark")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <Setting
-            title="Profile visibility"
+            title={t("settings.visibility")}
             text={
               profile?.is_public
-                ? "Other signed-in members can find your profile."
-                : "Your profile is private."
+                ? t("settings.visibility.public")
+                : t("settings.visibility.private")
             }
-            action={profile?.is_public ? "Make private" : "Make public"}
+            action={profile?.is_public ? t("settings.makePrivate") : t("settings.makePublic")}
             run={() => visibility.mutate()}
           />
           <Setting
-            title="Password"
-            text={resetMessage || "Send a secure password reset link to your email."}
-            action="Reset password"
+            title={t("settings.password")}
+            text={resetMessage || t("settings.passwordNote")}
+            action={t("settings.resetPassword")}
             run={() => void resetPassword()}
           />
           <Setting
-            title="Session"
+            title={t("settings.session")}
             text={user?.email ?? ""}
-            action="Log out"
+            action={t("shell.logOut")}
             run={() => void signOut()}
           />
         </div>

@@ -1,12 +1,21 @@
-export function renderErrorPage(): string {
+import { translate, type Language } from "@/lib/i18n";
+
+/**
+ * The last resort page, rendered when server rendering itself failed, so it can share no code
+ * with the app. The language comes from the request cookie because no provider is running.
+ */
+export function renderErrorPage(language: Language = "en"): string {
+  const t = (key: Parameters<typeof translate>[1]) => escape(translate(language, key));
   return `<!doctype html>
-<html lang="en">
+<html lang="${language}">
   <head>
     <meta charset="utf-8" />
-    <title>This page didn't load</title>
+    <title>${t("root.error.title")}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600&display=swap" />
     <style>
-      body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
+      body { font: 15px/1.7 "Noto Sans Myanmar", system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
       .card { max-width: 28rem; width: 100%; text-align: center; padding: 2rem; }
       h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
       p { color: #4b5563; margin: 0 0 1.5rem; }
@@ -18,13 +27,21 @@ export function renderErrorPage(): string {
   </head>
   <body>
     <div class="card">
-      <h1>This page didn't load</h1>
-      <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      <h1>${t("root.error.title")}</h1>
+      <p>${t("root.error.text")}</p>
       <div class="actions">
-        <button class="primary" onclick="location.reload()">Try again</button>
-        <a class="secondary" href="/">Go home</a>
+        <button class="primary" onclick="location.reload()">${t("common.tryAgain")}</button>
+        <a class="secondary" href="/">${t("common.goHome")}</a>
       </div>
     </div>
   </body>
 </html>`;
+}
+
+function escape(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }

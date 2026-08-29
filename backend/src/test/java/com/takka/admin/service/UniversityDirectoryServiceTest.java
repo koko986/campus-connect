@@ -148,7 +148,7 @@ class UniversityDirectoryServiceTest {
 
     var page = service.directory(request);
 
-    assertEquals("Published", page.items().get(0).state());
+    assertEquals("enum.directoryState.PUBLISHED", page.items().get(0).stateKey());
     assertEquals(3, page.items().get(0).campuses());
   }
 

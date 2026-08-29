@@ -26,10 +26,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ConsolePostsController {
   private final PostModerationService posts;
   private final ConsoleLayout layout;
+  private final ConsoleMessages messages;
 
-  public ConsolePostsController(PostModerationService posts, ConsoleLayout layout) {
+  public ConsolePostsController(
+      PostModerationService posts, ConsoleLayout layout, ConsoleMessages messages) {
     this.posts = posts;
     this.layout = layout;
+    this.messages = messages;
   }
 
   @GetMapping
@@ -61,7 +64,7 @@ public class ConsolePostsController {
     if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
 
     posts.remove(administrator, id, form);
-    Flash.success(attributes, "Post removed from the community feed.");
+    Flash.success(attributes, messages.get("flash.post.removed"));
     return redirect(returnStatus);
   }
 
@@ -76,12 +79,12 @@ public class ConsolePostsController {
     if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
 
     posts.restore(administrator, id, form);
-    Flash.success(attributes, "Post restored and visible again.");
+    Flash.success(attributes, messages.get("flash.post.restored"));
     return redirect(returnStatus);
   }
 
-  private static String rejected(BindingResult binding, RedirectAttributes attributes, String status) {
-    Flash.error(attributes, Flash.firstMessage(binding));
+  private String rejected(BindingResult binding, RedirectAttributes attributes, String status) {
+    Flash.error(attributes, messages.invalidSubmission(binding));
     return redirect(status);
   }
 

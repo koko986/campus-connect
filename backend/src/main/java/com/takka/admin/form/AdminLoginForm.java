@@ -6,12 +6,12 @@ import jakarta.validation.constraints.Size;
 
 /** Credentials submitted to the console sign-in page. */
 public class AdminLoginForm {
-  @NotBlank(message = "Enter your administrator email")
-  @Email(message = "Enter a valid email address")
+  @NotBlank(message = "{validation.signIn.email.required}")
+  @Email(message = "{validation.signIn.email.invalid}")
   private String email = "";
 
-  @NotBlank(message = "Enter your password")
-  @Size(max = 200, message = "Password is too long")
+  @NotBlank(message = "{validation.signIn.password.required}")
+  @Size(max = 200, message = "{validation.signIn.password.tooLong}")
   private String password = "";
 
   public String getEmail() {

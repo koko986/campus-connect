@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments :: head('Overview')}"></head>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.overview')}"></head>
   <body class="console-body">
     <aside th:replace="~{admin/fragments :: sidebar}"></aside>
     <main class="console-main">
@@ -11,60 +11,68 @@
         <a class="console-metric" th:classappend="${metrics.hasQueue()} ? 'console-metric--alert' : ''"
           th:href="@{/admin/reports(status='OPEN')}">
           <span class="console-metric-value" th:text="${metrics.openReports()}">0</span>
-          <span class="console-metric-label">Reports awaiting review</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.openReports}">Reports awaiting review</span>
         </a>
         <a class="console-metric" th:href="@{/admin/members}">
           <span class="console-metric-value" th:text="${metrics.members()}">0</span>
-          <span class="console-metric-label">Members</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.members}">Members</span>
         </a>
         <a class="console-metric" th:href="@{/admin/members(status='BLOCKED')}">
           <span class="console-metric-value" th:text="${metrics.blockedMembers()}">0</span>
-          <span class="console-metric-label">Blocked accounts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.blockedMembers}">Blocked accounts</span>
         </a>
         <a class="console-metric" th:href="@{/admin/posts}">
           <span class="console-metric-value" th:text="${metrics.visiblePosts()}">0</span>
-          <span class="console-metric-label">Visible posts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.visiblePosts}">Visible posts</span>
         </a>
         <a class="console-metric" th:href="@{/admin/posts(status='REMOVED')}">
           <span class="console-metric-value" th:text="${metrics.removedPosts()}">0</span>
-          <span class="console-metric-label">Removed posts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.removedPosts}">Removed posts</span>
         </a>
         <a class="console-metric" th:href="@{/admin/universities}">
           <span class="console-metric-value" th:text="${metrics.publishedUniversities()}">0</span>
-          <span class="console-metric-label">Published universities</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.publishedUniversities}"
+            >Published universities</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/universities}">
           <span class="console-metric-value" th:text="${metrics.draftUniversities()}">0</span>
-          <span class="console-metric-label">Unpublished universities</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.draftUniversities}"
+            >Unpublished universities</span
+          >
         </a>
       </section>
 
       <section class="console-panel">
         <div class="console-panel-head">
-          <h2>Longest waiting reports</h2>
-          <a th:href="@{/admin/reports}" class="console-button console-button--ghost">Open queue</a>
+          <h2 th:text="#{page.overview.queue.heading}">Longest waiting reports</h2>
+          <a th:href="@{/admin/reports}" class="console-button console-button--ghost" th:text="#{action.openQueue}"
+            >Open queue</a
+          >
         </div>
-        <p th:if="${queue.isEmpty()}" class="console-empty">The report queue is empty.</p>
+        <p th:if="${queue.isEmpty()}" class="console-empty" th:text="#{page.reports.empty.queue}">
+          The report queue is empty.
+        </p>
         <table th:unless="${queue.isEmpty()}" class="console-table">
           <thead>
             <tr>
-              <th>Waiting</th>
-              <th>Target</th>
-              <th>Reason</th>
-              <th>Status</th>
+              <th th:text="#{column.waiting}">Waiting</th>
+              <th th:text="#{column.target}">Target</th>
+              <th th:text="#{column.reason}">Reason</th>
+              <th th:text="#{column.status}">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="report : ${queue}">
-              <td th:text="${report.age()}">3d</td>
+              <td th:text="${#messages.msg(report.age().messageKey(), report.age().amount())}">3d</td>
               <td>
                 <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
-                <span class="console-muted" th:text="${report.targetType().label()}">Account</span>
+                <span class="console-muted" th:text="${#messages.msg(report.targetType().labelKey())}">Account</span>
               </td>
               <td th:text="${report.reason()}">SPAM</td>
               <td>
                 <span class="console-pill" th:classappend="'console-pill--' + ${report.statusTone()}"
-                  th:text="${report.status().label()}">Open</span>
+                  th:text="${#messages.msg(report.status().labelKey())}">Open</span>
               </td>
             </tr>
           </tbody>
@@ -73,14 +81,19 @@
 
       <section class="console-panel">
         <div class="console-panel-head">
-          <h2>Recent moderation activity</h2>
-          <a th:href="@{/admin/audit}" class="console-button console-button--ghost">Full audit log</a>
+          <h2 th:text="#{page.overview.activity.heading}">Recent moderation activity</h2>
+          <a th:href="@{/admin/audit}" class="console-button console-button--ghost" th:text="#{action.fullAuditLog}"
+            >Full audit log</a
+          >
         </div>
-        <p th:if="${recentActions.isEmpty()}" class="console-empty">No moderation actions recorded yet.</p>
+        <p th:if="${recentActions.isEmpty()}" class="console-empty" th:text="#{page.audit.empty}">
+          No moderation actions recorded yet.
+        </p>
         <ul th:unless="${recentActions.isEmpty()}" class="console-timeline">
           <li th:each="entry : ${recentActions}">
             <span class="console-pill" th:classappend="'console-pill--' + ${entry.actionTone()}"
-              th:text="${entry.actionLabel()}">Action</span>
+              th:text="${entry.isTranslatable()} ? ${#messages.msg(entry.actionKey())} : ${entry.rawAction()}"
+              >Action</span>
             <span class="console-strong" th:if="${entry.hasTargetLabel()}" th:text="${entry.targetLabel()}">Target</span>
             <span class="console-muted" th:text="${entry.adminEmail()}">admin</span>
             <span class="console-muted" th:text="${entry.recorded()}">date</span>

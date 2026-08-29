@@ -1,7 +1,9 @@
 package com.takka.admin.console;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
@@ -28,12 +30,15 @@ public final class Flash {
     RequestContextUtils.getOutputFlashMap(request).put(ERROR, message);
   }
 
-  /** The first validation message, which is what the console banner shows. */
-  public static String firstMessage(BindingResult binding) {
+  /**
+   * The first validation message, which is what the console banner shows. Already translated: the
+   * console's validator resolves {@code {key}} constraint messages from the same bundle as the
+   * templates.
+   */
+  public static Optional<String> firstMessage(BindingResult binding) {
     return binding.getAllErrors().stream()
-        .map(error -> error.getDefaultMessage())
+        .map(ObjectError::getDefaultMessage)
         .filter(message -> message != null && !message.isBlank())
-        .findFirst()
-        .orElse("Please check the submitted values");
+        .findFirst();
   }
 }

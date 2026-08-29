@@ -13,8 +13,8 @@ public class ModerationReasonForm {
   public static final int MIN_LENGTH = 3;
   public static final int MAX_LENGTH = 2000;
 
-  @NotBlank(message = "A reason is required")
-  @Size(min = MIN_LENGTH, max = MAX_LENGTH, message = "A reason must be between 3 and 2000 characters")
+  @NotBlank(message = "{validation.reason.required}")
+  @Size(min = MIN_LENGTH, max = MAX_LENGTH, message = "{validation.reason.length}")
   private String reason = "";
 
   /** Optional report this action resolves, so the queue entry closes alongside the action. */

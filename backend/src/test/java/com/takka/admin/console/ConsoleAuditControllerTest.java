@@ -22,7 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 class ConsoleAuditControllerTest {
   private final AuditTrailService auditTrail = mock(AuditTrailService.class);
-  private final MockMvc mvc = ConsoleMvc.forController(new ConsoleAuditController(auditTrail, new ConsoleLayout()));
+  private final MockMvc mvc =
+      ConsoleMvc.forController(new ConsoleAuditController(auditTrail, ConsoleMvc.layout()));
 
   @BeforeEach
   void signIn() {
