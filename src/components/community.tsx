@@ -13,6 +13,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { Tilt } from "@/components/tilt";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -444,7 +445,7 @@ export function UniversityCard({ university }: { university: University | Univer
   const image = universityImageUrl(university.cover_image_path);
   const count = departmentCount(university);
   return (
-    <article className="card-soft flex flex-col overflow-hidden transition-shadow hover:shadow-[var(--shadow-lift)]">
+    <Tilt as="article" className="card-soft flex flex-col overflow-hidden">
       {image ? (
         <img
           src={image}
@@ -493,6 +494,6 @@ export function UniversityCard({ university }: { university: University | Univer
           </Button>
         </div>
       </div>
-    </article>
+    </Tilt>
   );
 }

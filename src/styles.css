@@ -51,9 +51,21 @@
   --color-sidebar-ring: var(--sidebar-ring);
   /* Plus Jakarta Sans covers no Myanmar glyphs, so Noto Sans Myanmar follows it in the stack. */
   --font-sans: "Plus Jakarta Sans", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
+  /*
+   * Editorial serif for headline type. Google Fonts publishes no Myanmar serif, so Burmese
+   * headings fall through to Noto Sans Myanmar and set in sans — the alternative is tofu.
+   */
+  --font-display: "Instrument Serif", "Noto Sans Myanmar", ui-serif, Georgia, serif;
+  --color-blossom: var(--blossom);
+  --color-blossom-wash: var(--blossom-wash);
+  --color-mint: var(--mint);
+  --color-mint-wash: var(--mint-wash);
+  --color-sky: var(--sky);
+  --color-sky-wash: var(--sky-wash);
   --shadow-soft: 0 1px 2px oklch(0.2 0.03 165 / 0.04), 0 8px 24px -12px oklch(0.2 0.03 165 / 0.12);
   --shadow-lift: 0 2px 4px oklch(0.2 0.03 165 / 0.05), 0 18px 40px -18px oklch(0.2 0.03 165 / 0.22);
+  /* Cast further and softer than --shadow-lift, so a leaning card reads as being off the page. */
+  --shadow-tilt: 0 2px 6px oklch(0.2 0.03 165 / 0.06), 0 30px 60px -22px oklch(0.2 0.03 165 / 0.3);
 }
 
 :root {
@@ -89,6 +101,17 @@
   --sidebar-accent-foreground: oklch(0.4 0.08 167);
   --sidebar-border: oklch(0.925 0.008 165);
   --sidebar-ring: oklch(0.72 0.11 167);
+  /*
+   * Pastel accents for editorial marketing sections. Each is a "wash" for large section fills and
+   * a stronger tone for badges and small blocks. Mint sits on hue 168, all but identical to the
+   * brand primary at 167, which is what keeps the set from fighting the rest of the palette.
+   */
+  --blossom: oklch(0.902 0.075 333);
+  --blossom-wash: oklch(0.976 0.02 323);
+  --mint: oklch(0.874 0.055 168);
+  --mint-wash: oklch(0.966 0.014 162);
+  --sky: oklch(0.889 0.055 250);
+  --sky-wash: oklch(0.968 0.017 242);
 }
 
 .dark {
@@ -123,6 +146,13 @@
   --sidebar-accent-foreground: oklch(0.9 0.06 167);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.76 0.12 167);
+  /* Same hues held, lightness dropped below the dark background's card level. */
+  --blossom: oklch(0.32 0.055 333);
+  --blossom-wash: oklch(0.26 0.03 323);
+  --mint: oklch(0.32 0.045 168);
+  --mint-wash: oklch(0.25 0.025 162);
+  --sky: oklch(0.32 0.045 250);
+  --sky-wash: oklch(0.26 0.03 242);
 }
 
 @layer base {
@@ -157,6 +187,11 @@
     text-transform: none;
     letter-spacing: normal;
   }
+
+  /* list-style: none hides the disclosure triangle everywhere except WebKit, which needs this. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
 }
 
 @utility card-soft {
@@ -164,6 +199,66 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-soft);
+}
+
+/*
+ * Paired with the Tilt component, which supplies the custom properties from the cursor position.
+ * Every property rests at its identity value, so this class alone changes nothing: no cursor, no
+ * JavaScript, or reduced motion all leave the surface flat.
+ */
+@utility tilt {
+  transform: perspective(var(--tilt-depth, 1000px)) rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg)) translateY(var(--tilt-lift, 0px)) scale(var(--tilt-scale, 1));
+  transition:
+    transform var(--tilt-ms, 600ms) cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow var(--tilt-ms, 600ms) cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    box-shadow: var(--shadow-tilt);
+  }
+}
+
+/*
+ * Marquee track. The component renders the same row of items twice, so translating the track by
+ * exactly half its width lands the copy where the original started and the loop is seamless.
+ * Direction and duration come from the component.
+ */
+@keyframes marquee-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@utility marquee-track {
+  animation: marquee-drift var(--marquee-seconds, 40s) linear infinite;
+  animation-direction: var(--marquee-direction, normal);
+  width: max-content;
+
+  /* Text sliding out from under the reader is hostile, so let a hover hold it still. */
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Softens both ends of the strip so items enter and leave instead of being chopped off. */
+@utility marquee-edges {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+}
+
+/* Endlessly moving text is a genuine accessibility problem, so honour the request to stop it. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
 }
 
 /* Keeps the fixed bottom navigation clear of the iOS home indicator. */

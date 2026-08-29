@@ -22,6 +22,7 @@ import {
 } from "@/components/community";
 import { PostComposer } from "@/components/post-composer";
 import { Empty, Failure, Loading } from "@/components/states";
+import { Tilt } from "@/components/tilt";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -559,7 +560,14 @@ export function UniversityDetailPage({ id }: { id: string }) {
     <AppShell title={t("university.title")}>
       <section className="border-b pb-8">
         {coverImage ? (
-          <figure className="mb-6 overflow-hidden rounded-2xl border bg-muted">
+          /* Gentler than the grid cards: a full-width header swings through far more pixels, and
+             the same seven degrees on a 28rem image reads as the page falling over. */
+          <Tilt
+            as="figure"
+            degrees={3}
+            lift={4}
+            className="mb-6 overflow-hidden rounded-2xl border bg-muted"
+          >
             <img
               src={coverImage}
               alt={record.name}
@@ -581,7 +589,7 @@ export function UniversityDetailPage({ id }: { id: string }) {
                 )}
               </figcaption>
             ) : null}
-          </figure>
+          </Tilt>
         ) : null}
         <div className="flex flex-wrap items-start gap-4">
           {!coverImage ? (

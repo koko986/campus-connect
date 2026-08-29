@@ -49,8 +49,23 @@ const walk = (dir) => {
 };
 walk(join(root, "src"));
 const corpus = sources.join("\n");
+
+/**
+ * Some keys are assembled at the call site, as in t(`universities.type.${item}`), so no search for
+ * the whole key will ever find them. The counterpart to isBuiltFromAQuotedPrefix on the Java side:
+ * treat a key as read if any dotted prefix of it opens a template literal.
+ */
+const builtFromPrefix = (key) => {
+  for (let dot = key.indexOf("."); dot !== -1; dot = key.indexOf(".", dot + 1)) {
+    if (corpus.includes("`" + key.slice(0, dot + 1) + "${")) return true;
+  }
+  return false;
+};
+
 for (const key of Object.keys(en)) {
-  if (!corpus.includes(`"${key}"`)) problems.push(`nothing uses ${key}`);
+  if (!corpus.includes(`"${key}"`) && !builtFromPrefix(key)) {
+    problems.push(`nothing uses ${key}`);
+  }
 }
 
 if (problems.length) {
