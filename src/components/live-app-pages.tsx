@@ -124,8 +124,7 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
   const side = (
     <>
       <div className="card-soft p-5">
-        <p className="sequence-label text-primary">{t("common.saved")}</p>
-        <h3 className="mt-1 font-semibold">{t("feed.savedPosts")}</h3>
+        <h3 className="font-semibold">{t("feed.savedPosts")}</h3>
         <div className="mt-3 space-y-3">
           {savedPosts.data?.slice(0, 5).map((post) => (
             <Link
@@ -143,17 +142,16 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
         </div>
       </div>
       <div className="card-soft p-5">
-        <p className="sequence-label text-primary">{t("common.saved")}</p>
-        <h3 className="mt-1 font-semibold">{t("feed.savedUniversities")}</h3>
+        <h3 className="font-semibold">{t("feed.savedUniversities")}</h3>
         <div className="mt-3 space-y-3">
           {savedUniversities.data?.map((university) => (
             <Link
               key={university.id}
               to="/universities/$id"
               params={{ id: university.id }}
-              className="flex items-center gap-3 rounded-md text-sm hover:text-primary"
+              className="flex items-center gap-3 text-sm hover:text-primary"
             >
-              <span className="sequence-label flex size-8 shrink-0 items-center justify-center rounded-md border border-primary/15 bg-primary-soft text-primary-soft-foreground">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-xs font-bold">
                 {university.short_name}
               </span>
               <span className="min-w-0 truncate">{university.name}</span>
@@ -275,7 +273,7 @@ export function UniversitiesPage() {
                 <UniversityCard university={university} />
                 <div className="mt-2 flex flex-wrap gap-1">
                   {university.matchReasons.map((reason) => (
-                    <Badge key={reason} variant="secondary" className="sequence-label font-normal">
+                    <Badge key={reason} variant="secondary" className="font-normal">
                       {recommendationReason(t, reason)}
                     </Badge>
                   ))}
@@ -364,9 +362,8 @@ function PostPreview({ post }: { post: FeedPost }) {
       params={{ id: post.id }}
       className="card-soft block w-64 shrink-0 p-4 transition-shadow hover:shadow-[var(--shadow-lift)] md:w-auto"
     >
-      <p className="sequence-label text-primary">{post.topic ?? t("community.member")}</p>
       <p className="line-clamp-4 text-sm leading-relaxed">{post.body}</p>
-      <p className="sequence-label mt-3 text-muted-foreground">
+      <p className="mt-3 text-xs text-muted-foreground">
         {post.author?.full_name ?? t("community.member")} ·{" "}
         {t("post.upvotes", { count: post.like_count })} ·{" "}
         {t("post.comments", { count: post.comment_count })}
@@ -379,10 +376,9 @@ function QuestionPreview({ question }: { question: CommunityQuestion }) {
   const t = useT();
   return (
     <div className="card-soft w-64 shrink-0 p-4 md:w-auto">
-      <p className="sequence-label text-primary">{t("nav.questions")}</p>
-      <h4 className="mt-1 line-clamp-2 text-sm font-semibold">{question.title}</h4>
+      <h4 className="line-clamp-2 text-sm font-semibold">{question.title}</h4>
       <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{question.body}</p>
-      <p className="sequence-label mt-3 text-primary">
+      <p className="mt-3 text-xs font-semibold text-primary">
         {t("questions.answers", { count: question.answers[0]?.count ?? 0 })}
       </p>
     </div>

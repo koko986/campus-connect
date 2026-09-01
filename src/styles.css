@@ -62,14 +62,14 @@
   --color-mint-wash: var(--mint-wash);
   --color-sky: var(--sky);
   --color-sky-wash: var(--sky-wash);
-  --shadow-soft: 0 1px 0 oklch(1 0 0 / 0.75), 0 14px 34px -28px oklch(0.18 0.03 165 / 0.36);
-  --shadow-lift: 0 1px 0 oklch(1 0 0 / 0.85), 0 22px 54px -30px oklch(0.18 0.03 165 / 0.42);
+  --shadow-soft: 0 1px 2px oklch(0.2 0.03 165 / 0.04), 0 8px 24px -12px oklch(0.2 0.03 165 / 0.12);
+  --shadow-lift: 0 2px 4px oklch(0.2 0.03 165 / 0.05), 0 18px 40px -18px oklch(0.2 0.03 165 / 0.22);
   /* Cast further and softer than --shadow-lift, so a leaning card reads as being off the page. */
   --shadow-tilt: 0 2px 6px oklch(0.2 0.03 165 / 0.06), 0 30px 60px -22px oklch(0.2 0.03 165 / 0.3);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 1rem;
   --background: oklch(0.99 0.004 160);
   --foreground: oklch(0.24 0.02 165);
   --card: oklch(1 0 0);
@@ -153,9 +153,6 @@
   --mint-wash: oklch(0.25 0.025 162);
   --sky: oklch(0.32 0.045 250);
   --sky-wash: oklch(0.26 0.03 242);
-  --shadow-soft: 0 1px 0 oklch(1 0 0 / 0.05), 0 18px 44px -28px oklch(0 0 0 / 0.75);
-  --shadow-lift: 0 1px 0 oklch(1 0 0 / 0.07), 0 26px 62px -28px oklch(0 0 0 / 0.82);
-  --shadow-tilt: 0 1px 0 oklch(1 0 0 / 0.08), 0 36px 76px -30px oklch(0 0 0 / 0.88);
 }
 
 @layer base {
@@ -204,33 +201,10 @@
 }
 
 @utility card-soft {
-  position: relative;
-  background: linear-gradient(180deg, oklch(1 0 0 / 0.72), oklch(1 0 0 / 0) 38%), var(--color-card);
-  border: 1px solid color-mix(in oklch, var(--color-border) 86%, var(--color-primary) 14%);
-  border-radius: var(--radius-lg);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-soft);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-
-  &:hover {
-    border-color: color-mix(in oklch, var(--color-border) 58%, var(--color-primary) 42%);
-  }
-}
-
-.dark .card-soft {
-  background:
-    linear-gradient(180deg, oklch(1 0 0 / 0.035), oklch(1 0 0 / 0) 44%), var(--color-card);
-}
-
-@utility sequence-label {
-  font-family: ui-monospace, "JetBrains Mono", "Cascadia Mono", "SF Mono", monospace;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 
 /*
@@ -277,7 +251,13 @@
 
 /* Softens both ends of the strip so items enter and leave instead of being chopped off. */
 @utility marquee-edges {
-  mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
 }
 
 /* Endlessly moving text is a genuine accessibility problem, so honour the request to stop it. */
