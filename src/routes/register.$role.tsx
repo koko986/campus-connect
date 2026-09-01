@@ -178,30 +178,54 @@ function RegisterPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t("field.university")}</Label>
-                <Select
+                <select
+                  aria-label={t("field.university")}
                   value={universityId}
-                  onValueChange={(value) => {
-                    setUniversityId(value);
+                  disabled={universitiesQuery.isLoading || universitiesQuery.isError}
+                  onChange={(event) => {
+                    setUniversityId(event.target.value);
                     setDepartmentId("");
                   }}
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
                 >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        universitiesQuery.isLoading
-                          ? t("register.loadingUniversities")
-                          : t("register.selectUniversity")
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {universitiesQuery.data?.map((university) => (
-                      <SelectItem key={university.id} value={university.id}>
-                        {university.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">
+                    {universitiesQuery.isLoading
+                      ? t("register.loadingUniversities")
+                      : t("register.selectUniversity")}
+                  </option>
+                  {universitiesQuery.data?.map((university) => (
+                    <option key={university.id} value={university.id}>
+                      {university.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="hidden md:block">
+                  <Select
+                    value={universityId}
+                    onValueChange={(value) => {
+                      setUniversityId(value);
+                      setDepartmentId("");
+                    }}
+                    disabled={universitiesQuery.isLoading || universitiesQuery.isError}
+                  >
+                    <SelectTrigger aria-label={t("field.university")}>
+                      <SelectValue
+                        placeholder={
+                          universitiesQuery.isLoading
+                            ? t("register.loadingUniversities")
+                            : t("register.selectUniversity")
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {universitiesQuery.data?.map((university) => (
+                        <SelectItem key={university.id} value={university.id}>
+                          {university.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("field.department")}</Label>
