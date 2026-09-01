@@ -44,13 +44,13 @@ function GetStarted() {
   const t = useT();
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5">
-        <Logo />
-        <div className="flex items-center gap-3">
+      <header className="pt-safe mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-5">
+        <Logo className="shrink-0 [&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
+        <div className="flex min-w-0 items-center justify-end gap-2">
           <LanguageSwitcher />
           <Link
             to="/login"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="text-right text-xs font-medium text-muted-foreground hover:text-foreground sm:text-sm"
           >
             {t("auth.logIn")}
           </Link>

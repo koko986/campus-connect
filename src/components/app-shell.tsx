@@ -96,7 +96,7 @@ export function AppShell({
         </aside>
 
         <div className="lg:pl-64">
-          <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+          <header className="pt-safe sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
             <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
               <div className="lg:hidden">
                 <Logo />
@@ -143,12 +143,12 @@ export function AppShell({
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
+                  "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
                   isActive(item.to) ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <item.icon className="size-5" />
-                {t(item.label)}
+                <span className="max-w-full truncate px-0.5">{t(item.label)}</span>
               </Link>
             ))}
           </div>

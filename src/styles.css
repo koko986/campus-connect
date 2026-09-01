@@ -161,6 +161,8 @@
   }
 
   body {
+    min-width: 0;
+    overflow-x: hidden;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -192,6 +194,10 @@
   summary::-webkit-details-marker {
     display: none;
   }
+}
+
+:lang(my) .font-display {
+  line-height: 1.5;
 }
 
 @utility card-soft {
@@ -262,6 +268,10 @@
 }
 
 /* Keeps the fixed bottom navigation clear of the iOS home indicator. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
 @utility pb-safe {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }

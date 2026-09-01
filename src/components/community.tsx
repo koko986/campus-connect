@@ -350,6 +350,7 @@ export function PostCard({
           disabled={like.isPending}
           onClick={() => like.mutate()}
           aria-pressed={post.liked}
+          aria-label={t("post.upvotes", { count: post.like_count })}
           className={cn("h-9 gap-2 rounded-full", post.liked && "text-primary")}
         >
           <ArrowUp className={cn("size-4", post.liked && "stroke-[3]")} />
@@ -388,6 +389,7 @@ export function PostCard({
           size="sm"
           className="h-9 gap-2 rounded-full"
           onClick={() => void sharePost(t, post.id)}
+          aria-label={t("post.share")}
         >
           <Share2 className="size-4" />
           <span className="hidden sm:inline">{t("post.share")}</span>
@@ -460,7 +462,7 @@ export function UniversityCard({ university }: { university: University | Univer
       )}
       <div className="flex flex-1 flex-col p-5">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold">{university.name}</h3>
+          <h3 className="text-base font-semibold break-words">{university.name}</h3>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="size-3" /> {university.city}
           </p>

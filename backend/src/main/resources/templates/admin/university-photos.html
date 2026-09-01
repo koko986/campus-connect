@@ -31,7 +31,11 @@
             ></option>
           </select>
         </label>
-        <button type="submit" class="console-button console-button--ghost" th:text="#{action.apply}">
+        <button
+          type="submit"
+          class="console-button console-button--ghost"
+          th:text="#{action.apply}"
+        >
           Apply
         </button>
       </form>
@@ -57,10 +61,14 @@
                 <img
                   th:src="${photo.imageUrl()}"
                   th:alt="${photo.caption()}"
-                  style="width: 12rem; max-height: 8rem; border-radius: 0.6rem; object-fit: cover"
+                  class="console-photo-preview"
                 />
               </a>
-              <p class="console-detail" th:if="${photo.hasCaption()}" th:text="${photo.caption()}"></p>
+              <p
+                class="console-detail"
+                th:if="${photo.hasCaption()}"
+                th:text="${photo.caption()}"
+              ></p>
             </td>
             <td>
               <span class="console-strong" th:text="${photo.universityName()}">University</span>
@@ -83,7 +91,11 @@
               >
             </td>
             <td>
-              <span th:unless="${photo.isPending()}" class="console-muted" th:text="#{page.reports.closed}">
+              <span
+                th:unless="${photo.isPending()}"
+                class="console-muted"
+                th:text="#{page.reports.closed}"
+              >
                 Closed
               </span>
               <form
@@ -124,7 +136,9 @@
       </table>
 
       <div th:unless="${photos.isEmpty()}">
-        <nav th:replace="~{admin/fragments :: pagination(${photos}, '/admin/university-photos')}"></nav>
+        <nav
+          th:replace="~{admin/fragments :: pagination(${photos}, '/admin/university-photos')}"
+        ></nav>
       </div>
     </main>
   </body>

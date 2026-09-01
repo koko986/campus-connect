@@ -132,15 +132,15 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-md">
+      <header className="pt-safe sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Logo />
+          <Logo className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
           <div className="flex items-center gap-2">
-            <LanguageSwitcher className="mr-1" />
-            <Button asChild variant="ghost" className="rounded-full">
+            <LanguageSwitcher className="sm:mr-1" />
+            <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
               <Link to="/login">{t("auth.logIn")}</Link>
             </Button>
-            <Button asChild className="rounded-full">
+            <Button asChild size="sm" className="rounded-full sm:h-9 sm:px-4">
               <Link to="/get-started">{t("auth.getStarted")}</Link>
             </Button>
           </div>
@@ -152,7 +152,7 @@ function Landing() {
           <Sparkle className="size-3" /> {t("landing.badge")}
         </span>
         {/* Instrument Serif ships at a single weight, so the size carries the emphasis, not bold. */}
-        <h1 className="font-display mt-6 text-5xl leading-[1.05] font-normal tracking-tight sm:text-6xl lg:text-7xl">
+        <h1 className="font-display mt-6 text-4xl leading-[1.05] font-normal tracking-tight sm:text-6xl lg:text-7xl">
           {t("landing.heading")}
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground">
@@ -183,7 +183,7 @@ function Landing() {
             className="aspect-[16/9] w-full rounded-2xl object-cover"
           />
         </Tilt>
-        <dl className="mx-auto mt-8 grid max-w-2xl grid-cols-3 gap-4 text-center">
+        <dl className="mx-auto mt-8 grid max-w-2xl grid-cols-3 gap-2 text-center sm:gap-4">
           {[
             [String(universities.data?.length ?? 0), t("landing.stat.universities")],
             [String(departmentCount), t("landing.stat.departments")],
@@ -191,7 +191,7 @@ function Landing() {
           ].map(([value, label]) => (
             <div key={label}>
               <dt className="font-display text-3xl font-normal">{value}</dt>
-              <dd className="text-xs text-muted-foreground">{label}</dd>
+              <dd className="text-[10px] leading-snug text-muted-foreground sm:text-xs">{label}</dd>
             </div>
           ))}
         </dl>
@@ -237,11 +237,17 @@ function Landing() {
           {t("landing.walkthrough.text")}
         </p>
         <Tabs defaultValue="choosing" className="mt-8">
-          <TabsList className="h-auto rounded-full p-1">
-            <TabsTrigger value="choosing" className="rounded-full px-4 py-2">
+          <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl p-1 sm:inline-grid sm:w-auto sm:rounded-full">
+            <TabsTrigger
+              value="choosing"
+              className="min-w-0 whitespace-normal rounded-xl px-2 py-2 text-center sm:rounded-full sm:px-4"
+            >
               {t("landing.tab.prospective")}
             </TabsTrigger>
-            <TabsTrigger value="studying" className="rounded-full px-4 py-2">
+            <TabsTrigger
+              value="studying"
+              className="min-w-0 whitespace-normal rounded-xl px-2 py-2 text-center sm:rounded-full sm:px-4"
+            >
               {t("landing.tab.student")}
             </TabsTrigger>
           </TabsList>
@@ -276,7 +282,7 @@ function Landing() {
           {faqs.map((faq) => (
             /* Native disclosure: keyboard accessible and open to in-page search without any JS. */
             <details key={faq.q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-2 text-base font-semibold">
                 {t(faq.q)}
                 <Plus className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-45" />
               </summary>

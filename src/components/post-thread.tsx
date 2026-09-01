@@ -112,7 +112,7 @@ function Comment({ comment, depth }: { comment: CommentNode; depth: number }) {
   });
 
   return (
-    <div className={cn(depth > 0 && "border-l border-border pl-3 sm:pl-4")}>
+    <div className={cn(depth > 0 && "border-l border-border pl-2 sm:pl-4")}>
       <div className="py-3">
         {deleted ? (
           <p className="text-sm italic text-muted-foreground">{t("comment.deleted")}</p>
@@ -175,7 +175,7 @@ function Comment({ comment, depth }: { comment: CommentNode; depth: number }) {
       </div>
 
       {comment.replies.length ? (
-        <div className={cn(depth < MAX_INDENT ? "ml-1 sm:ml-3" : undefined)}>
+        <div className={cn(depth < MAX_INDENT ? "sm:ml-3" : undefined)}>
           {comment.replies.map((reply) => (
             <Comment key={reply.id} comment={reply} depth={Math.min(depth + 1, MAX_INDENT)} />
           ))}

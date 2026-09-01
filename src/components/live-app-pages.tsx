@@ -616,7 +616,7 @@ export function UniversityDetailPage({ id }: { id: string }) {
                 <ExternalLink className="size-4" />
               </a>
             ) : null}
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 break-all text-sm text-muted-foreground">
               {record.founded_year ? (
                 <span>{t("university.founded", { year: record.founded_year })}</span>
               ) : null}
@@ -626,17 +626,19 @@ export function UniversityDetailPage({ id }: { id: string }) {
               {record.contact_phone ? <span>{record.contact_phone}</span> : null}
             </div>
           </div>
-          <Button
-            variant={isSaved ? "default" : "outline"}
-            size="icon"
-            className="size-11"
-            disabled={save.isPending}
-            onClick={() => save.mutate()}
-            aria-label={isSaved ? t("university.removeSaved") : t("university.save")}
-          >
-            <Bookmark className={isSaved ? "size-4 fill-current" : "size-4"} />
-          </Button>
-          {canSubmitPhoto ? <UniversityPhotoUpload universityId={id} /> : null}
+          <div className="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
+            <Button
+              variant={isSaved ? "default" : "outline"}
+              size="icon"
+              className="size-11"
+              disabled={save.isPending}
+              onClick={() => save.mutate()}
+              aria-label={isSaved ? t("university.removeSaved") : t("university.save")}
+            >
+              <Bookmark className={isSaved ? "size-4 fill-current" : "size-4"} />
+            </Button>
+            {canSubmitPhoto ? <UniversityPhotoUpload universityId={id} /> : null}
+          </div>
         </div>
         <div className="mt-7 grid gap-6 border-t pt-6 md:grid-cols-3">
           <Details
@@ -1261,13 +1263,17 @@ export function ProfilePage() {
                   {t("profile.joined", { date: formatDate(profile.created_at, language) })}
                 </p>
               </div>
-              <div className="ml-auto flex gap-2">
-                <Button asChild variant="ghost" className="h-11">
+              <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row">
+                <Button asChild variant="ghost" className="h-11 w-full sm:w-auto">
                   <Link to="/profiles/$id" params={{ id: user!.id }}>
                     {t("profile.publicView")}
                   </Link>
                 </Button>
-                <Button variant="outline" className="h-11" onClick={() => setEditing(true)}>
+                <Button
+                  variant="outline"
+                  className="h-11 w-full sm:w-auto"
+                  onClick={() => setEditing(true)}
+                >
                   {t("profile.edit")}
                 </Button>
               </div>

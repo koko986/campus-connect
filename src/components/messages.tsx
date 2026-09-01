@@ -405,7 +405,7 @@ function MessageThread({
   }
 
   return (
-    <section className="flex min-h-[60dvh] flex-col md:min-h-[560px]">
+    <section className="flex min-h-[calc(100dvh-12rem)] flex-col md:min-h-[560px]">
       <header className="flex items-center gap-2 border-b p-3">
         <Button
           variant="ghost"
@@ -560,12 +560,16 @@ export function MessagesPage() {
           className={cn("border-b p-3 md:border-b-0 md:border-r", selected && "hidden md:block")}
         >
           <Tabs value={tab} onValueChange={(next) => setTab(next as "direct" | "groups")}>
-            <div className="flex items-center gap-2">
-              <TabsList className="grid flex-1 grid-cols-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <TabsList className="grid w-full grid-cols-2 sm:flex-1">
                 <TabsTrigger value="direct">{t("messages.tab.direct")}</TabsTrigger>
                 <TabsTrigger value="groups">{t("messages.tab.groups")}</TabsTrigger>
               </TabsList>
-              {tab === "direct" ? <ConversationStarter onStarted={openConversation} /> : null}
+              {tab === "direct" ? (
+                <div className="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto">
+                  <ConversationStarter onStarted={openConversation} />
+                </div>
+              ) : null}
             </div>
 
             <TabsContent value="direct" className="mt-3 space-y-1">

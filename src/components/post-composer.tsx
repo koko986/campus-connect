@@ -144,9 +144,13 @@ export function PostComposer({
 
         <div className="space-y-4">
           <Tabs value={scope} onValueChange={(next) => setScope(next as PostScope)}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="COMMUNITY">{t("composer.scope.community")}</TabsTrigger>
-              <TabsTrigger value="PROFILE_ONLY">{t("composer.scope.profileOnly")}</TabsTrigger>
+            <TabsList className="grid h-auto w-full grid-cols-1 gap-1 sm:grid-cols-2">
+              <TabsTrigger value="COMMUNITY" className="h-auto whitespace-normal px-2 py-2">
+                {t("composer.scope.community")}
+              </TabsTrigger>
+              <TabsTrigger value="PROFILE_ONLY" className="h-auto whitespace-normal px-2 py-2">
+                {t("composer.scope.profileOnly")}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           <p className="text-xs text-muted-foreground">

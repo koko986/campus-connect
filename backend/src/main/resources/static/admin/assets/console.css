@@ -23,7 +23,8 @@
    * Myanmar block, so Noto Sans Myanmar follows as the fallback the browser reaches for Burmese
    * glyphs; the Latin text in the same sentence still renders monospaced.
    */
-  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace,
+  font-family:
+    ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace,
     "Noto Sans Myanmar";
 }
 
@@ -348,6 +349,16 @@ body {
   white-space: pre-wrap;
 }
 
+.console-muted,
+.console-strong,
+.console-email,
+.console-post-body,
+.console-detail,
+.console-link {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .console-post-body {
   margin: 0;
   max-width: 62ch;
@@ -460,6 +471,21 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.console-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-photo-preview {
+  display: block;
+  width: 12rem;
+  max-width: 100%;
+  max-height: 8rem;
+  border-radius: 0.6rem;
+  object-fit: cover;
 }
 
 .console-action summary {
@@ -742,5 +768,148 @@ html:lang(my) .console-table td {
   .console-table {
     display: block;
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 600px) {
+  .console-body--centered {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .console-sidebar {
+    padding: 12px;
+  }
+
+  .console-nav {
+    flex-wrap: nowrap;
+    gap: 4px;
+    margin: 12px -12px 0;
+    padding: 0 12px 4px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .console-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .console-nav-link {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+
+  .console-scope {
+    margin-top: 8px;
+  }
+
+  .console-main {
+    padding: 12px 12px max(40px, env(safe-area-inset-bottom));
+  }
+
+  .console-topbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .console-identity {
+    flex-wrap: wrap;
+  }
+
+  .console-email {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .console-metrics,
+  .console-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .console-panel {
+    margin-top: 20px;
+  }
+
+  .console-panel-head {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px;
+  }
+
+  .console-inline-actions,
+  .console-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .console-filters {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .console-filters label,
+  .console-filters .console-button,
+  .console-inline-actions .console-button,
+  .console-form-actions .console-button {
+    width: 100%;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .console-checkbox input {
+    width: 18px;
+    min-height: 18px;
+    height: 18px;
+  }
+
+  .console-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .console-action-form {
+    width: min(340px, calc(100vw - 48px));
+  }
+
+  .console-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .console-pagination-controls .console-button {
+    flex: 1;
+  }
+
+  .console-login {
+    padding: 20px;
+  }
+
+  .console-photo-preview {
+    width: 100%;
+    max-height: none;
+    aspect-ratio: 16 / 10;
   }
 }

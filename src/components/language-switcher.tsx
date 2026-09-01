@@ -24,7 +24,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           aria-current={option.code === language}
           onClick={() => setLanguage(option.code)}
           className={cn(
-            "rounded-full px-2.5 py-1 transition-colors",
+            "min-h-11 min-w-11 rounded-full px-2.5 py-1 transition-colors sm:min-h-0 sm:min-w-0",
             option.code === language
               ? "bg-background text-foreground shadow-[var(--shadow-soft)]"
               : "text-muted-foreground hover:text-foreground",
