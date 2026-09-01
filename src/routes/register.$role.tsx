@@ -229,37 +229,68 @@ function RegisterPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>{t("field.department")}</Label>
-                <Select
+                <select
+                  aria-label={t("field.department")}
                   value={departmentId}
-                  onValueChange={setDepartmentId}
                   disabled={!universityId}
+                  onChange={(event) => setDepartmentId(event.target.value)}
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("register.selectDepartment")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((department) => (
-                      <SelectItem key={department.id} value={department.id}>
-                        {department.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">{t("register.selectDepartment")}</option>
+                  {departments.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="hidden md:block">
+                  <Select
+                    value={departmentId}
+                    onValueChange={setDepartmentId}
+                    disabled={!universityId}
+                  >
+                    <SelectTrigger aria-label={t("field.department")}>
+                      <SelectValue placeholder={t("register.selectDepartment")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((department) => (
+                        <SelectItem key={department.id} value={department.id}>
+                          {department.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("field.academicYear")}</Label>
-                <Select value={academicYear} onValueChange={setAcademicYear}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("register.selectYear")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 6 }, (_, index) => String(index + 1)).map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {t("register.year", { year })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  aria-label={t("field.academicYear")}
+                  value={academicYear}
+                  onChange={(event) => setAcademicYear(event.target.value)}
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:hidden"
+                >
+                  <option value="">{t("register.selectYear")}</option>
+                  {Array.from({ length: 6 }, (_, index) => String(index + 1)).map((year) => (
+                    <option key={year} value={year}>
+                      {t("register.year", { year })}
+                    </option>
+                  ))}
+                </select>
+                <div className="hidden md:block">
+                  <Select value={academicYear} onValueChange={setAcademicYear}>
+                    <SelectTrigger aria-label={t("field.academicYear")}>
+                      <SelectValue placeholder={t("register.selectYear")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 6 }, (_, index) => String(index + 1)).map((year) => (
+                        <SelectItem key={year} value={year}>
+                          {t("register.year", { year })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           ) : (
