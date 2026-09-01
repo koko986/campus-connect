@@ -65,7 +65,7 @@ export function VerifiedBadge() {
   return (
     <span
       title={t("community.verifiedTitle")}
-      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary-soft-foreground"
+      className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary-soft-foreground"
     >
       <BadgeCheck className="size-3" /> {t("community.verified")}
     </span>
@@ -264,7 +264,7 @@ export function UniversityTagLink({
 }) {
   return (
     <Link to="/universities/$id" params={{ id: university.id }}>
-      <Badge variant="secondary" className="font-normal hover:bg-primary-soft">
+      <Badge variant="secondary" className="sequence-label font-normal hover:bg-primary-soft">
         {university.short_name ?? university.name}
       </Badge>
     </Link>
@@ -324,9 +324,15 @@ export function PostCard({
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {post.university ? <UniversityTagLink university={post.university} /> : null}
-        {post.topic ? <Badge variant="secondary">{post.topic}</Badge> : null}
+        {post.topic ? (
+          <Badge variant="secondary" className="sequence-label">
+            {post.topic}
+          </Badge>
+        ) : null}
         {post.scope === "PROFILE_ONLY" ? (
-          <Badge variant="outline">{t("post.profileOnly")}</Badge>
+          <Badge variant="outline" className="sequence-label">
+            {t("post.profileOnly")}
+          </Badge>
         ) : null}
       </div>
 
@@ -447,27 +453,46 @@ export function UniversityCard({ university }: { university: University | Univer
   const image = universityImageUrl(university.cover_image_path);
   const count = departmentCount(university);
   return (
-    <Tilt as="article" className="card-soft flex flex-col overflow-hidden">
-      {image ? (
-        <img
-          src={image}
-          alt=""
-          loading="lazy"
-          className="aspect-video w-full bg-muted object-cover"
-        />
-      ) : (
-        <div className="flex aspect-video w-full items-center justify-center bg-primary-soft text-2xl font-bold text-primary-soft-foreground">
-          {university.short_name}
+    <Tilt as="article" className="card-soft group flex min-h-full flex-col overflow-hidden">
+      <div className="relative overflow-hidden border-b border-border bg-muted">
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            loading="lazy"
+            className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex aspect-[16/10] w-full items-center justify-center bg-primary-soft text-3xl font-bold text-primary-soft-foreground">
+            {university.short_name}
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
+          <div className="min-w-0">
+            <p className="sequence-label truncate text-white/70">
+              {university.region ?? university.university_type}
+            </p>
+            <h3 className="mt-1 line-clamp-2 break-words text-lg font-semibold leading-tight">
+              {university.short_name ?? university.name}
+            </h3>
+          </div>
+          <span className="sequence-label max-w-[9rem] shrink-0 truncate rounded-md border border-white/20 bg-white/10 px-2 py-1 text-white backdrop-blur">
+            {count > 0 ? count : university.university_type}
+          </span>
         </div>
-      )}
+      </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold break-words">{university.name}</h3>
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="size-3" /> {university.city}
+          <h4 className="break-words text-base font-semibold leading-snug">{university.name}</h4>
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="size-3 shrink-0" />
+            <span className="min-w-0 truncate">{university.city}</span>
           </p>
         </div>
-        <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{university.description}</p>
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          {university.description}
+        </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {count > 0 && hasDetailedDepartments(university)
             ? university.departments.slice(0, 3).map((department) => (
@@ -483,13 +508,13 @@ export function UniversityCard({ university }: { university: University | Univer
             </>
           ) : null}
         </div>
-        <div className="mt-auto flex items-center justify-between border-t border-border pt-4">
-          <p className="text-xs text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
+          <p className="sequence-label text-muted-foreground">
             {count > 0
               ? t("university.departmentCount", { count })
               : t("university.directoryListing")}
           </p>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="shrink-0">
             <Link to="/universities/$id" params={{ id: university.id }}>
               {t("common.view")}
             </Link>
