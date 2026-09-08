@@ -7,15 +7,24 @@ import {
   User,
   Settings,
   LogOut,
+  Bell,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, type ReactNode } from "react";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { avatarUrl, getMemberProfile } from "@/lib/data";
+import {
+  avatarUrl,
+  getMemberProfile,
+  getUnreadMessageCount,
+  getUnreadNotificationCount,
+  subscribeToConversationList,
+  subscribeToNotifications,
+  unsubscribe,
+} from "@/lib/data";
 import { initials } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -44,21 +53,51 @@ export function AppShell({
   children,
   right,
   title,
+  hideMobileNav = false,
 }: {
   children: ReactNode;
   right?: ReactNode;
   title?: string;
+  hideMobileNav?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut, user } = useAuth();
+  const userId = user?.id;
   const t = useT();
+  const client = useQueryClient();
 
   const member = useQuery({
-    queryKey: ["member-profile", user?.id],
-    queryFn: () => getMemberProfile(user!.id),
-    enabled: Boolean(user),
+    queryKey: ["member-profile", userId],
+    queryFn: () => getMemberProfile(userId!),
+    enabled: Boolean(userId),
   });
   const verified = member.data?.student?.verification_status === "verified";
+  const notificationCount = useQuery({
+    queryKey: ["notification-count", userId],
+    queryFn: () => getUnreadNotificationCount(userId!),
+    enabled: Boolean(userId),
+  });
+  const messageCount = useQuery({
+    queryKey: ["message-count", userId],
+    queryFn: () => getUnreadMessageCount(userId!),
+    enabled: Boolean(userId),
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    const notifications = subscribeToNotifications(userId, () => {
+      void client.invalidateQueries({ queryKey: ["notification-count", userId] });
+      void client.invalidateQueries({ queryKey: ["notifications", userId] });
+    });
+    const messages = subscribeToConversationList(userId, () => {
+      void client.invalidateQueries({ queryKey: ["conversations", userId] });
+      void client.invalidateQueries({ queryKey: ["message-count", userId] });
+    });
+    return () => {
+      unsubscribe(notifications);
+      unsubscribe(messages);
+    };
+  }, [client, userId]);
 
   // "/profile" must not light up while viewing another member at "/profiles/:id".
   const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
@@ -82,6 +121,11 @@ export function AppShell({
               >
                 <item.icon className="size-[18px]" />
                 {t(item.label)}
+                {item.to === "/messages" && (messageCount.data ?? 0) > 0 ? (
+                  <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                    {(messageCount.data ?? 0) > 99 ? "99+" : messageCount.data}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
@@ -103,6 +147,16 @@ export function AppShell({
               </div>
               <h1 className="hidden text-base font-semibold lg:block">{title ?? t("nav.home")}</h1>
               <div className="ml-auto" />
+              <Button asChild variant="ghost" size="icon" className="relative rounded-full">
+                <Link to="/notifications" aria-label={t("notifications.open")}>
+                  <Bell className="size-[18px]" />
+                  {(notificationCount.data ?? 0) > 0 ? (
+                    <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                      {(notificationCount.data ?? 0) > 9 ? "9+" : notificationCount.data}
+                    </span>
+                  ) : null}
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -128,7 +182,9 @@ export function AppShell({
             </div>
           </header>
 
-          <div className="mx-auto max-w-6xl px-4 pb-28 pt-6 lg:pb-12">
+          <div
+            className={cn("mx-auto max-w-6xl px-4 pt-6 lg:pb-12", hideMobileNav ? "pb-4" : "pb-28")}
+          >
             <div className={cn("gap-6", right && "xl:grid xl:grid-cols-[minmax(0,1fr)_320px]")}>
               <main className="min-w-0">{children}</main>
               {right ? <aside className="mt-6 space-y-4 xl:mt-0">{right}</aside> : null}
@@ -136,7 +192,12 @@ export function AppShell({
           </div>
         </div>
 
-        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+        <nav
+          className={cn(
+            "pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden",
+            hideMobileNav && "hidden",
+          )}
+        >
           <div className="flex items-center justify-around px-1 pt-1">
             {nav.slice(0, 5).map((item) => (
               <Link
@@ -147,7 +208,14 @@ export function AppShell({
                   isActive(item.to) ? "text-primary" : "text-muted-foreground",
                 )}
               >
-                <item.icon className="size-5" />
+                <span className="relative">
+                  <item.icon className="size-5" />
+                  {item.to === "/messages" && (messageCount.data ?? 0) > 0 ? (
+                    <span className="absolute -right-2.5 -top-2 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                      {(messageCount.data ?? 0) > 9 ? "9+" : messageCount.data}
+                    </span>
+                  ) : null}
+                </span>
                 <span className="max-w-full truncate px-0.5">{t(item.label)}</span>
               </Link>
             ))}

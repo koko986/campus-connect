@@ -375,13 +375,18 @@ function PostPreview({ post }: { post: FeedPost }) {
 function QuestionPreview({ question }: { question: CommunityQuestion }) {
   const t = useT();
   return (
-    <div className="card-soft w-64 shrink-0 p-4 md:w-auto">
+    <Link
+      to="/questions/$id"
+      params={{ id: question.id }}
+      className="card-soft group w-64 shrink-0 p-4 transition-shadow hover:shadow-[var(--shadow-lift)] md:w-auto"
+    >
       <h4 className="line-clamp-2 text-sm font-semibold">{question.title}</h4>
       <p className="mt-2 line-clamp-3 text-xs text-muted-foreground">{question.body}</p>
-      <p className="mt-3 text-xs font-semibold text-primary">
+      <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-primary">
         {t("questions.answers", { count: question.answers[0]?.count ?? 0 })}
-      </p>
-    </div>
+        <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </Link>
   );
 }
 
@@ -745,7 +750,9 @@ function QuestionComposer() {
       setTags("");
       setUniversityId("");
       await client.invalidateQueries({ queryKey: ["questions"] });
+      toast.success(t("questions.posted"));
     },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   return (
@@ -775,18 +782,19 @@ function QuestionComposer() {
             onChange={(event) => setBody(event.target.value)}
             placeholder={t("questions.bodyPlaceholder")}
           />
-          <Select value={universityId} onValueChange={setUniversityId}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("questions.universityOptional")} />
-            </SelectTrigger>
-            <SelectContent>
-              {universities.data?.map((university) => (
-                <SelectItem key={university.id} value={university.id}>
-                  {university.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <select
+            value={universityId}
+            onChange={(event) => setUniversityId(event.target.value)}
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+            aria-label={t("questions.universityOptional")}
+          >
+            <option value="">{t("questions.universityOptional")}</option>
+            {universities.data?.map((university) => (
+              <option key={university.id} value={university.id}>
+                {university.name}
+              </option>
+            ))}
+          </select>
           <Input
             value={tags}
             onChange={(event) => setTags(event.target.value)}
@@ -841,10 +849,21 @@ export function QuestionsPage({ universityId }: { universityId?: string | undefi
         {query.isLoading ? <Loading label={t("questions.loading")} /> : null}
         {query.error ? <Failure error={query.error} onRetry={() => void query.refetch()} /> : null}
         {query.data?.map((question) => (
-          <article key={question.id} className="card-soft p-4 sm:p-5">
+          <article
+            key={question.id}
+            className="card-soft p-4 transition-shadow hover:shadow-[var(--shadow-lift)] sm:p-5"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="font-semibold break-words">{question.title}</h3>
+                <h3 className="break-words font-semibold">
+                  <Link
+                    to="/questions/$id"
+                    params={{ id: question.id }}
+                    className="hover:text-primary"
+                  >
+                    {question.title}
+                  </Link>
+                </h3>
                 <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
                   {question.body}
                 </p>
@@ -869,6 +888,14 @@ export function QuestionsPage({ universityId }: { universityId?: string | undefi
             </div>
             <div className="mt-4">
               <AuthorLine profile={question.author} time={question.created_at} />
+            </div>
+            <div className="mt-4 border-t border-border pt-3">
+              <Button asChild variant="ghost" size="sm" className="-ml-3 text-primary">
+                <Link to="/questions/$id" params={{ id: question.id }}>
+                  {question.answers[0]?.count ? t("questions.viewAnswers") : t("questions.answer")}
+                  <ChevronRight className="size-4" />
+                </Link>
+              </Button>
             </div>
           </article>
         ))}

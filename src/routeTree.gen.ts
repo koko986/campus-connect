@@ -14,11 +14,13 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GetStartedRouteImport } from './routes/get-started'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PostsIdRouteImport } from './routes/posts.$id'
 import { Route as ProfilesIdRouteImport } from './routes/profiles.$id'
+import { Route as QuestionsIdRouteImport } from './routes/questions_.$id'
 import { Route as RegisterRoleRouteImport } from './routes/register.$role'
 import { Route as UniversitiesIndexRouteImport } from './routes/universities/index'
 import { Route as UniversitiesIdRouteImport } from './routes/universities/$id'
@@ -48,6 +50,11 @@ const MessagesRoute = MessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -73,6 +80,11 @@ const ProfilesIdRoute = ProfilesIdRouteImport.update({
   path: '/profiles/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuestionsIdRoute = QuestionsIdRouteImport.update({
+  id: '/questions_/$id',
+  path: '/questions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoleRoute = RegisterRoleRouteImport.update({
   id: '/register/$role',
   path: '/register/$role',
@@ -95,11 +107,13 @@ export interface FileRoutesByFullPath {
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
   '/posts/$id': typeof PostsIdRoute
   '/profiles/$id': typeof ProfilesIdRoute
+  '/questions/$id': typeof QuestionsIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities/': typeof UniversitiesIndexRoute
@@ -110,11 +124,13 @@ export interface FileRoutesByTo {
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
   '/posts/$id': typeof PostsIdRoute
   '/profiles/$id': typeof ProfilesIdRoute
+  '/questions/$id': typeof QuestionsIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities': typeof UniversitiesIndexRoute
@@ -126,11 +142,13 @@ export interface FileRoutesById {
   '/get-started': typeof GetStartedRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
+  '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/questions': typeof QuestionsRoute
   '/settings': typeof SettingsRoute
   '/posts/$id': typeof PostsIdRoute
   '/profiles/$id': typeof ProfilesIdRoute
+  '/questions_/$id': typeof QuestionsIdRoute
   '/register/$role': typeof RegisterRoleRoute
   '/universities/$id': typeof UniversitiesIdRoute
   '/universities/': typeof UniversitiesIndexRoute
@@ -143,11 +161,13 @@ export interface FileRouteTypes {
     | '/get-started'
     | '/login'
     | '/messages'
+    | '/notifications'
     | '/profile'
     | '/questions'
     | '/settings'
     | '/posts/$id'
     | '/profiles/$id'
+    | '/questions/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities/'
@@ -158,11 +178,13 @@ export interface FileRouteTypes {
     | '/get-started'
     | '/login'
     | '/messages'
+    | '/notifications'
     | '/profile'
     | '/questions'
     | '/settings'
     | '/posts/$id'
     | '/profiles/$id'
+    | '/questions/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities'
@@ -173,11 +195,13 @@ export interface FileRouteTypes {
     | '/get-started'
     | '/login'
     | '/messages'
+    | '/notifications'
     | '/profile'
     | '/questions'
     | '/settings'
     | '/posts/$id'
     | '/profiles/$id'
+    | '/questions_/$id'
     | '/register/$role'
     | '/universities/$id'
     | '/universities/'
@@ -189,11 +213,13 @@ export interface RootRouteChildren {
   GetStartedRoute: typeof GetStartedRoute
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
+  NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   QuestionsRoute: typeof QuestionsRoute
   SettingsRoute: typeof SettingsRoute
   PostsIdRoute: typeof PostsIdRoute
   ProfilesIdRoute: typeof ProfilesIdRoute
+  QuestionsIdRoute: typeof QuestionsIdRoute
   RegisterRoleRoute: typeof RegisterRoleRoute
   UniversitiesIdRoute: typeof UniversitiesIdRoute
   UniversitiesIndexRoute: typeof UniversitiesIndexRoute
@@ -236,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -271,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/questions_/$id': {
+      id: '/questions_/$id'
+      path: '/questions/$id'
+      fullPath: '/questions/$id'
+      preLoaderRoute: typeof QuestionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register/$role': {
       id: '/register/$role'
       path: '/register/$role'
@@ -301,11 +341,13 @@ const rootRouteChildren: RootRouteChildren = {
   GetStartedRoute: GetStartedRoute,
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
+  NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   QuestionsRoute: QuestionsRoute,
   SettingsRoute: SettingsRoute,
   PostsIdRoute: PostsIdRoute,
   ProfilesIdRoute: ProfilesIdRoute,
+  QuestionsIdRoute: QuestionsIdRoute,
   RegisterRoleRoute: RegisterRoleRoute,
   UniversitiesIdRoute: UniversitiesIdRoute,
   UniversitiesIndexRoute: UniversitiesIndexRoute,

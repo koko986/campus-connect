@@ -5,7 +5,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { ArrowLeft, LogOut, Plus, Send, Users } from "lucide-react";
+import { ArrowLeft, LogOut, Plus, Search, Send, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ import { ProfileLink, UserAvatar } from "@/components/community";
 import { Empty, Failure, Loading } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,6 @@ import {
   sendMessage,
   startDirectConversation,
   subscribeToConversation,
-  subscribeToConversationList,
   unsubscribe,
 } from "@/lib/data";
 import { useT, type Translate } from "@/lib/i18n";
@@ -181,6 +181,7 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
   const { user } = useAuth();
   const client = useQueryClient();
   const t = useT();
+  const [search, setSearch] = useState("");
 
   const groups = useQuery({
     queryKey: ["university-groups", user!.id],
@@ -227,13 +228,31 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
       return a.university.name.localeCompare(b.university.name);
     });
   }, [groups.data, homeUniversityId]);
+  const visible = useMemo(() => {
+    const needle = search.trim().toLocaleLowerCase();
+    if (!needle) return ordered;
+    return ordered.filter((group) =>
+      `${group.university.name} ${group.university.short_name ?? ""}`
+        .toLocaleLowerCase()
+        .includes(needle),
+    );
+  }, [ordered, search]);
 
   if (groups.isLoading) return <Loading label={t("messages.loadingGroups")} />;
   if (groups.error) return <Failure error={groups.error} onRetry={() => void groups.refetch()} />;
 
   return (
     <div className="space-y-2">
-      {ordered.map((group) => (
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t("messages.searchGroups")}
+          className="h-11 pl-9"
+        />
+      </div>
+      {visible.map((group) => (
         <div
           key={group.university.id}
           className="flex items-center gap-3 rounded-xl border border-border p-3"
@@ -275,13 +294,18 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
               disabled={join.isPending}
               onClick={() => join.mutate(group.university.id)}
             >
-              {t("messages.join")}
+              {join.isPending && join.variables === group.university.id
+                ? t("messages.joining")
+                : t("messages.join")}
             </Button>
           )}
         </div>
       ))}
-      {!ordered.length ? (
-        <Empty title={t("messages.noGroups.title")} text={t("messages.noGroups.text")} />
+      {!visible.length ? (
+        <Empty
+          title={search ? t("messages.noGroupMatches.title") : t("messages.noGroups.title")}
+          text={search ? t("messages.noGroupMatches.text") : t("messages.noGroups.text")}
+        />
       ) : null}
     </div>
   );
@@ -405,7 +429,7 @@ function MessageThread({
   }
 
   return (
-    <section className="flex min-h-[calc(100dvh-12rem)] flex-col md:min-h-[560px]">
+    <section className="flex h-[calc(100dvh-5rem)] flex-col md:h-[min(720px,calc(100dvh-8rem))] md:min-h-[560px]">
       <header className="flex items-center gap-2 border-b p-3">
         <Button
           variant="ghost"
@@ -478,7 +502,7 @@ function MessageThread({
         <div ref={bottom} />
       </div>
 
-      <div className="flex gap-2 border-t p-3 pb-safe">
+      <div className="flex gap-2 border-t bg-card p-3 pb-safe">
         <Textarea
           value={draft}
           maxLength={4000}
@@ -506,24 +530,21 @@ function MessageThread({
   );
 }
 
-export function MessagesPage() {
+export function MessagesPage({
+  initialConversationId,
+}: {
+  initialConversationId: string | undefined;
+}) {
   const { user } = useAuth();
   const client = useQueryClient();
   const t = useT();
   const [tab, setTab] = useState<"direct" | "groups">("direct");
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedId, setSelectedId] = useState(initialConversationId ?? "");
 
   const conversations = useQuery({
     queryKey: ["conversations", user!.id],
     queryFn: () => listConversations(user!.id),
   });
-
-  useEffect(() => {
-    const channel = subscribeToConversationList(user!.id, () => {
-      void client.invalidateQueries({ queryKey: ["conversations", user!.id] });
-    });
-    return () => unsubscribe(channel);
-  }, [client, user]);
 
   const direct = (conversations.data ?? []).filter((item) => item.conversationType === "DIRECT");
   const groups = (conversations.data ?? []).filter(
@@ -554,8 +575,8 @@ export function MessagesPage() {
   }
 
   return (
-    <AppShell title={t("messages.title")}>
-      <div className="card-soft grid overflow-hidden md:grid-cols-[300px_1fr]">
+    <AppShell title={t("messages.title")} hideMobileNav={Boolean(selected)}>
+      <div className="card-soft -mx-4 -mt-6 grid overflow-hidden rounded-none border-x-0 md:mx-0 md:mt-0 md:grid-cols-[300px_1fr] md:rounded-[var(--radius-2xl)] md:border-x">
         <aside
           className={cn("border-b p-3 md:border-b-0 md:border-r", selected && "hidden md:block")}
         >

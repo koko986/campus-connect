@@ -124,6 +124,7 @@ export type Database = {
           is_accepted: boolean;
           question_id: string;
           updated_at: string;
+          vote_count: number;
         };
         Insert: {
           author_id?: string | null;
@@ -133,6 +134,7 @@ export type Database = {
           is_accepted?: boolean;
           question_id: string;
           updated_at?: string;
+          vote_count?: number;
         };
         Update: {
           author_id?: string | null;
@@ -142,6 +144,7 @@ export type Database = {
           is_accepted?: boolean;
           question_id?: string;
           updated_at?: string;
+          vote_count?: number;
         };
         Relationships: [
           {
@@ -1232,6 +1235,10 @@ export type Database = {
           score: number;
           university_id: string;
         }[];
+      };
+      set_accepted_answer: {
+        Args: { target_answer_id: string };
+        Returns: boolean;
       };
       soft_delete_comment: {
         Args: { target_comment_id: string };

@@ -132,6 +132,11 @@ export type CommunityQuestion = Tables<"questions"> & {
   university: UniversityTag | null;
 };
 
+export type QuestionAnswer = Tables<"answers"> & {
+  author: CommunityProfile | null;
+  voted: boolean;
+};
+
 export type MemberProfile = {
   profile: Pick<
     Tables<"profiles">,
@@ -168,6 +173,10 @@ export type DiscoverableGroup = {
 };
 
 export type ConversationMessage = Tables<"messages"> & { sender: CommunityProfile | null };
+
+export type MemberNotification = Tables<"notifications"> & {
+  actor: CommunityProfile | null;
+};
 
 export type StudentContact = {
   department: string | null;
@@ -653,6 +662,68 @@ export async function listQuestions(
   return (unwrap(await query) ?? []) as unknown as CommunityQuestion[];
 }
 
+export async function getQuestion(questionId: string): Promise<CommunityQuestion | null> {
+  return unwrap(
+    await supabase
+      .from("questions")
+      .select(
+        `*, author:profiles!questions_author_id_fkey(${PROFILE_SUMMARY}), university:universities(id,name,short_name), question_tags(tag), answers(count)`,
+      )
+      .eq("id", questionId)
+      .maybeSingle(),
+  ) as unknown as CommunityQuestion | null;
+}
+
+export async function listAnswers(questionId: string, userId: string): Promise<QuestionAnswer[]> {
+  const [answerResult, voteResult] = await Promise.all([
+    supabase
+      .from("answers")
+      .select(`*, author:profiles!answers_author_id_fkey(${PROFILE_SUMMARY})`)
+      .eq("question_id", questionId),
+    supabase.from("answer_votes").select("answer_id").eq("user_id", userId),
+  ]);
+  assertOk(answerResult);
+  assertOk(voteResult);
+  const voted = new Set((voteResult.data ?? []).map((row) => row.answer_id));
+  return ((answerResult.data ?? []) as unknown as Omit<QuestionAnswer, "voted">[])
+    .map((answer) => ({ ...answer, voted: voted.has(answer.id) }))
+    .sort(
+      (a, b) =>
+        Number(b.is_accepted) - Number(a.is_accepted) ||
+        b.vote_count - a.vote_count ||
+        a.created_at.localeCompare(b.created_at),
+    );
+}
+
+export async function createAnswer(questionId: string, authorId: string, body: string) {
+  return unwrap(
+    await supabase
+      .from("answers")
+      .insert({ author_id: authorId, body: body.trim(), question_id: questionId })
+      .select(`*, author:profiles!answers_author_id_fkey(${PROFILE_SUMMARY})`)
+      .single(),
+  ) as unknown as Omit<QuestionAnswer, "voted">;
+}
+
+export async function setAnswerVoted(answerId: string, userId: string, voted: boolean) {
+  assertOk(
+    voted
+      ? await supabase.from("answer_votes").insert({ answer_id: answerId, user_id: userId })
+      : await supabase
+          .from("answer_votes")
+          .delete()
+          .eq("answer_id", answerId)
+          .eq("user_id", userId),
+  );
+}
+
+export async function setAcceptedAnswer(answerId: string) {
+  const accepted = unwrap(
+    await supabase.rpc("set_accepted_answer", { target_answer_id: answerId }),
+  );
+  if (!accepted) throw new Error("Only the question author can accept this answer.");
+}
+
 export async function createQuestion(input: {
   authorId: string;
   body: string;
@@ -858,6 +929,13 @@ export async function listConversations(userId: string): Promise<ConversationSum
     .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
 }
 
+export async function getUnreadMessageCount(userId: string) {
+  const memberships = await listMemberships(userId);
+  if (!memberships.length) return 0;
+  const unread = await countUnread(memberships, userId);
+  return [...unread.values()].reduce((sum, count) => sum + count, 0);
+}
+
 /**
  * Older pages are requested with a "created before" cursor so new arrivals at
  * the bottom never shift the window.
@@ -950,6 +1028,58 @@ export async function leaveConversation(conversationId: string, userId: string) 
       .eq("conversation_id", conversationId)
       .eq("user_id", userId),
   );
+}
+
+export async function listNotifications(userId: string): Promise<MemberNotification[]> {
+  return (unwrap(
+    await supabase
+      .from("notifications")
+      .select(`*, actor:profiles!notifications_actor_id_fkey(${PROFILE_BASIC})`)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(100),
+  ) ?? []) as unknown as MemberNotification[];
+}
+
+export async function getUnreadNotificationCount(userId: string) {
+  const result = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  assertOk(result);
+  return result.count ?? 0;
+}
+
+export async function markNotificationRead(notificationId: string, userId: string) {
+  assertOk(
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", userId),
+  );
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  assertOk(
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .is("read_at", null),
+  );
+}
+
+export function subscribeToNotifications(userId: string, onChange: () => void): RealtimeChannel {
+  return supabase
+    .channel(`notifications:${userId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+      onChange,
+    )
+    .subscribe();
 }
 
 export async function listStudentContacts(currentUserId: string): Promise<StudentContact[]> {
