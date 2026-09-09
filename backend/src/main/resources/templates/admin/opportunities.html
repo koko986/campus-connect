@@ -1,0 +1,35 @@
+<!doctype html>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.opportunities')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+      <div class="console-panel-head">
+        <p class="console-scope-note" th:text="#{page.opportunities.note}">Review student-submitted opportunities before publication.</p>
+      </div>
+      <section class="console-metrics">
+        <a class="console-metric" th:classappend="${counts.getOrDefault('pending', 0L) > 0} ? 'console-metric--alert' : ''" th:href="@{/admin/opportunities(status='pending')}"><span class="console-metric-value" th:text="${counts.getOrDefault('pending', 0L)}">0</span><span class="console-metric-label" th:text="#{page.opportunities.metric.pending}">Awaiting review</span></a>
+        <a class="console-metric" th:href="@{/admin/opportunities(status='published')}"><span class="console-metric-value" th:text="${counts.getOrDefault('published', 0L)}">0</span><span class="console-metric-label" th:text="#{page.opportunities.metric.published}">Published</span></a>
+        <a class="console-metric" th:href="@{/admin/opportunities(status='rejected')}"><span class="console-metric-value" th:text="${counts.getOrDefault('rejected', 0L)}">0</span><span class="console-metric-label" th:text="#{page.opportunities.metric.rejected}">Rejected</span></a>
+      </section>
+      <form th:action="@{/admin/opportunities}" method="get" class="console-filters">
+        <label><span th:text="#{field.status}">Status</span><select name="status"><option th:each="status : ${statuses}" th:value="${status}" th:selected="${status == statusFilter}" th:text="${#messages.msg('enum.opportunityStatus.' + ${status})}"></option></select></label>
+        <button type="submit" class="console-button console-button--ghost" th:text="#{action.apply}">Apply</button>
+      </form>
+      <p th:if="${opportunities.isEmpty()}" class="console-empty" th:text="#{page.opportunities.empty}">No opportunities match this filter.</p>
+      <table th:unless="${opportunities.isEmpty()}" class="console-table console-table--roomy">
+        <thead><tr><th th:text="#{column.opportunity}">Opportunity</th><th th:text="#{column.submittedBy}">Submitted by</th><th th:text="#{column.deadline}">Deadline</th><th th:text="#{column.status}">Status</th><th th:text="#{column.decision}">Decision</th></tr></thead>
+        <tbody><tr th:each="item : ${opportunities.items()}">
+          <td><span class="console-strong" th:text="${item.title()}">Title</span><span class="console-muted" th:text="${item.organization() + ' · ' + #messages.msg('enum.opportunityType.' + item.type())}">Organization</span><p class="console-detail" th:text="${item.description()}">Description</p><a th:if="${item.hasLink()}" th:href="${item.externalUrl()}" target="_blank" rel="noreferrer" th:text="#{action.openSource}">Open source</a></td>
+          <td><span th:text="${item.submitterName()}">Student</span><span class="console-muted" th:if="${!#strings.isEmpty(item.universityName())}" th:text="${item.universityName()}">University</span><span class="console-muted" th:with="elapsed=${#messages.msg(item.age().messageKey(), item.age().amount())}" th:text="${item.submitted() + ' · ' + elapsed}">Submitted</span></td>
+          <td><span th:text="${item.deadline()}">Deadline</span></td>
+          <td><span class="console-pill" th:classappend="'console-pill--' + ${item.statusTone()}" th:text="${#messages.msg('enum.opportunityStatus.' + item.status())}">Pending</span><p class="console-detail" th:if="${item.hasReviewNote()}" th:text="${item.reviewNote()}"></p></td>
+          <td><span th:unless="${item.isPending()}" class="console-muted" th:text="#{page.reports.closed}">Closed</span><form th:if="${item.isPending()}" th:action="@{'/admin/opportunities/' + ${item.id()} + '/decision'}" method="post" class="console-action-form"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /><label><span th:text="#{field.notes}">Notes</span><textarea name="note" rows="3" maxlength="1000"></textarea></label><div class="console-inline-actions"><button type="submit" name="decision" value="published" class="console-button console-button--primary" th:text="#{action.approve}">Approve</button><button type="submit" name="decision" value="rejected" class="console-button console-button--danger" th:text="#{action.reject}">Reject</button></div></form></td>
+        </tr></tbody>
+      </table>
+      <div th:unless="${opportunities.isEmpty()}"><nav th:replace="~{admin/fragments :: pagination(${opportunities}, '/admin/opportunities')}"></nav></div>
+    </main>
+  </body>
+</html>

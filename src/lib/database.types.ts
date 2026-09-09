@@ -1253,7 +1253,17 @@ export type Database = {
     Enums: {
       account_type: "current_student" | "prospective_student";
       conversation_type: "DIRECT" | "UNIVERSITY_GROUP";
-      notification_type: "comment" | "answer" | "message" | "like" | "helpful_vote" | "system";
+      notification_type:
+        | "comment"
+        | "answer"
+        | "message"
+        | "like"
+        | "helpful_vote"
+        | "system"
+        | "opportunity_deadline"
+        | "opportunity_status"
+        | "buddy_request"
+        | "buddy_accepted";
       post_scope: "COMMUNITY" | "PROFILE_ONLY";
       post_visibility: "public" | "university";
       university_type: "public" | "private";
@@ -1380,7 +1390,18 @@ export const Constants = {
     Enums: {
       account_type: ["current_student", "prospective_student"],
       conversation_type: ["DIRECT", "UNIVERSITY_GROUP"],
-      notification_type: ["comment", "answer", "message", "like", "helpful_vote", "system"],
+      notification_type: [
+        "comment",
+        "answer",
+        "message",
+        "like",
+        "helpful_vote",
+        "system",
+        "opportunity_deadline",
+        "opportunity_status",
+        "buddy_request",
+        "buddy_accepted",
+      ],
       post_scope: ["COMMUNITY", "PROFILE_ONLY"],
       post_visibility: ["public", "university"],
       university_type: ["public", "private"],

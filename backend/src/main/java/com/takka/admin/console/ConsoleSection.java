@@ -15,6 +15,7 @@ public enum ConsoleSection {
   ACCOUNTS("/admin/members"),
   POSTS("/admin/posts"),
   UNIVERSITIES("/admin/universities"),
+  OPPORTUNITIES("/admin/opportunities"),
   CATALOG("/admin/catalog"),
   AUDIT("/admin/audit");
 

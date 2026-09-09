@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   Bell,
+  Compass,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
@@ -32,11 +33,16 @@ import { cn } from "@/lib/utils";
 const nav = [
   { to: "/dashboard", label: "nav.home", icon: Home },
   { to: "/universities", label: "nav.universities", icon: GraduationCap },
+  { to: "/hub", label: "nav.hub", icon: Compass },
   { to: "/questions", label: "nav.questions", icon: HelpCircle },
   { to: "/messages", label: "nav.messages", icon: MessagesSquare },
   { to: "/profile", label: "nav.profile", icon: User },
   { to: "/settings", label: "nav.settings", icon: Settings },
 ] as const;
+
+const mobileNav = nav.filter((item) =>
+  ["/dashboard", "/universities", "/hub", "/messages", "/profile"].includes(item.to),
+);
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -199,7 +205,7 @@ export function AppShell({
           )}
         >
           <div className="flex items-center justify-around px-1 pt-1">
-            {nav.slice(0, 5).map((item) => (
+            {mobileNav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

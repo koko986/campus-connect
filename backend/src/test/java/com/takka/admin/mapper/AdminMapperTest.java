@@ -249,6 +249,28 @@ class AdminMapperTest {
     assertTrue(view.linkedToReport());
   }
 
+  @Test
+  void mapsAnOpportunityForModeration() {
+    var view = OpportunityMapper.toView(json("""
+        {
+          "id": "%s", "title": "Women in Technology Scholarship",
+          "organization": "Example Foundation", "opportunity_type": "scholarship",
+          "description": "Support for undergraduate technology students.",
+          "deadline_at": "2026-10-01T00:00:00Z", "created_at": "2026-09-01T00:00:00Z",
+          "status": "pending", "external_url": "https://example.org/apply",
+          "university": { "name": "Yangon University" },
+          "submitter": { "full_name": "Mya Student" }
+        }
+        """.formatted(ID)));
+
+    assertEquals("Women in Technology Scholarship", view.title());
+    assertEquals("Yangon University", view.universityName());
+    assertEquals("Mya Student", view.submitterName());
+    assertTrue(view.isPending());
+    assertTrue(view.hasLink());
+    assertEquals("warning", view.statusTone());
+  }
+
   /** An action the console does not know cannot be translated, so the stored value is shown as-is. */
   @Test
   void anUnknownAuditActionKeepsItsRawLabel() {

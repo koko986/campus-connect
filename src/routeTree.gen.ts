@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GetStartedRouteImport } from './routes/get-started'
+import { Route as HubRouteImport } from './routes/hub'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -38,6 +39,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const GetStartedRoute = GetStartedRouteImport.update({
   id: '/get-started',
   path: '/get-started',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HubRoute = HubRouteImport.update({
+  id: '/hub',
+  path: '/hub',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
+  '/hub': typeof HubRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
+  '/hub': typeof HubRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/get-started': typeof GetStartedRoute
+  '/hub': typeof HubRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/get-started'
+    | '/hub'
     | '/login'
     | '/messages'
     | '/notifications'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/get-started'
+    | '/hub'
     | '/login'
     | '/messages'
     | '/notifications'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/get-started'
+    | '/hub'
     | '/login'
     | '/messages'
     | '/notifications'
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   GetStartedRoute: typeof GetStartedRoute
+  HubRoute: typeof HubRoute
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/get-started'
       fullPath: '/get-started'
       preLoaderRoute: typeof GetStartedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hub': {
+      id: '/hub'
+      path: '/hub'
+      fullPath: '/hub'
+      preLoaderRoute: typeof HubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -339,6 +359,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   GetStartedRoute: GetStartedRoute,
+  HubRoute: HubRoute,
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,

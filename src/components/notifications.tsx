@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Bell, CheckCheck, Heart, MessageCircle, MessageSquareText, ThumbsUp } from "lucide-react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  CheckCheck,
+  Heart,
+  MessageCircle,
+  MessageSquareText,
+  ThumbsUp,
+  UsersRound,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -24,6 +33,13 @@ const notificationMeta: Record<
   like: { icon: Heart, label: "notifications.type.like" },
   message: { icon: MessageCircle, label: "notifications.type.message" },
   system: { icon: Bell, label: "notifications.type.system" },
+  opportunity_deadline: {
+    icon: BriefcaseBusiness,
+    label: "notifications.type.opportunityDeadline",
+  },
+  opportunity_status: { icon: BriefcaseBusiness, label: "notifications.type.opportunityStatus" },
+  buddy_request: { icon: UsersRound, label: "notifications.type.buddyRequest" },
+  buddy_accepted: { icon: UsersRound, label: "notifications.type.buddyAccepted" },
 };
 
 export function NotificationsPage() {
@@ -67,6 +83,10 @@ export function NotificationsPage() {
         to: "/messages",
         search: { conversation: notification.entity_id },
       });
+    } else if (notification.entity_type === "opportunity") {
+      await navigate({ to: "/hub", search: { tab: "opportunities" } });
+    } else if (notification.entity_type === "buddy_request") {
+      await navigate({ to: "/hub", search: { tab: "buddies" } });
     }
   }
 
