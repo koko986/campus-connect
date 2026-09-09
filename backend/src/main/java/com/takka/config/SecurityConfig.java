@@ -73,7 +73,8 @@ public class SecurityConfig {
     var configuration = new CorsConfiguration();
     configuration.setAllowedOriginPatterns(List.of(
         origin, origin.replace("localhost", "127.0.0.1"),
-        "http://localhost:*", "http://127.0.0.1:*", "https://*.vercel.app"));
+        "http://localhost:*", "http://127.0.0.1:*", "https://*.vercel.app",
+        "https://*.up.railway.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(List.of(
         "Content-Range", "Range", "X-Supabase-Api-Version"));

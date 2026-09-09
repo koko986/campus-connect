@@ -155,6 +155,21 @@ class ConsoleSecurityTest {
   }
 
   @Test
+  void theRailwayFrontendFallbackCanPreflightAnApiRequest() throws Exception {
+    String railwayOrigin = "https://campus-connect-backend-production-4525.up.railway.app";
+
+    mvc.perform(
+            options("/api/supabase/auth/v1/token")
+                .header("Origin", railwayOrigin)
+                .header("Access-Control-Request-Method", "POST")
+                .header(
+                    "Access-Control-Request-Headers",
+                    "apikey,authorization,content-type,x-client-info"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Access-Control-Allow-Origin", railwayOrigin));
+  }
+
+  @Test
   void anApiWriteNeedsABearerTokenButNoCsrfToken() throws Exception {
     when(supabase.authenticate("token-123"))
         .thenReturn(new TakkaPrincipal(UUID.randomUUID(), "member@takka.test", "token-123"));
