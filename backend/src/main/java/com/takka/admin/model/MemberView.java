@@ -28,6 +28,18 @@ public record MemberView(
     return verificationKey != null && !verificationKey.isBlank();
   }
 
+  public boolean isVerifiedStudent() {
+    return "enum.verification.verified".equals(verificationKey);
+  }
+
+  public boolean isPendingStudent() {
+    return "enum.verification.pending".equals(verificationKey);
+  }
+
+  public boolean isRejectedStudent() {
+    return "enum.verification.rejected".equals(verificationKey);
+  }
+
   public boolean hasBlockReason() {
     return blockReason != null && !blockReason.isBlank();
   }

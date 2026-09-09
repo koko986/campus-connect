@@ -7,6 +7,7 @@ import {
   ExternalLink,
   ImagePlus,
   Plus,
+  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
@@ -74,7 +75,14 @@ import type { Enums } from "@/lib/database.types";
 import { useTheme, type Appearance } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
 import { accountTypeKey, formatDate, imageProblemMessage } from "@/lib/format";
-import { languages, useLanguage, useT, type Language, type Translate } from "@/lib/i18n";
+import {
+  languages,
+  useLanguage,
+  useT,
+  type Language,
+  type Translate,
+  type TranslationKey,
+} from "@/lib/i18n";
 
 function SortControl({ value, onChange }: { value: FeedSort; onChange: (next: FeedSort) => void }) {
   const t = useT();
@@ -1314,6 +1322,31 @@ export function ProfilePage() {
               >
                 {student.university.name}
               </Link>
+            ) : null}
+
+            {isCurrentStudent ? (
+              <div className="mt-5 flex items-start gap-3 border-y py-4">
+                <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold">{t("profile.verification.title")}</p>
+                    <Badge
+                      variant={
+                        student?.verification_status === "verified" ? "default" : "secondary"
+                      }
+                    >
+                      {t(
+                        `profile.verification.${student?.verification_status ?? "pending"}.label` as TranslationKey,
+                      )}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {t(
+                      `profile.verification.${student?.verification_status ?? "pending"}.text` as TranslationKey,
+                    )}
+                  </p>
+                </div>
+              </div>
             ) : null}
 
             {profile.bio ? (

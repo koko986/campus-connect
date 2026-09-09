@@ -48,6 +48,13 @@ class AccountModerationServiceTest {
         "{\"id\":\"" + memberId + "\",\"email\":\"ada@takka.test\",\"full_name\":\"Ada Lovelace\"}");
   }
 
+  private JsonNode student() {
+    return json(
+        "{\"id\":\"" + memberId
+            + "\",\"email\":\"ada@takka.test\",\"full_name\":\"Ada Lovelace\","
+            + "\"account_type\":\"current_student\"}");
+  }
+
   private ModerationReasonForm reason(String text) {
     var form = new ModerationReasonForm();
     form.setReason(text);
@@ -83,6 +90,42 @@ class AccountModerationServiceTest {
     assertEquals("Ada Lovelace", name);
     verify(moderation).unblock(memberId, "Appeal accepted");
     verify(auditTrail).record(any(), eq(ModerationAction.UNBLOCK_USER), eq(memberId), any(), any(), any());
+  }
+
+  @Test
+  void verifyingAStudentUpdatesTheirStatusAndWritesAnAuditEntry() {
+    when(profiles.requireById(memberId)).thenReturn(student());
+
+    var name = service.verifyStudent(superAdmin(), memberId, reason("University record checked"));
+
+    assertEquals("Ada Lovelace", name);
+    verify(profiles).updateStudentVerification(memberId, "verified");
+    verify(auditTrail).record(any(), eq(ModerationAction.VERIFY_STUDENT), eq(memberId),
+        eq("University record checked"), any(), any());
+  }
+
+  @Test
+  void rejectingAStudentClearsVerificationAndWritesAnAuditEntry() {
+    when(profiles.requireById(memberId)).thenReturn(student());
+
+    service.rejectStudentVerification(
+        moderator(), memberId, reason("University details do not match"));
+
+    verify(profiles).updateStudentVerification(memberId, "rejected");
+    verify(auditTrail).record(any(), eq(ModerationAction.REJECT_STUDENT_VERIFICATION),
+        eq(memberId), eq("University details do not match"), any(), any());
+  }
+
+  @Test
+  void aProspectiveAccountCannotBeStudentVerified() {
+    when(profiles.requireById(memberId)).thenReturn(json(
+        "{\"id\":\"" + memberId + "\",\"account_type\":\"prospective_student\"}"));
+
+    var error = assertThrows(IllegalArgumentException.class,
+        () -> service.verifyStudent(superAdmin(), memberId, reason("Manual review")));
+
+    assertEquals("error.member.notStudent", error.getMessage());
+    verify(profiles, never()).updateStudentVerification(any(), any());
   }
 
   @Test

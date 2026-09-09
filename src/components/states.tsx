@@ -25,7 +25,7 @@ function readableMessage(t: Translate, error: Error) {
   if (/row-level security|permission denied|not authorized/i.test(message)) {
     return t("states.error.noAccess");
   }
-  if (/fetch|network|failed to fetch/i.test(message)) {
+  if (/fetch|network|failed to fetch|timeout|timed out/i.test(message)) {
     return t("states.error.offline");
   }
   return message;

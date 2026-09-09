@@ -8,6 +8,7 @@ const takkaApiUrl = import.meta.env["VITE_TAKKA_API_URL"]?.replace(/\/$/, "");
 const supabaseProxyUrl = (
   import.meta.env["VITE_SUPABASE_PROXY_URL"] ?? (takkaApiUrl ? `${takkaApiUrl}/api/supabase` : "")
 ).replace(/\/$/, "");
+const REQUEST_TIMEOUT_MS = 15_000;
 
 if (!supabaseUrl || !supabasePublishableKey) {
   throw new Error(
@@ -15,12 +16,30 @@ if (!supabaseUrl || !supabasePublishableKey) {
   );
 }
 
+async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit) {
+  const controller = new AbortController();
+  const sourceSignal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+  const relayAbort = () => controller.abort(sourceSignal?.reason);
+  sourceSignal?.addEventListener("abort", relayAbort, { once: true });
+  const timeout = window.setTimeout(
+    () => controller.abort(new DOMException("Request timed out", "TimeoutError")),
+    REQUEST_TIMEOUT_MS,
+  );
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+    sourceSignal?.removeEventListener("abort", relayAbort);
+  }
+}
+
 function proxySupabaseFetch(input: RequestInfo | URL, init?: RequestInit) {
-  if (typeof window === "undefined" || !supabaseProxyUrl) return fetch(input, init);
+  if (typeof window === "undefined") return fetch(input, init);
+  if (!supabaseProxyUrl) return fetchWithTimeout(input, init);
   const original = new URL(input instanceof Request ? input.url : input.toString());
-  if (original.origin !== new URL(supabaseUrl).origin) return fetch(input, init);
+  if (original.origin !== new URL(supabaseUrl).origin) return fetchWithTimeout(input, init);
   const proxyUrl = `${supabaseProxyUrl}${original.pathname}${original.search}`;
-  return fetch(input instanceof Request ? new Request(proxyUrl, input) : proxyUrl, init);
+  return fetchWithTimeout(input instanceof Request ? new Request(proxyUrl, input) : proxyUrl, init);
 }
 
 export function isSupabaseConnectionError(error: unknown) {

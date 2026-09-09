@@ -30,7 +30,10 @@ public class SupabaseGateway {
       @Value("${takka.supabase.url}") String url,
       @Value("${takka.supabase.publishable-key}") String publishableKey,
       @Value("${takka.supabase.secret-key}") String secretKey) {
-    this.client = RestClient.builder().requestFactory(new SimpleClientHttpRequestFactory()).build();
+    var requestFactory = new SimpleClientHttpRequestFactory();
+    requestFactory.setConnectTimeout(10_000);
+    requestFactory.setReadTimeout(20_000);
+    this.client = RestClient.builder().requestFactory(requestFactory).build();
     this.mapper = mapper;
     this.url = url.replaceAll("/$", "");
     this.publishableKey = publishableKey;

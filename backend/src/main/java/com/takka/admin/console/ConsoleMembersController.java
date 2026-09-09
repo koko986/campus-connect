@@ -101,6 +101,36 @@ public class ConsoleMembersController {
     return redirect(search, status);
   }
 
+  @PostMapping("/{id}/verify")
+  String verifyStudent(
+      @AuthenticationPrincipal AdminIdentity administrator,
+      @PathVariable UUID id,
+      @Valid @ModelAttribute ModerationReasonForm form,
+      BindingResult binding,
+      @RequestParam(defaultValue = "") String search,
+      @RequestParam(defaultValue = "") String status,
+      RedirectAttributes attributes) {
+    if (binding.hasErrors()) return rejected(binding, attributes, search, status);
+    String member = accounts.verifyStudent(administrator, id, form);
+    Flash.success(attributes, messages.get("flash.member.verified", member));
+    return redirect(search, status);
+  }
+
+  @PostMapping("/{id}/reject-verification")
+  String rejectStudentVerification(
+      @AuthenticationPrincipal AdminIdentity administrator,
+      @PathVariable UUID id,
+      @Valid @ModelAttribute ModerationReasonForm form,
+      BindingResult binding,
+      @RequestParam(defaultValue = "") String search,
+      @RequestParam(defaultValue = "") String status,
+      RedirectAttributes attributes) {
+    if (binding.hasErrors()) return rejected(binding, attributes, search, status);
+    String member = accounts.rejectStudentVerification(administrator, id, form);
+    Flash.success(attributes, messages.get("flash.member.verificationRejected", member));
+    return redirect(search, status);
+  }
+
   private String rejected(
       BindingResult binding, RedirectAttributes attributes, String search, String status) {
     Flash.error(attributes, messages.invalidSubmission(binding));

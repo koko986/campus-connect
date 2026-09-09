@@ -90,6 +90,55 @@
                 >Administrator</span
               >
 
+              <details
+                th:if="${member.isModeratable() and member.hasVerification() and !member.isVerifiedStudent()}"
+                class="console-action"
+              >
+                <summary class="console-button console-button--primary" th:text="#{action.verifyStudent}">
+                  Verify student
+                </summary>
+                <form
+                  th:action="@{'/admin/members/' + ${member.id()} + '/verify'}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="search" th:value="${filter.search()}" />
+                  <input type="hidden" name="status" th:value="${filter.statusValue()}" />
+                  <label>
+                    <span th:text="#{field.reason}">Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
+                      th:placeholder="#{page.accounts.verificationNote}"></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--primary"
+                    th:text="#{action.confirmVerification}">Confirm verification</button>
+                </form>
+              </details>
+
+              <details
+                th:if="${member.isModeratable() and member.hasVerification() and !member.isRejectedStudent()}"
+                class="console-action"
+              >
+                <summary class="console-button console-button--ghost" th:text="#{action.rejectVerification}">
+                  Reject verification
+                </summary>
+                <form
+                  th:action="@{'/admin/members/' + ${member.id()} + '/reject-verification'}"
+                  method="post"
+                  class="console-action-form"
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="search" th:value="${filter.search()}" />
+                  <input type="hidden" name="status" th:value="${filter.statusValue()}" />
+                  <label>
+                    <span th:text="#{field.reason}">Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required></textarea>
+                  </label>
+                  <button type="submit" class="console-button console-button--danger"
+                    th:text="#{action.confirmRejection}">Reject verification</button>
+                </form>
+              </details>
+
               <details th:if="${member.isModeratable() and !member.isBlocked()}" class="console-action">
                 <summary class="console-button console-button--danger" th:text="#{action.block}">Block</summary>
                 <form

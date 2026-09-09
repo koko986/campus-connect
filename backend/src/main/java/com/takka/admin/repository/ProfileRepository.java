@@ -8,6 +8,8 @@ import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import com.takka.admin.support.Query;
 import com.takka.supabase.SupabaseGateway;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,6 +64,14 @@ public class ProfileRepository {
 
   public JsonNode requireById(UUID userId) {
     return findById(userId).orElseThrow(() -> new MessageException("error.member.notFound"));
+  }
+
+  public void updateStudentVerification(UUID userId, String status) {
+    var attributes = new HashMap<String, Object>();
+    attributes.put("verification_status", status);
+    attributes.put("verified_at", "verified".equals(status) ? Instant.now().toString() : null);
+    supabase.patch(
+        Query.from("student_profiles").eq("user_id", userId).build(), attributes, null);
   }
 
   public long countAll() {

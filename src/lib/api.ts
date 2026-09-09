@@ -4,6 +4,7 @@ const apiUrl = (import.meta.env["VITE_TAKKA_API_URL"] ?? "http://localhost:8080"
   /\/$/,
   "",
 );
+const API_TIMEOUT_MS = 15_000;
 
 /** The two member-facing endpoints the Java API serves. Moderation lives in the /admin console. */
 export type SubmittedReport = {
@@ -24,14 +25,25 @@ export type AccountStatus = {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const { data } = await supabase.auth.getSession();
   if (!data.session) throw new Error("Your session has expired. Please log in again.");
-  const response = await fetch(apiUrl + path, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${data.session.access_token}`,
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(
+    () => controller.abort(new DOMException("Request timed out", "TimeoutError")),
+    API_TIMEOUT_MS,
+  );
+  let response: Response;
+  try {
+    response = await fetch(apiUrl + path, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${data.session.access_token}`,
+        "Content-Type": "application/json",
+        ...init?.headers,
+      },
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? `Request failed (${response.status})`);

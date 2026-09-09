@@ -113,6 +113,29 @@ class ConsoleMembersControllerTest {
   }
 
   @Test
+  void verifyingAStudentReportsSuccess() throws Exception {
+    when(accounts.verifyStudent(any(), eq(memberId), any())).thenReturn("Ada Lovelace");
+
+    mvc.perform(post("/admin/members/{id}/verify", memberId)
+            .param("reason", "University record checked"))
+        .andExpect(redirectedUrl("/admin/members"))
+        .andExpect(flash().attribute(
+            "flashSuccess", "Ada Lovelace is now a verified student."));
+  }
+
+  @Test
+  void rejectingStudentVerificationReportsSuccess() throws Exception {
+    when(accounts.rejectStudentVerification(any(), eq(memberId), any()))
+        .thenReturn("Ada Lovelace");
+
+    mvc.perform(post("/admin/members/{id}/reject-verification", memberId)
+            .param("reason", "University details do not match"))
+        .andExpect(redirectedUrl("/admin/members"))
+        .andExpect(flash().attribute(
+            "flashSuccess", "Student verification for Ada Lovelace was rejected."));
+  }
+
+  @Test
   void deletingRequiresBothAReasonAndTheRetypedEmail() throws Exception {
     mvc.perform(post("/admin/members/{id}/delete", memberId).param("reason", "Fraudulent account"))
         .andExpect(redirectedUrl("/admin/members"))

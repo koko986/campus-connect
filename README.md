@@ -57,6 +57,10 @@ The frontend reads and writes live Supabase tables. There is no mock-data fallba
 
 Generated database types live in `src/lib/database.types.ts`. Regenerate them after schema changes.
 
+Apply every SQL file in `supabase/migrations/` in filename order before deploying a frontend that
+uses the corresponding feature. The Student Hub requires both `20260909000000` and
+`20260909000100`; student verification decisions also require `20260909000200`.
+
 ## Production Checklist
 
 - Configure the production Site URL and redirect URLs in Supabase Auth.
@@ -88,6 +92,23 @@ The console has its own cookie session and CSRF protection, its own sidebar (Ove
 Two roles exist. A `MODERATOR` can work the report queue, block and unblock accounts, and remove or restore posts. A `SUPER_ADMIN` can additionally delete accounts, edit the university directory, publish or archive universities, and curate campuses, departments, and programs. Every action appends an immutable row to `moderation_actions`, visible under Audit log.
 
 Members never see an administration link, and there is no `/admin` route in the React app.
+
+### Create The First Administrator
+
+No shared administrator password is committed to the project. Create a normal Supabase Auth account
+with an email address you control, then promote it once from the Supabase SQL editor:
+
+```sql
+insert into public.admin_users (user_id, role, is_active)
+select id, 'SUPER_ADMIN', true
+from auth.users
+where lower(email) = lower('your-email@gmail.com')
+on conflict (user_id) do update
+set role = excluded.role, is_active = true, updated_at = now();
+```
+
+Use that account's email and password at the deployed Java backend's `/admin/login` URL. Never add
+an administrator password to Git, a migration, or a frontend environment variable.
 
 ## Language Report
 

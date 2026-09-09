@@ -100,6 +100,18 @@ public class AccountModerationService {
     return Json.text(profile, "full_name", Json.text(profile, "email"));
   }
 
+  public String verifyStudent(
+      AdminIdentity administrator, UUID userId, ModerationReasonForm form) {
+    return decideStudentVerification(administrator, userId, form, "verified",
+        ModerationAction.VERIFY_STUDENT);
+  }
+
+  public String rejectStudentVerification(
+      AdminIdentity administrator, UUID userId, ModerationReasonForm form) {
+    return decideStudentVerification(administrator, userId, form, "rejected",
+        ModerationAction.REJECT_STUDENT_VERIFICATION);
+  }
+
   /**
    * Permanently deletes an account. Restricted to super admins, and the administrator must retype
    * the member's email so a mis-click cannot destroy the wrong account.
@@ -134,5 +146,21 @@ public class AccountModerationService {
       throw new AccessDeniedException("error.member.administratorProtected");
     }
     return profileRepository.requireById(userId);
+  }
+
+  private String decideStudentVerification(
+      AdminIdentity administrator,
+      UUID userId,
+      ModerationReasonForm form,
+      String status,
+      ModerationAction action) {
+    AdminAccess.requireAdministrator(administrator);
+    JsonNode profile = requireModeratableMember(administrator, userId);
+    if (!"current_student".equals(Json.text(profile, "account_type"))) {
+      throw new MessageException("error.member.notStudent");
+    }
+    profileRepository.updateStudentVerification(userId, status);
+    auditTrail.record(administrator, action, userId, form.getReason(), form.getReportId(), profile);
+    return Json.text(profile, "full_name", Json.text(profile, "email"));
   }
 }

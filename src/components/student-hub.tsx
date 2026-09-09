@@ -107,6 +107,28 @@ const opportunityTypes: OpportunityType[] = [
 const degreeLevels = ["Bachelor", "Master", "Doctorate", "Diploma"];
 const availabilityOptions = ["weekday_morning", "weekday_afternoon", "weekday_evening", "weekend"];
 const languageOptions = ["Myanmar", "English"];
+const fallbackFields = [
+  "Agriculture",
+  "Arts and Humanities",
+  "Business Administration",
+  "Computer Science",
+  "Economics",
+  "Education",
+  "Engineering",
+  "Law",
+  "Medicine",
+  "Social Sciences",
+];
+const fallbackLocations = [
+  "Yangon",
+  "Mandalay",
+  "Nay Pyi Taw",
+  "Taunggyi",
+  "Mawlamyine",
+  "Pathein",
+  "Monywa",
+  "Meiktila",
+];
 
 function SectionHeading({
   icon: Icon,
@@ -274,10 +296,17 @@ function DecisionCenter({
   const t = useT();
   const client = useQueryClient();
   const [preferences, setPreferences] = useState(() => defaultPreferences(user!.id));
-  const fields = useQuery({ queryKey: ["field-options"], queryFn: listFieldOfStudyOptions });
+  const fields = useQuery({
+    queryKey: ["field-options"],
+    queryFn: listFieldOfStudyOptions,
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
   const locations = useQuery({
     queryKey: ["university-locations"],
     queryFn: listUniversityLocations,
+    retry: false,
+    staleTime: 5 * 60_000,
   });
   const shortlist = useQuery({
     queryKey: ["saved-universities", user!.id],
@@ -286,6 +315,7 @@ function DecisionCenter({
   const stored = useQuery({
     queryKey: ["matcher-preferences", user!.id],
     queryFn: () => getMatcherPreferences(user!.id),
+    retry: false,
   });
   useEffect(() => {
     if (stored.data) setPreferences(stored.data);
@@ -331,6 +361,9 @@ function DecisionCenter({
           ? [...compareIds, id]
           : compareIds,
     );
+  const fieldOptions = fields.data?.length ? fields.data : fallbackFields;
+  const locationOptions = locations.data?.length ? locations.data : fallbackLocations;
+  const optionsUnavailable = fields.isError || locations.isError;
 
   return (
     <div className="space-y-8">
@@ -342,6 +375,17 @@ function DecisionCenter({
       />
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid gap-5 sm:grid-cols-2">
+          {optionsUnavailable ? (
+            <div className="sm:col-span-2">
+              <Failure
+                error={new Error(t("hub.matcher.optionsFallback"))}
+                onRetry={() => {
+                  void fields.refetch();
+                  void locations.refetch();
+                }}
+              />
+            </div>
+          ) : null}
           <Field label={t("field.preferredField")} htmlFor="matcher-field">
             <Select
               value={preferences.preferred_field ?? "none"}
@@ -352,7 +396,7 @@ function DecisionCenter({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">{t("hub.any")}</SelectItem>
-                {fields.data?.map((field) => (
+                {fieldOptions.map((field) => (
                   <SelectItem key={field} value={field}>
                     {field}
                   </SelectItem>
@@ -370,7 +414,7 @@ function DecisionCenter({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">{t("hub.any")}</SelectItem>
-                {locations.data?.map((region) => (
+                {locationOptions.map((region) => (
                   <SelectItem key={region} value={region}>
                     {region}
                   </SelectItem>
@@ -446,6 +490,7 @@ function DecisionCenter({
         </Button>
         <p className="text-xs text-muted-foreground">{t("hub.matcher.hint")}</p>
       </div>
+      {stored.error ? <Failure error={stored.error} onRetry={() => void stored.refetch()} /> : null}
       {matches.isLoading ? <Loading label={t("hub.matcher.loading")} /> : null}
       {matches.error ? (
         <Failure error={matches.error} onRetry={() => void matches.refetch()} />
@@ -1044,21 +1089,25 @@ function StudyBuddy() {
   const member = useQuery({
     queryKey: ["member-profile", user!.id],
     queryFn: () => getMemberProfile(user!.id),
+    retry: false,
   });
   const profile = useQuery({
     queryKey: ["buddy-profile", user!.id],
     queryFn: () => getBuddyProfile(user!.id),
     enabled: member.data?.student?.verification_status === "verified",
+    retry: false,
   });
   const matches = useQuery({
     queryKey: ["buddy-matches", user!.id],
     queryFn: () => listBuddyMatches(user!.id),
     enabled: Boolean(profile.data?.is_active),
+    retry: false,
   });
   const requests = useQuery({
     queryKey: ["buddy-requests", user!.id],
     queryFn: () => listBuddyRequests(user!.id),
     enabled: member.data?.student?.verification_status === "verified",
+    retry: false,
   });
   const [editing, setEditing] = useState(false);
   const [requestTarget, setRequestTarget] = useState<BuddyMatch | null>(null);
@@ -1099,6 +1148,18 @@ function StudyBuddy() {
     onSuccess: refresh,
   });
   if (member.isLoading) return <Loading label={t("hub.buddy.checking")} />;
+  if (member.error)
+    return (
+      <div className="space-y-6">
+        <SectionHeading
+          icon={UsersRound}
+          eyebrow={t("hub.buddy.eyebrow")}
+          title={t("hub.buddy.title")}
+          text={t("hub.buddy.text")}
+        />
+        <Failure error={member.error} onRetry={() => void member.refetch()} />
+      </div>
+    );
   if (member.data?.student?.verification_status !== "verified")
     return (
       <div className="space-y-6">
@@ -1136,6 +1197,9 @@ function StudyBuddy() {
         }
       />
       {profile.isLoading ? <Loading label={t("hub.buddy.loadingProfile")} /> : null}
+      {profile.error ? (
+        <Failure error={profile.error} onRetry={() => void profile.refetch()} />
+      ) : null}
       {profile.isSuccess && (!profile.data || editing) ? (
         <BuddyProfileForm
           initial={profile.data}
@@ -1146,12 +1210,16 @@ function StudyBuddy() {
         />
       ) : null}
       {profile.data ? (
-        <BuddyRequests
-          items={requests.data ?? []}
-          userId={user!.id}
-          onRespond={(item, action) => respond.mutate({ item, action })}
-          busy={respond.isPending}
-        />
+        requests.error ? (
+          <Failure error={requests.error} onRetry={() => void requests.refetch()} />
+        ) : (
+          <BuddyRequests
+            items={requests.data ?? []}
+            userId={user!.id}
+            onRespond={(item, action) => respond.mutate({ item, action })}
+            busy={respond.isPending}
+          />
+        )
       ) : null}
       {profile.data?.is_active ? (
         <section>

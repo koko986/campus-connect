@@ -40,11 +40,13 @@ public record AuditEntryView(
           RESOLVE_REPORT,
           PUBLISH_UNIVERSITY,
           APPROVE_UNIVERSITY_PHOTO,
-          APPROVE_OPPORTUNITY -> "success";
+          APPROVE_OPPORTUNITY,
+          VERIFY_STUDENT -> "success";
       case DISMISS_REPORT,
           UNPUBLISH_UNIVERSITY,
           REJECT_UNIVERSITY_PHOTO,
-          REJECT_OPPORTUNITY -> "warning";
+          REJECT_OPPORTUNITY,
+          REJECT_STUDENT_VERIFICATION -> "warning";
       case CREATE_UNIVERSITY, UPDATE_UNIVERSITY -> "info";
     };
   }
