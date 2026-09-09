@@ -54,7 +54,7 @@ public class SecurityConfig {
         .cors(cors -> {})
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/actuator/health", "/error").permitAll()
+            .requestMatchers("/actuator/health", "/error", "/api/supabase/**").permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(new SupabaseAuthenticationFilter(supabase), UsernamePasswordAuthenticationFilter.class)
         .build();
@@ -64,8 +64,12 @@ public class SecurityConfig {
   UrlBasedCorsConfigurationSource corsConfigurationSource(
       @Value("${takka.frontend-origin}") String origin) {
     var configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(origin, origin.replace("localhost", "127.0.0.1")));
-    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key"));
+    configuration.setAllowedOriginPatterns(List.of(
+        origin, origin.replace("localhost", "127.0.0.1"),
+        "http://localhost:*", "http://127.0.0.1:*", "https://*.vercel.app"));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setExposedHeaders(List.of(
+        "Content-Range", "Range", "X-Supabase-Api-Version"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowCredentials(true);
     var source = new UrlBasedCorsConfigurationSource();

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { initialLanguage, translate, useT } from "@/lib/i18n";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConnectionError, supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/login")({
   head: () => {
@@ -41,13 +41,22 @@ function LoginPage() {
     e.preventDefault();
     setError("");
     setPending(true);
-    const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setPending(false);
-    if (result.error) {
-      setError(result.error.message);
-      return;
+    try {
+      const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (result.error) {
+        setError(
+          isSupabaseConnectionError(result.error) ? t("auth.error.network") : result.error.message,
+        );
+        return;
+      }
+      await navigate({ to: "/dashboard", replace: true });
+    } catch (cause) {
+      setError(
+        isSupabaseConnectionError(cause) ? t("auth.error.network") : t("auth.error.unexpected"),
+      );
+    } finally {
+      setPending(false);
     }
-    await navigate({ to: "/dashboard", replace: true });
   }
 
   return (

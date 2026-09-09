@@ -70,6 +70,8 @@
   "guard.suspended.text": "This account has been suspended by a TAKKA administrator.",
 
   "auth.logIn": "Log in",
+  "auth.error.network": "TAKKA cannot reach the account service right now. Check your connection and try again.",
+  "auth.error.unexpected": "Something went wrong while contacting the account service. Please try again.",
   "auth.getStarted": "Get started",
 
   "landing.meta.title": "TAKKA - Choose a university with help from real students",
@@ -160,6 +162,7 @@
   "register.error.password": "Use a password with at least 8 characters.",
   "register.error.mismatch": "The two passwords do not match.",
   "register.error.university": "Select your university.",
+  "register.error.universities": "Universities could not be loaded. Check your connection and try again.",
   "register.error.confirmEmail": "Instant signup is not enabled in Supabase yet. Turn off Confirm email in Authentication > Sign In / Providers > Email, then try again.",
   "register.loadingUniversities": "Loading universities...",
   "register.selectUniversity": "Select university",

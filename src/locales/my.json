@@ -70,6 +70,8 @@
   "guard.suspended.text": "ဤအကောင့်ကို TAKKA စီမံခန့်ခွဲသူ တစ်ဦးမှ ပိတ်ပင်ထားပါသည်။",
 
   "auth.logIn": "ဝင်မည်",
+  "auth.error.network": "TAKKA သည် အကောင့်ဝန်ဆောင်မှုသို့ ယခု ချိတ်ဆက်မရပါ။ အင်တာနက်ကို စစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။",
+  "auth.error.unexpected": "အကောင့်ဝန်ဆောင်မှုနှင့် ချိတ်ဆက်ရာတွင် အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်။ ထပ်မံကြိုးစားပါ။",
   "auth.getStarted": "စတင်မည်",
 
   "landing.meta.title": "TAKKA - ကျောင်းသားများ၏ အကူအညီဖြင့် တက္ကသိုလ် ရွေးပါ",
@@ -160,6 +162,7 @@
   "register.error.password": "အက္ခရာ အနည်းဆုံး 8 လုံး ပါသော စကားဝှက် အသုံးပြုပါ။",
   "register.error.mismatch": "စကားဝှက် နှစ်ခု ကိုက်ညီမှု မရှိပါ။",
   "register.error.university": "သင့် တက္ကသိုလ် ရွေးပါ။",
+  "register.error.universities": "တက္ကသိုလ်စာရင်းကို မရယူနိုင်ပါ။ အင်တာနက်ကို စစ်ဆေးပြီး ထပ်မံကြိုးစားပါ။",
   "register.error.confirmEmail": "Supabase တွင် ချက်ချင်း စာရင်းသွင်းမှုကို ခွင့်မပြုထားပါ။ Authentication > Sign In / Providers > Email တွင် Confirm email ကို ပိတ်ပြီး ပြန်စမ်းပါ။",
   "register.loadingUniversities": "တက္ကသိုလ်များ ရယူနေသည်...",
   "register.selectUniversity": "တက္ကသိုလ် ရွေးပါ",

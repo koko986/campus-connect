@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { listUniversities } from "@/lib/data";
 import { initialLanguage, translate, useT } from "@/lib/i18n";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConnectionError, supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/register/$role")({
   head: () => {
@@ -59,7 +59,12 @@ function RegisterPage() {
   const navigate = useNavigate();
   const t = useT();
   const isStudent = role === "student";
-  const universitiesQuery = useQuery({ queryKey: ["universities"], queryFn: listUniversities });
+  const universitiesQuery = useQuery({
+    queryKey: ["universities"],
+    queryFn: listUniversities,
+    enabled: isStudent,
+    retry: 1,
+  });
   const [universityId, setUniversityId] = useState("");
   const [departmentId, setDepartmentId] = useState("");
   const [academicYear, setAcademicYear] = useState("");
@@ -101,16 +106,26 @@ function RegisterPage() {
           preferred_degree_level: String(form.get("degree") ?? "").trim() || null,
           preferences: String(form.get("preferences") ?? "").trim() || null,
         };
-    const result = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: metadata },
-    });
-    setPending(false);
-    if (result.error) return setError(result.error.message);
-    if (result.data.session) await navigate({ to: "/dashboard", replace: true });
-    else {
-      setError(t("register.error.confirmEmail"));
+    try {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: metadata },
+      });
+      if (result.error) {
+        setError(
+          isSupabaseConnectionError(result.error) ? t("auth.error.network") : result.error.message,
+        );
+        return;
+      }
+      if (result.data.session) await navigate({ to: "/dashboard", replace: true });
+      else setError(t("register.error.confirmEmail"));
+    } catch (cause) {
+      setError(
+        isSupabaseConnectionError(cause) ? t("auth.error.network") : t("auth.error.unexpected"),
+      );
+    } finally {
+      setPending(false);
     }
   }
 
@@ -176,6 +191,21 @@ function RegisterPage() {
           </div>
           {isStudent ? (
             <div className="grid gap-4 sm:grid-cols-2">
+              {universitiesQuery.isError ? (
+                <Alert variant="destructive" className="sm:col-span-2">
+                  <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+                    <span>{t("register.error.universities")}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void universitiesQuery.refetch()}
+                    >
+                      {t("common.tryAgain")}
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              ) : null}
               <div className="space-y-1.5">
                 <Label>{t("field.university")}</Label>
                 <select
@@ -318,7 +348,7 @@ function RegisterPage() {
           <Button
             type="submit"
             size="lg"
-            disabled={pending || universitiesQuery.isError}
+            disabled={pending || (isStudent && universitiesQuery.isError)}
             className="w-full rounded-full"
           >
             {pending ? t("register.submitting") : t("register.submit")}

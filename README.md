@@ -17,9 +17,11 @@ Create `.env.local` in the repository root:
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
 VITE_TAKKA_API_URL=http://localhost:8080
+VITE_SUPABASE_PROXY_URL=https://your-deployed-takka-api.example.com/api/supabase
 ```
 
 Only use a publishable key in the frontend. Never place a secret or service-role key in a `VITE_*` variable.
+`VITE_SUPABASE_PROXY_URL` is optional. Set it to the deployed Java endpoint when local networks cannot reach `*.supabase.co`; production automatically uses `VITE_TAKKA_API_URL` when the override is omitted.
 
 Set the Java server credentials in the terminal that starts the backend:
 
