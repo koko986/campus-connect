@@ -16,6 +16,7 @@ management:
         include: health,info
 takka:
   frontend-origin: ${TAKKA_FRONTEND_ORIGIN:http://localhost:5173}
+  frontend-upstream: ${TAKKA_FRONTEND_UPSTREAM:https://campus-connect-ako890.vercel.app}
   supabase:
     url: ${SUPABASE_URL:https://rgotqcryuogqrdzlfntb.supabase.co}
     publishable-key: ${SUPABASE_PUBLISHABLE_KEY:}

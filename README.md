@@ -79,6 +79,10 @@ mvn spring-boot:run
 
 The community can read public Supabase data without Java, but reporting and the administration console require this service. Supabase user access tokens are validated server-side; the secret key is used only for administrator operations.
 
+The backend also exposes the member app at its root as a network fallback for regions where
+`*.vercel.app` is unreachable. It relays only known frontend GET/HEAD routes from
+`TAKKA_FRONTEND_UPSTREAM`; `/api/**` and `/admin/**` continue to be handled locally.
+
 ## Administration Console
 
 Administration is a separate Java application, not a page inside the student app. Sign in at:

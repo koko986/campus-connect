@@ -29,6 +29,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
   private static final String LOGIN_PAGE = "/admin/login";
+  private static final String[] PUBLIC_FRONTEND_ROUTES = {
+      "/", "/login", "/get-started", "/register/**", "/dashboard", "/hub",
+      "/universities/**", "/questions", "/questions/**", "/messages", "/notifications",
+      "/profile", "/profiles/**", "/posts/**", "/settings", "/assets/**", "/favicon.ico",
+      "/favicon.svg", "/robots.txt"
+  };
 
   @Bean
   @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -55,6 +61,7 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/actuator/health", "/error", "/api/supabase/**").permitAll()
+            .requestMatchers(PUBLIC_FRONTEND_ROUTES).permitAll()
             .anyRequest().authenticated())
         .addFilterBefore(new SupabaseAuthenticationFilter(supabase), UsernamePasswordAuthenticationFilter.class)
         .build();
