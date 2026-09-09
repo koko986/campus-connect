@@ -113,11 +113,39 @@ function ok<T>(result: { data: T | null; error: { message: string } | null }): T
   return result.data as T;
 }
 
+function normalizeMatcherPreferences(preferences: MatcherPreferences): MatcherPreferences {
+  const optional = (value: string | null) => {
+    const trimmed = value?.trim() ?? "";
+    return !trimmed || /^(any|all|no preference)$/i.test(trimmed) ? null : trimmed;
+  };
+  const field = optional(preferences.preferred_field);
+  const degree = optional(preferences.preferred_degree_level);
+
+  return {
+    ...preferences,
+    preferred_field:
+      field && /^(it|ict|information tech(?:nology)?)$/i.test(field)
+        ? "Information Technology"
+        : field && /^(cs|b\.?c\.?s\.?c\.?)$/i.test(field)
+          ? "Computer Science"
+          : field,
+    preferred_city: optional(preferences.preferred_city),
+    preferred_degree_level:
+      degree && /^(b\.?c\.?s\.?c\.?|b\.?c\.?tech\.?|bachelor.*)$/i.test(degree)
+        ? "Bachelor"
+        : degree && /^(m\.?c\.?s\.?c\.?|m\.?c\.?tech\.?|master.*)$/i.test(degree)
+          ? "Master"
+          : degree && /^(ph\.?d\.?|doctor.*)$/i.test(degree)
+            ? "Doctorate"
+            : degree,
+  };
+}
+
 export async function getMatcherPreferences(userId: string): Promise<MatcherPreferences | null> {
   const saved = ok<MatcherPreferences | null>(
     await db.from("matcher_preferences").select("*").eq("user_id", userId).maybeSingle(),
   );
-  if (saved) return saved;
+  if (saved) return normalizeMatcherPreferences(saved);
   const prospective = ok<{
     preferred_field: string | null;
     preferred_city: string | null;
@@ -130,7 +158,7 @@ export async function getMatcherPreferences(userId: string): Promise<MatcherPref
       .maybeSingle(),
   );
   return prospective
-    ? {
+    ? normalizeMatcherPreferences({
         user_id: userId,
         preferred_field: prospective.preferred_field,
         preferred_city: prospective.preferred_city,
@@ -140,12 +168,16 @@ export async function getMatcherPreferences(userId: string): Promise<MatcherPref
         city_weight: 2,
         degree_weight: 3,
         type_weight: 1,
-      }
+      })
     : null;
 }
 
 export async function saveMatcherPreferences(preferences: MatcherPreferences) {
-  ok(await db.from("matcher_preferences").upsert(preferences, { onConflict: "user_id" }));
+  ok(
+    await db
+      .from("matcher_preferences")
+      .upsert(normalizeMatcherPreferences(preferences), { onConflict: "user_id" }),
+  );
 }
 
 export async function listUniversityLocations(): Promise<string[]> {
@@ -162,16 +194,17 @@ export async function listUniversityLocations(): Promise<string[]> {
 }
 
 export async function listSmartMatches(preferences: MatcherPreferences): Promise<SmartMatch[]> {
+  const normalized = normalizeMatcherPreferences(preferences);
   const ranked = ok<SmartMatchRow[]>(
     await db.rpc("recommend_universities_v2", {
-      p_preferred_field: preferences.preferred_field,
-      p_preferred_city: preferences.preferred_city,
-      p_preferred_degree_level: preferences.preferred_degree_level,
-      p_preferred_university_type: preferences.preferred_university_type,
-      p_field_weight: preferences.field_weight,
-      p_city_weight: preferences.city_weight,
-      p_degree_weight: preferences.degree_weight,
-      p_type_weight: preferences.type_weight,
+      p_preferred_field: normalized.preferred_field,
+      p_preferred_city: normalized.preferred_city,
+      p_preferred_degree_level: normalized.preferred_degree_level,
+      p_preferred_university_type: normalized.preferred_university_type,
+      p_field_weight: normalized.field_weight,
+      p_city_weight: normalized.city_weight,
+      p_degree_weight: normalized.degree_weight,
+      p_type_weight: normalized.type_weight,
       p_limit: 12,
     }),
   );
