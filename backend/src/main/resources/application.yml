@@ -19,5 +19,6 @@ takka:
   frontend-upstream: ${TAKKA_FRONTEND_UPSTREAM:https://campus-connect-ako890.vercel.app}
   supabase:
     url: ${SUPABASE_URL:https://rgotqcryuogqrdzlfntb.supabase.co}
-    publishable-key: ${SUPABASE_PUBLISHABLE_KEY:}
+    # Publishable keys are safe in public clients; the privileged secret remains environment-only.
+    publishable-key: ${SUPABASE_PUBLISHABLE_KEY:sb_publishable_yY153JVd0BKy8_xMfVc9lw_eFtzsXJT}
     secret-key: ${SUPABASE_SECRET_KEY:}
