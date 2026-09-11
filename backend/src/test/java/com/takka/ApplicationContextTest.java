@@ -80,5 +80,6 @@ class ApplicationContextTest {
           "Missing console template: " + template);
     }
     assertTrue(new ClassPathResource("static/admin/assets/console.css").exists());
+    assertTrue(new ClassPathResource("static/admin/assets/takka-logo.png").exists());
   }
 }

@@ -2,14 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { StudentHubPage } from "@/components/student-hub";
 
-type HubTab = "decide" | "opportunities" | "buddies";
+type HubTab = "decide" | "opportunities" | "connect";
 
 export const Route = createFileRoute("/hub")({
   validateSearch: (search: Record<string, unknown>): { tab?: HubTab; compare?: string } => ({
     tab:
-      search.tab === "opportunities" || search.tab === "buddies" || search.tab === "decide"
+      search.tab === "opportunities" || search.tab === "connect" || search.tab === "decide"
         ? search.tab
-        : undefined,
+        : search.tab === "buddies"
+          ? "connect"
+          : undefined,
     compare: typeof search.compare === "string" ? search.compare : undefined,
   }),
   component: HubRoute,

@@ -331,6 +331,8 @@ function MessageThread({
     queryFn: ({ pageParam }) => listMessages(conversation.id, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.olderCursor ?? undefined,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
   });
 
   // Pages arrive newest first, so they are reversed into reading order.
@@ -353,7 +355,13 @@ function MessageThread({
           ],
         };
       });
+      void client.invalidateQueries({ queryKey: cacheKey });
       void client.invalidateQueries({ queryKey: ["conversations", user!.id] });
+      if (incoming.sender_id !== user!.id) {
+        void markConversationRead(conversation.id, user!.id)
+          .then(() => client.invalidateQueries({ queryKey: ["message-count", user!.id] }))
+          .catch(() => undefined);
+      }
     });
     return () => unsubscribe(channel);
   }, [cacheKey, client, conversation.id, user]);
@@ -363,9 +371,9 @@ function MessageThread({
   }, [messages.length]);
 
   useEffect(() => {
-    void markConversationRead(conversation.id, user!.id).then(() =>
-      client.invalidateQueries({ queryKey: ["conversations", user!.id] }),
-    );
+    void markConversationRead(conversation.id, user!.id)
+      .then(() => client.invalidateQueries({ queryKey: ["conversations", user!.id] }))
+      .catch(() => undefined);
   }, [client, conversation.id, user]);
 
   const send = useMutation({
@@ -429,7 +437,7 @@ function MessageThread({
   }
 
   return (
-    <section className="flex h-[calc(100dvh-5rem)] flex-col md:h-[min(720px,calc(100dvh-8rem))] md:min-h-[560px]">
+    <section className="flex h-[calc(100dvh-11rem)] flex-col md:h-[min(720px,calc(100dvh-8rem))] md:min-h-[560px]">
       <header className="flex items-center gap-2 border-b p-3">
         <Button
           variant="ghost"
@@ -535,15 +543,31 @@ export function MessagesPage({
 }: {
   initialConversationId: string | undefined;
 }) {
+  const t = useT();
+  return (
+    <AppShell title={t("messages.title")}>
+      <MessagesWorkspace initialConversationId={initialConversationId} />
+    </AppShell>
+  );
+}
+
+export function MessagesWorkspace({
+  initialConversationId,
+}: {
+  initialConversationId: string | undefined;
+}) {
   const { user } = useAuth();
   const client = useQueryClient();
   const t = useT();
   const [tab, setTab] = useState<"direct" | "groups">("direct");
   const [selectedId, setSelectedId] = useState(initialConversationId ?? "");
+  const workspace = useRef<HTMLDivElement>(null);
 
   const conversations = useQuery({
     queryKey: ["conversations", user!.id],
     queryFn: () => listConversations(user!.id),
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
   });
 
   const direct = (conversations.data ?? []).filter((item) => item.conversationType === "DIRECT");
@@ -552,6 +576,12 @@ export function MessagesPage({
   );
   const selected = conversations.data?.find((item) => item.id === selectedId) ?? null;
 
+  useEffect(() => {
+    if (selectedId && window.matchMedia("(max-width: 767px)").matches) {
+      workspace.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
+  }, [selectedId]);
+
   function openConversation(id: string) {
     const conversation = conversations.data?.find((item) => item.id === id);
     if (conversation) setTab(conversation.conversationType === "DIRECT" ? "direct" : "groups");
@@ -559,89 +589,82 @@ export function MessagesPage({
   }
 
   if (conversations.isLoading) {
-    return (
-      <AppShell title={t("messages.title")}>
-        <Loading label={t("messages.loadingConversations")} />
-      </AppShell>
-    );
+    return <Loading label={t("messages.loadingConversations")} />;
   }
 
   if (conversations.error) {
-    return (
-      <AppShell title={t("messages.title")}>
-        <Failure error={conversations.error} onRetry={() => void conversations.refetch()} />
-      </AppShell>
-    );
+    return <Failure error={conversations.error} onRetry={() => void conversations.refetch()} />;
   }
 
   return (
-    <AppShell title={t("messages.title")} hideMobileNav={Boolean(selected)}>
-      <div className="card-soft -mx-4 -mt-6 grid overflow-hidden rounded-none border-x-0 md:mx-0 md:mt-0 md:grid-cols-[300px_1fr] md:rounded-[var(--radius-2xl)] md:border-x">
-        <aside
-          className={cn("border-b p-3 md:border-b-0 md:border-r", selected && "hidden md:block")}
-        >
-          <Tabs value={tab} onValueChange={(next) => setTab(next as "direct" | "groups")}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <TabsList className="grid w-full grid-cols-2 sm:flex-1">
-                <TabsTrigger value="direct">{t("messages.tab.direct")}</TabsTrigger>
-                <TabsTrigger value="groups">{t("messages.tab.groups")}</TabsTrigger>
-              </TabsList>
-              {tab === "direct" ? (
-                <div className="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto">
-                  <ConversationStarter onStarted={openConversation} />
-                </div>
-              ) : null}
-            </div>
-
-            <TabsContent value="direct" className="mt-3 space-y-1">
-              {direct.map((conversation) => (
-                <ConversationRow
-                  key={conversation.id}
-                  conversation={conversation}
-                  viewerId={user!.id}
-                  active={conversation.id === selectedId}
-                  onSelect={() => setSelectedId(conversation.id)}
-                />
-              ))}
-              {!direct.length ? (
-                <Empty title={t("messages.noDirect.title")} text={t("messages.noDirect.text")} />
-              ) : null}
-            </TabsContent>
-
-            <TabsContent value="groups" className="mt-3 space-y-4">
-              {groups.length ? (
-                <div className="space-y-1">
-                  {groups.map((conversation) => (
-                    <ConversationRow
-                      key={conversation.id}
-                      conversation={conversation}
-                      viewerId={user!.id}
-                      active={conversation.id === selectedId}
-                      onSelect={() => setSelectedId(conversation.id)}
-                    />
-                  ))}
-                </div>
-              ) : null}
-              <div>
-                <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t("messages.discoverGroups")}
-                </h3>
-                <div className="mt-2">
-                  <GroupDirectory onOpenGroup={openConversation} />
-                </div>
+    <div
+      ref={workspace}
+      className="card-soft scroll-mt-20 grid overflow-hidden md:grid-cols-[300px_1fr]"
+    >
+      <aside
+        className={cn("border-b p-3 md:border-b-0 md:border-r", selected && "hidden md:block")}
+      >
+        <Tabs value={tab} onValueChange={(next) => setTab(next as "direct" | "groups")}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <TabsList className="grid w-full grid-cols-2 sm:flex-1">
+              <TabsTrigger value="direct">{t("messages.tab.direct")}</TabsTrigger>
+              <TabsTrigger value="groups">{t("messages.tab.groups")}</TabsTrigger>
+            </TabsList>
+            {tab === "direct" ? (
+              <div className="w-full [&>button]:w-full sm:w-auto sm:[&>button]:w-auto">
+                <ConversationStarter onStarted={openConversation} />
               </div>
-            </TabsContent>
-          </Tabs>
-        </aside>
-
-        {selected ? (
-          <MessageThread conversation={selected} onBack={() => setSelectedId("")} />
-        ) : (
-          <div className="hidden items-center justify-center p-10 text-sm text-muted-foreground md:flex">
-            {t("messages.chooseConversation")}
+            ) : null}
           </div>
-        )}
-      </div>
-    </AppShell>
+
+          <TabsContent value="direct" className="mt-3 space-y-1">
+            {direct.map((conversation) => (
+              <ConversationRow
+                key={conversation.id}
+                conversation={conversation}
+                viewerId={user!.id}
+                active={conversation.id === selectedId}
+                onSelect={() => setSelectedId(conversation.id)}
+              />
+            ))}
+            {!direct.length ? (
+              <Empty title={t("messages.noDirect.title")} text={t("messages.noDirect.text")} />
+            ) : null}
+          </TabsContent>
+
+          <TabsContent value="groups" className="mt-3 space-y-4">
+            {groups.length ? (
+              <div className="space-y-1">
+                {groups.map((conversation) => (
+                  <ConversationRow
+                    key={conversation.id}
+                    conversation={conversation}
+                    viewerId={user!.id}
+                    active={conversation.id === selectedId}
+                    onSelect={() => setSelectedId(conversation.id)}
+                  />
+                ))}
+              </div>
+            ) : null}
+            <div>
+              <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t("messages.discoverGroups")}
+              </h3>
+              <div className="mt-2">
+                <GroupDirectory onOpenGroup={openConversation} />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </aside>
+
+      {selected ? (
+        <MessageThread conversation={selected} onBack={() => setSelectedId("")} />
+      ) : (
+        <div className="hidden items-center justify-center p-10 text-sm text-muted-foreground md:flex">
+          {t("messages.chooseConversation")}
+        </div>
+      )}
+    </div>
   );
 }

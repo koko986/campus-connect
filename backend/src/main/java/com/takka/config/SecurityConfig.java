@@ -31,9 +31,9 @@ public class SecurityConfig {
   private static final String LOGIN_PAGE = "/admin/login";
   private static final String[] PUBLIC_FRONTEND_ROUTES = {
       "/", "/login", "/get-started", "/register/**", "/dashboard", "/hub",
-      "/universities/**", "/questions", "/questions/**", "/messages", "/notifications",
+      "/universities/**", "/questions", "/questions/**", "/messages", "/notifications", "/saved",
       "/profile", "/profiles/**", "/posts/**", "/settings", "/assets/**", "/favicon.ico",
-      "/favicon.svg", "/robots.txt"
+      "/favicon.svg", "/takka-logo.png", "/robots.txt"
   };
 
   @Bean

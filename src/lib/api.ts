@@ -7,6 +7,16 @@ const apiUrl = (import.meta.env["VITE_TAKKA_API_URL"] ?? "http://localhost:8080"
 export const adminConsoleUrl = `${apiUrl}/admin`;
 const API_TIMEOUT_MS = 15_000;
 
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiRequestError";
+  }
+}
+
 /** The two member-facing endpoints the Java API serves. Moderation lives in the /admin console. */
 export type SubmittedReport = {
   id: string;
@@ -44,6 +54,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         ...init?.headers,
       },
     });
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : "The account service is unavailable.";
+    throw new ApiRequestError(message, 0);
   } finally {
     window.clearTimeout(timeout);
   }
@@ -58,7 +71,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       if (response.headers.get("content-type")?.startsWith("text/plain")) message = text.trim();
     }
-    throw new Error(message || `Request failed (${response.status})`);
+    throw new ApiRequestError(message || `Request failed (${response.status})`, response.status);
   }
   return (text ? JSON.parse(text) : undefined) as T;
 }

@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, LoaderCircle, RefreshCw, ShieldCheck, ShieldBan } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { useAuth } from "@/lib/auth";
-import { adminConsoleUrl, getAccountStatus } from "@/lib/api";
+import { ApiRequestError, adminConsoleUrl, getAccountStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 
@@ -12,6 +12,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const { initialized, signOut, user } = useAuth();
   const navigate = useNavigate();
   const t = useT();
+  const [statusGraceExpired, setStatusGraceExpired] = useState(false);
   const status = useQuery({
     queryKey: ["account-status", user?.id],
     queryFn: getAccountStatus,
@@ -24,6 +25,13 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     if (initialized && !user) navigate({ to: "/login", replace: true });
   }, [initialized, navigate, user]);
 
+  useEffect(() => {
+    setStatusGraceExpired(false);
+    if (!user || !status.isPending) return;
+    const timeout = window.setTimeout(() => setStatusGraceExpired(true), 7_000);
+    return () => window.clearTimeout(timeout);
+  }, [status.isPending, user]);
+
   if (!initialized || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -35,7 +43,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (status.isPending) {
+  if (status.isPending && !statusGraceExpired) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <LoaderCircle
@@ -44,6 +52,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         />
       </div>
     );
+  }
+
+  if (status.isPending && statusGraceExpired) {
+    return children;
   }
 
   if (status.data?.status === "BLOCKED") {
@@ -61,6 +73,15 @@ export function AuthGuard({ children }: { children: ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  const statusError = status.error;
+  const accountServiceUnavailable =
+    statusError instanceof ApiRequestError &&
+    (statusError.status === 0 || statusError.status >= 500);
+
+  if (accountServiceUnavailable) {
+    return children;
   }
 
   if (status.isError) {

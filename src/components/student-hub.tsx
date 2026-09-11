@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { UniversityCard, UserAvatar } from "@/components/community";
+import { MessagesWorkspace } from "@/components/messages";
 import { Empty, Failure, Loading } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ import {
 import { useLanguage, useT, type TranslationKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-type HubTab = "decide" | "opportunities" | "buddies";
+type HubTab = "decide" | "opportunities" | "connect";
 
 const defaultPreferences = (userId: string): MatcherPreferences => ({
   user_id: userId,
@@ -265,10 +266,9 @@ export function StudentHubPage({
             <span className="hidden sm:inline">{t("hub.tab.opportunities")}</span>
             <span className="sm:hidden">{t("hub.tab.opportunitiesShort")}</span>
           </TabsTrigger>
-          <TabsTrigger value="buddies" className="min-h-12 gap-2 px-2">
+          <TabsTrigger value="connect" className="min-h-12 gap-2 px-2">
             <UsersRound aria-hidden="true" className="size-4" />
-            <span className="hidden sm:inline">{t("hub.tab.buddies")}</span>
-            <span className="sm:hidden">{t("hub.tab.buddiesShort")}</span>
+            <span>{t("hub.tab.connect")}</span>
           </TabsTrigger>
         </TabsList>
         <TabsContent value="decide" className="mt-8">
@@ -277,11 +277,35 @@ export function StudentHubPage({
         <TabsContent value="opportunities" className="mt-8">
           <OpportunitiesBoard />
         </TabsContent>
-        <TabsContent value="buddies" className="mt-8">
-          <StudyBuddy />
+        <TabsContent value="connect" className="mt-8">
+          <ConnectCenter />
         </TabsContent>
       </Tabs>
     </AppShell>
+  );
+}
+
+function ConnectCenter() {
+  const t = useT();
+  return (
+    <Tabs defaultValue="messages">
+      <TabsList className="grid h-auto w-full grid-cols-2 rounded-lg border bg-muted/60 p-1 sm:max-w-md">
+        <TabsTrigger value="messages" className="min-h-11 gap-2">
+          <MessageCircle aria-hidden="true" className="size-4" />
+          {t("hub.connect.messages")}
+        </TabsTrigger>
+        <TabsTrigger value="buddies" className="min-h-11 gap-2">
+          <UserRoundSearch aria-hidden="true" className="size-4" />
+          {t("hub.connect.buddies")}
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="messages" className="mt-6">
+        <MessagesWorkspace initialConversationId={undefined} />
+      </TabsContent>
+      <TabsContent value="buddies" className="mt-6">
+        <StudyBuddy />
+      </TabsContent>
+    </Tabs>
   );
 }
 

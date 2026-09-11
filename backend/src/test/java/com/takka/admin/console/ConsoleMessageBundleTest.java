@@ -128,7 +128,11 @@ class ConsoleMessageBundleTest {
     String sources;
     try (Stream<Path> files = Files.walk(Path.of("src/main"))) {
       var text = new StringBuilder();
-      for (Path file : files.filter(Files::isRegularFile).toList()) {
+      for (Path file :
+          files
+              .filter(Files::isRegularFile)
+              .filter(ConsoleMessageBundleTest::isUtf8SourceFile)
+              .toList()) {
         if (file.toString().endsWith(".properties")) continue;
         text.append(Files.readString(file, StandardCharsets.UTF_8)).append('\n');
       }
@@ -140,6 +144,19 @@ class ConsoleMessageBundleTest {
       if (!sources.contains(key) && !isBuiltFromAQuotedPrefix(key, sources)) unused.add(key);
     }
     assertEquals(Set.of(), unused);
+  }
+
+  private static boolean isUtf8SourceFile(Path path) {
+    String name = path.getFileName().toString();
+    return name.endsWith(".java")
+        || name.endsWith(".html")
+        || name.endsWith(".css")
+        || name.endsWith(".js")
+        || name.endsWith(".json")
+        || name.endsWith(".xml")
+        || name.endsWith(".yml")
+        || name.endsWith(".yaml")
+        || name.endsWith(".properties");
   }
 
   private static boolean isBuiltFromAQuotedPrefix(String key, String sources) {

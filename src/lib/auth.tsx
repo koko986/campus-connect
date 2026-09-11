@@ -27,6 +27,7 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const AUTH_STARTUP_TIMEOUT_MS = 8_000;
 
 // The email column is revoked for signed-in members, so the columns are named.
 async function getProfile(userId: string) {
@@ -37,6 +38,25 @@ async function getProfile(userId: string) {
     .single();
   if (error) throw error;
   return data;
+}
+
+function withTimeout<T>(promise: Promise<T>, milliseconds: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(
+      () => reject(new DOMException("Auth startup timed out", "TimeoutError")),
+      milliseconds,
+    );
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -54,18 +74,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      if (data.session) {
-        try {
-          setProfile(await getProfile(data.session.user.id));
-        } catch {
-          setProfile(null);
+    withTimeout(supabase.auth.getSession(), AUTH_STARTUP_TIMEOUT_MS)
+      .then(async ({ data }) => {
+        if (!active) return;
+        setSession(data.session);
+        setInitialized(true);
+        if (data.session) {
+          getProfile(data.session.user.id)
+            .then((nextProfile) => {
+              if (active) setProfile(nextProfile);
+            })
+            .catch(() => {
+              if (active) setProfile(null);
+            });
         }
-      }
-      if (active) setInitialized(true);
-    });
+      })
+      .catch(() => {
+        if (!active) return;
+        setSession(null);
+        setProfile(null);
+      })
+      .finally(() => {
+        if (active) setInitialized(true);
+      });
 
     const {
       data: { subscription },

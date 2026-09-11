@@ -2,18 +2,17 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
   GraduationCap,
-  MessagesSquare,
   HelpCircle,
   User,
   Settings,
   LogOut,
   Bell,
+  Bookmark,
   Compass,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
 
-import { AuthGuard } from "@/components/auth-guard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -35,20 +34,20 @@ const nav = [
   { to: "/universities", label: "nav.universities", icon: GraduationCap },
   { to: "/hub", label: "nav.hub", icon: Compass },
   { to: "/questions", label: "nav.questions", icon: HelpCircle },
-  { to: "/messages", label: "nav.messages", icon: MessagesSquare },
+  { to: "/saved", label: "nav.saved", icon: Bookmark },
   { to: "/profile", label: "nav.profile", icon: User },
   { to: "/settings", label: "nav.settings", icon: Settings },
 ] as const;
 
 const mobileNav = nav.filter((item) =>
-  ["/dashboard", "/universities", "/hub", "/messages", "/profile"].includes(item.to),
+  ["/dashboard", "/universities", "/hub", "/saved", "/profile"].includes(item.to),
 );
 
 export function Logo({ className }: { className?: string }) {
   return (
     <Link to="/" className={cn("flex items-center gap-2", className)}>
-      <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <GraduationCap className="size-5" />
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f4f0e4]">
+        <img src="/takka-logo.png" alt="" className="size-full object-contain" />
       </span>
       <span className="text-lg font-bold tracking-tight">TAKKA</span>
     </Link>
@@ -109,125 +108,123 @@ export function AppShell({
   const isActive = (to: string) => pathname === to || pathname.startsWith(`${to}/`);
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-background">
-        <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
-          <Logo className="px-2" />
-          <nav className="mt-8 flex flex-1 flex-col gap-1">
-            {nav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive(item.to)
-                    ? "bg-primary-soft text-primary-soft-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <item.icon className="size-[18px]" />
-                {t(item.label)}
-                {item.to === "/messages" && (messageCount.data ?? 0) > 0 ? (
-                  <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                    {(messageCount.data ?? 0) > 99 ? "99+" : messageCount.data}
+    <div className="min-h-screen bg-background">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
+        <Logo className="px-2" />
+        <nav className="mt-8 flex flex-1 flex-col gap-1">
+          {nav.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                isActive(item.to)
+                  ? "bg-primary-soft text-primary-soft-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <item.icon className="size-[18px]" />
+              {t(item.label)}
+              {item.to === "/hub" && (messageCount.data ?? 0) > 0 ? (
+                <span className="ml-auto rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                  {(messageCount.data ?? 0) > 99 ? "99+" : messageCount.data}
+                </span>
+              ) : null}
+            </Link>
+          ))}
+        </nav>
+        {verified ? (
+          <div className="rounded-lg bg-primary-soft p-4">
+            <p className="text-sm font-semibold text-primary-soft-foreground">
+              {t("shell.verified.title")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("shell.verified.text")}</p>
+          </div>
+        ) : null}
+      </aside>
+
+      <div className="lg:pl-64">
+        <header className="pt-safe sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
+          <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+            <div className="lg:hidden">
+              <Logo />
+            </div>
+            <h1 className="hidden text-base font-semibold lg:block">{title ?? t("nav.home")}</h1>
+            <div className="ml-auto" />
+            <Button asChild variant="ghost" size="icon" className="relative rounded-full">
+              <Link to="/notifications" aria-label={t("notifications.open")}>
+                <Bell className="size-[18px]" />
+                {(notificationCount.data ?? 0) > 0 ? (
+                  <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                    {(notificationCount.data ?? 0) > 9 ? "9+" : notificationCount.data}
                   </span>
                 ) : null}
               </Link>
-            ))}
-          </nav>
-          {verified ? (
-            <div className="rounded-lg bg-primary-soft p-4">
-              <p className="text-sm font-semibold text-primary-soft-foreground">
-                {t("shell.verified.title")}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{t("shell.verified.text")}</p>
-            </div>
-          ) : null}
-        </aside>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t("shell.logOut")}
+              onClick={() => void signOut()}
+              className="rounded-full"
+            >
+              <LogOut className="size-[18px]" />
+            </Button>
+            <Link to="/profile" aria-label={t("shell.openProfile")}>
+              <Avatar className="size-9 border border-border">
+                {profile?.avatar_path ? (
+                  <AvatarImage
+                    src={avatarUrl(profile.avatar_path) ?? undefined}
+                    alt={profile.full_name}
+                  />
+                ) : null}
+                <AvatarFallback className="bg-primary-soft text-xs font-semibold text-primary-soft-foreground">
+                  {profile ? initials(profile.full_name) : "?"}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
+        </header>
 
-        <div className="lg:pl-64">
-          <header className="pt-safe sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-            <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-              <div className="lg:hidden">
-                <Logo />
-              </div>
-              <h1 className="hidden text-base font-semibold lg:block">{title ?? t("nav.home")}</h1>
-              <div className="ml-auto" />
-              <Button asChild variant="ghost" size="icon" className="relative rounded-full">
-                <Link to="/notifications" aria-label={t("notifications.open")}>
-                  <Bell className="size-[18px]" />
-                  {(notificationCount.data ?? 0) > 0 ? (
-                    <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
-                      {(notificationCount.data ?? 0) > 9 ? "9+" : notificationCount.data}
-                    </span>
-                  ) : null}
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t("shell.logOut")}
-                onClick={() => void signOut()}
-                className="rounded-full"
-              >
-                <LogOut className="size-[18px]" />
-              </Button>
-              <Link to="/profile" aria-label={t("shell.openProfile")}>
-                <Avatar className="size-9 border border-border">
-                  {profile?.avatar_path ? (
-                    <AvatarImage
-                      src={avatarUrl(profile.avatar_path) ?? undefined}
-                      alt={profile.full_name}
-                    />
-                  ) : null}
-                  <AvatarFallback className="bg-primary-soft text-xs font-semibold text-primary-soft-foreground">
-                    {profile ? initials(profile.full_name) : "?"}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
-            </div>
-          </header>
-
-          <div
-            className={cn("mx-auto max-w-6xl px-4 pt-6 lg:pb-12", hideMobileNav ? "pb-4" : "pb-28")}
-          >
-            <div className={cn("gap-6", right && "xl:grid xl:grid-cols-[minmax(0,1fr)_320px]")}>
-              <main className="min-w-0">{children}</main>
-              {right ? <aside className="mt-6 space-y-4 xl:mt-0">{right}</aside> : null}
-            </div>
+        <div
+          className={cn("mx-auto max-w-6xl px-4 pt-6 lg:pb-12", hideMobileNav ? "pb-4" : "pb-28")}
+        >
+          <div className={cn("gap-6", right && "xl:grid xl:grid-cols-[minmax(0,1fr)_320px]")}>
+            <main className="min-w-0">{children}</main>
+            {right ? <aside className="mt-6 space-y-4 xl:mt-0">{right}</aside> : null}
           </div>
         </div>
-
-        <nav
-          className={cn(
-            "pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden",
-            hideMobileNav && "hidden",
-          )}
-        >
-          <div className="flex items-center justify-around px-1 pt-1">
-            {mobileNav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
-                  isActive(item.to) ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                <span className="relative">
-                  <item.icon className="size-5" />
-                  {item.to === "/messages" && (messageCount.data ?? 0) > 0 ? (
-                    <span className="absolute -right-2.5 -top-2 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
-                      {(messageCount.data ?? 0) > 9 ? "9+" : messageCount.data}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="max-w-full truncate px-0.5">{t(item.label)}</span>
-              </Link>
-            ))}
-          </div>
-        </nav>
       </div>
-    </AuthGuard>
+
+      <nav
+        className={cn(
+          "pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden",
+          hideMobileNav && "hidden",
+        )}
+      >
+        <div className="flex items-center justify-around px-1 pt-1">
+          {mobileNav.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] font-medium transition-colors",
+                isActive(item.to) ? "text-primary" : "text-muted-foreground",
+              )}
+            >
+              <span className="relative">
+                <item.icon className="size-5" />
+                {item.to === "/hub" && (messageCount.data ?? 0) > 0 ? (
+                  <span className="absolute -right-2.5 -top-2 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                    {(messageCount.data ?? 0) > 9 ? "9+" : messageCount.data}
+                  </span>
+                ) : null}
+              </span>
+              <span className="max-w-full truncate px-0.5">{t(item.label)}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </div>
   );
 }

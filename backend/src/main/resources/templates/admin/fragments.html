@@ -24,7 +24,7 @@
   <body>
     <aside th:fragment="sidebar" class="console-sidebar">
       <div class="console-brand">
-        <span class="console-brand-mark">TK</span>
+        <img class="console-brand-mark" th:src="@{/admin/assets/takka-logo.png}" alt="" />
         <span class="console-brand-text">
           <strong>TAKKA</strong>
           <small th:text="#{console.brand.tagline}">Administration</small>
@@ -41,7 +41,8 @@
         >
       </nav>
       <p class="console-scope" th:text="#{console.scope}">
-        Moderation console. Member pages are served by the TAKKA app and are not reachable from here.
+        Moderation console. Member pages are served by the TAKKA app and are not reachable from
+        here.
       </p>
     </aside>
 
@@ -61,7 +62,11 @@
         >
         <form th:action="@{/admin/logout}" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button type="submit" class="console-button console-button--ghost" th:text="#{console.signOut}">
+          <button
+            type="submit"
+            class="console-button console-button--ghost"
+            th:text="#{console.signOut}"
+          >
             Sign out
           </button>
         </form>
@@ -72,7 +77,11 @@
       Each option is written in its own language, so the switch is readable whichever language is
       currently active. The links are built server-side and keep the current filters.
     -->
-    <nav th:fragment="languages" class="console-languages" th:attr="aria-label=#{console.language.label}">
+    <nav
+      th:fragment="languages"
+      class="console-languages"
+      th:attr="aria-label=#{console.language.label}"
+    >
       <a
         th:each="choice : ${languageChoices}"
         th:href="${choice.href()}"
@@ -85,8 +94,16 @@
     </nav>
 
     <div th:fragment="flash" class="console-flash">
-      <p th:if="${flashSuccess}" class="console-banner console-banner--success" th:text="${flashSuccess}"></p>
-      <p th:if="${flashError}" class="console-banner console-banner--error" th:text="${flashError}"></p>
+      <p
+        th:if="${flashSuccess}"
+        class="console-banner console-banner--success"
+        th:text="${flashSuccess}"
+      ></p>
+      <p
+        th:if="${flashError}"
+        class="console-banner console-banner--error"
+        th:text="${flashError}"
+      ></p>
     </div>
 
     <!-- Page links keep the active filter by re-using the encoded query the controller built. -->

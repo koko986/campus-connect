@@ -4,7 +4,7 @@
   <body class="console-body console-body--centered">
     <main class="console-login">
       <div class="console-brand console-brand--stacked">
-        <span class="console-brand-mark">TK</span>
+        <img class="console-brand-mark" th:src="@{/admin/assets/takka-logo.png}" alt="" />
         <span class="console-brand-text">
           <strong>TAKKA</strong>
           <small th:text="#{console.brand.tagline}">Administration</small>
@@ -12,7 +12,10 @@
       </div>
       <h1 th:text="${errorTitle}">Something went wrong</h1>
       <p class="console-login-note" th:text="${errorDetail}">Please try again.</p>
-      <a th:href="@{/admin}" class="console-button console-button--primary" th:text="#{action.backToConsole}"
+      <a
+        th:href="@{/admin}"
+        class="console-button console-button--primary"
+        th:text="#{action.backToConsole}"
         >Back to the console</a
       >
     </main>

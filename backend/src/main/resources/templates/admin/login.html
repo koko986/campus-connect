@@ -4,7 +4,7 @@
   <body class="console-body console-body--centered">
     <main class="console-login">
       <div class="console-brand console-brand--stacked">
-        <span class="console-brand-mark">TK</span>
+        <img class="console-brand-mark" th:src="@{/admin/assets/takka-logo.png}" alt="" />
         <span class="console-brand-text">
           <strong>TAKKA</strong>
           <small th:text="#{console.brand.tagline}">Administration</small>
@@ -15,11 +15,15 @@
 
       <h1 th:text="#{page.signIn.heading}">Administrator sign in</h1>
       <p class="console-login-note" th:text="#{page.signIn.note}">
-        This console is separate from the TAKKA member app. Only accounts listed as administrators can
-        sign in here.
+        This console is separate from the TAKKA member app. Only accounts listed as administrators
+        can sign in here.
       </p>
 
-      <p th:if="${signInError}" class="console-banner console-banner--error" th:text="${signInError}"></p>
+      <p
+        th:if="${signInError}"
+        class="console-banner console-banner--error"
+        th:text="${signInError}"
+      ></p>
       <p
         th:if="${param.signedOut}"
         class="console-banner console-banner--success"
@@ -39,7 +43,11 @@
           <!-- Bound by name only, so a rejected attempt never echoes the password back. -->
           <input type="password" name="password" autocomplete="current-password" required />
         </label>
-        <button type="submit" class="console-button console-button--primary" th:text="#{action.signIn}">
+        <button
+          type="submit"
+          class="console-button console-button--primary"
+          th:text="#{action.signIn}"
+        >
           Sign in
         </button>
       </form>

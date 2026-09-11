@@ -49,9 +49,9 @@ public class FrontendFallbackController {
   @RequestMapping(
       value = {
           "/", "/login", "/get-started", "/register/**", "/dashboard", "/hub",
-          "/universities/**", "/questions", "/questions/**", "/messages", "/notifications",
+          "/universities/**", "/questions", "/questions/**", "/messages", "/notifications", "/saved",
           "/profile", "/profiles/**", "/posts/**", "/settings", "/assets/**", "/favicon.ico",
-          "/favicon.svg", "/robots.txt"
+          "/favicon.svg", "/takka-logo.png", "/robots.txt"
       },
       method = {RequestMethod.GET, RequestMethod.HEAD})
   ResponseEntity<byte[]> serve(HttpServletRequest incoming) {

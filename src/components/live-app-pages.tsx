@@ -5,6 +5,7 @@ import {
   Camera,
   ChevronRight,
   ExternalLink,
+  GraduationCap,
   ImagePlus,
   Plus,
   ShieldCheck,
@@ -44,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
 import type { CommunityProfile, CommunityQuestion, FeedPost, FeedSort } from "@/lib/data";
 import {
@@ -112,15 +114,6 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
     getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
   });
 
-  const savedUniversities = useQuery({
-    queryKey: ["saved-universities", user!.id],
-    queryFn: () => listSavedUniversities(user!.id),
-  });
-  const savedPosts = useQuery({
-    queryKey: ["saved-posts", user!.id],
-    queryFn: () => listSavedPosts(user!.id),
-  });
-
   const filter = useQuery({
     queryKey: ["university", universityId],
     queryFn: () => getUniversity(universityId!),
@@ -129,52 +122,8 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
 
   const posts = feed.data?.pages.flatMap((page) => page.posts) ?? [];
 
-  const side = (
-    <>
-      <div className="card-soft p-5">
-        <h3 className="font-semibold">{t("feed.savedPosts")}</h3>
-        <div className="mt-3 space-y-3">
-          {savedPosts.data?.slice(0, 5).map((post) => (
-            <Link
-              key={post.id}
-              to="/posts/$id"
-              params={{ id: post.id }}
-              className="block text-sm hover:text-primary"
-            >
-              <span className="line-clamp-2">{post.body}</span>
-            </Link>
-          ))}
-          {savedPosts.isSuccess && !savedPosts.data.length ? (
-            <p className="text-sm text-muted-foreground">{t("feed.nothingSaved")}</p>
-          ) : null}
-        </div>
-      </div>
-      <div className="card-soft p-5">
-        <h3 className="font-semibold">{t("feed.savedUniversities")}</h3>
-        <div className="mt-3 space-y-3">
-          {savedUniversities.data?.map((university) => (
-            <Link
-              key={university.id}
-              to="/universities/$id"
-              params={{ id: university.id }}
-              className="flex items-center gap-3 text-sm hover:text-primary"
-            >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-xs font-bold">
-                {university.short_name}
-              </span>
-              <span className="min-w-0 truncate">{university.name}</span>
-            </Link>
-          ))}
-          {savedUniversities.isSuccess && !savedUniversities.data.length ? (
-            <p className="text-sm text-muted-foreground">{t("feed.noSavedUniversities")}</p>
-          ) : null}
-        </div>
-      </div>
-    </>
-  );
-
   return (
-    <AppShell title={t("nav.home")} right={side}>
+    <AppShell title={t("nav.home")}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">
@@ -222,6 +171,82 @@ export function DashboardPage({ universityId }: { universityId?: string | undefi
           </div>
         ) : null}
       </div>
+    </AppShell>
+  );
+}
+
+export function SavedPage() {
+  const { user } = useAuth();
+  const t = useT();
+  const savedPosts = useQuery({
+    queryKey: ["saved-posts", user!.id],
+    queryFn: () => listSavedPosts(user!.id),
+  });
+  const savedUniversities = useQuery({
+    queryKey: ["saved-universities", user!.id],
+    queryFn: () => listSavedUniversities(user!.id),
+  });
+
+  return (
+    <AppShell title={t("saved.title")}>
+      <header className="mb-6 border-b pb-6">
+        <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+          <Bookmark aria-hidden="true" className="size-4" />
+          {t("saved.eyebrow")}
+        </div>
+        <h1 className="mt-2 text-3xl font-bold">{t("saved.heading")}</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("saved.note")}</p>
+      </header>
+
+      <Tabs defaultValue="posts">
+        <TabsList className="grid h-auto w-full grid-cols-2 rounded-lg border bg-muted/60 p-1 sm:max-w-md">
+          <TabsTrigger value="posts" className="min-h-11 gap-2">
+            <Bookmark aria-hidden="true" className="size-4" />
+            {t("feed.savedPosts")}
+            {savedPosts.data ? <Badge variant="secondary">{savedPosts.data.length}</Badge> : null}
+          </TabsTrigger>
+          <TabsTrigger value="universities" className="min-h-11 gap-2">
+            <GraduationCap aria-hidden="true" className="size-4" />
+            {t("feed.savedUniversities")}
+            {savedUniversities.data ? (
+              <Badge variant="secondary">{savedUniversities.data.length}</Badge>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="posts" className="mt-6 space-y-4">
+          {savedPosts.isLoading ? <Loading label={t("saved.loadingPosts")} /> : null}
+          {savedPosts.error ? (
+            <Failure error={savedPosts.error} onRetry={() => void savedPosts.refetch()} />
+          ) : null}
+          {savedPosts.data?.map((post) => (
+            <PostCard key={post.id} post={post} userId={user!.id} />
+          ))}
+          {savedPosts.isSuccess && !savedPosts.data.length ? (
+            <Empty title={t("saved.noPostsTitle")} text={t("saved.noPostsText")} />
+          ) : null}
+        </TabsContent>
+
+        <TabsContent value="universities" className="mt-6">
+          {savedUniversities.isLoading ? <Loading label={t("saved.loadingUniversities")} /> : null}
+          {savedUniversities.error ? (
+            <Failure
+              error={savedUniversities.error}
+              onRetry={() => void savedUniversities.refetch()}
+            />
+          ) : null}
+          {savedUniversities.data?.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {savedUniversities.data.map((university) => (
+                <UniversityCard key={university.id} university={university} />
+              ))}
+            </div>
+          ) : null}
+          {savedUniversities.isSuccess && !savedUniversities.data.length ? (
+            <Empty title={t("saved.noUniversitiesTitle")} text={t("saved.noUniversitiesText")} />
+          ) : null}
+        </TabsContent>
+      </Tabs>
     </AppShell>
   );
 }
