@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17";
+    PostgrestVersion: "14.5";
   };
   public: {
     Tables: {
@@ -411,6 +411,53 @@ export type Database = {
           },
         ];
       };
+      matcher_preferences: {
+        Row: {
+          city_weight: number;
+          degree_weight: number;
+          field_weight: number;
+          preferred_city: string | null;
+          preferred_degree_level: string | null;
+          preferred_field: string | null;
+          preferred_university_type: Database["public"]["Enums"]["university_type"] | null;
+          type_weight: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          city_weight?: number;
+          degree_weight?: number;
+          field_weight?: number;
+          preferred_city?: string | null;
+          preferred_degree_level?: string | null;
+          preferred_field?: string | null;
+          preferred_university_type?: Database["public"]["Enums"]["university_type"] | null;
+          type_weight?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          city_weight?: number;
+          degree_weight?: number;
+          field_weight?: number;
+          preferred_city?: string | null;
+          preferred_degree_level?: string | null;
+          preferred_field?: string | null;
+          preferred_university_type?: Database["public"]["Enums"]["university_type"] | null;
+          type_weight?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "matcher_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           body: string;
@@ -544,6 +591,160 @@ export type Database = {
           },
           {
             foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunities: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deadline_at: string;
+          description: string;
+          eligibility: string | null;
+          external_url: string | null;
+          id: string;
+          location: string | null;
+          opportunity_type: string;
+          organization: string;
+          review_note: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          starts_at: string | null;
+          status: string;
+          title: string;
+          university_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deadline_at: string;
+          description: string;
+          eligibility?: string | null;
+          external_url?: string | null;
+          id?: string;
+          location?: string | null;
+          opportunity_type: string;
+          organization: string;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          starts_at?: string | null;
+          status?: string;
+          title: string;
+          university_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deadline_at?: string;
+          description?: string;
+          eligibility?: string | null;
+          external_url?: string | null;
+          id?: string;
+          location?: string | null;
+          opportunity_type?: string;
+          organization?: string;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          starts_at?: string | null;
+          status?: string;
+          title?: string;
+          university_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunities_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "admin_users";
+            referencedColumns: ["user_id"];
+          },
+          {
+            foreignKeyName: "opportunities_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: false;
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunity_bookmarks: {
+        Row: {
+          created_at: string;
+          opportunity_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          opportunity_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          opportunity_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_bookmarks_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_bookmarks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunity_reminders: {
+        Row: {
+          delivered_at: string;
+          opportunity_id: string;
+          reminder_window: string;
+          user_id: string;
+        };
+        Insert: {
+          delivered_at?: string;
+          opportunity_id: string;
+          reminder_window: string;
+          user_id: string;
+        };
+        Update: {
+          delivered_at?: string;
+          opportunity_id?: string;
+          reminder_window?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_reminders_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_reminders_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
@@ -1058,6 +1259,125 @@ export type Database = {
           },
         ];
       };
+      study_buddy_dismissals: {
+        Row: {
+          created_at: string;
+          dismissed_user_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          dismissed_user_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          dismissed_user_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_buddy_dismissals_dismissed_user_id_fkey";
+            columns: ["dismissed_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "study_buddy_dismissals_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      study_buddy_profiles: {
+        Row: {
+          availability: string[];
+          goals: string;
+          is_active: boolean;
+          languages: string[];
+          study_modes: string[];
+          topics: string[];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          availability?: string[];
+          goals?: string;
+          is_active?: boolean;
+          languages?: string[];
+          study_modes?: string[];
+          topics?: string[];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          availability?: string[];
+          goals?: string;
+          is_active?: boolean;
+          languages?: string[];
+          study_modes?: string[];
+          topics?: string[];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_buddy_profiles_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      study_buddy_requests: {
+        Row: {
+          created_at: string;
+          id: string;
+          message: string | null;
+          receiver_id: string;
+          responded_at: string | null;
+          sender_id: string;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          message?: string | null;
+          receiver_id: string;
+          responded_at?: string | null;
+          sender_id: string;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          message?: string | null;
+          receiver_id?: string;
+          responded_at?: string | null;
+          sender_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_buddy_requests_receiver_id_fkey";
+            columns: ["receiver_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "study_buddy_requests_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       universities: {
         Row: {
           about: string | null;
@@ -1219,6 +1539,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      deliver_due_opportunity_reminders: { Args: never; Returns: number };
       join_university_group: {
         Args: { target_university_id: string };
         Returns: string;
@@ -1233,6 +1554,28 @@ export type Database = {
         Returns: {
           match_reasons: string[];
           score: number;
+          university_id: string;
+        }[];
+      };
+      recommend_universities_v2: {
+        Args: {
+          p_city_weight?: number;
+          p_degree_weight?: number;
+          p_field_weight?: number;
+          p_limit?: number;
+          p_preferred_city?: string;
+          p_preferred_degree_level?: string;
+          p_preferred_field?: string;
+          p_preferred_university_type?: Database["public"]["Enums"]["university_type"];
+          p_type_weight?: number;
+        };
+        Returns: {
+          city_score: number;
+          degree_score: number;
+          field_score: number;
+          match_reasons: string[];
+          score: number;
+          type_score: number;
           university_id: string;
         }[];
       };

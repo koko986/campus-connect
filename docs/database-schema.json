@@ -1,0 +1,2188 @@
+{
+  "generatedAt": "2026-09-11",
+  "source": "Supabase production public schema",
+  "foreignKeyConstraints": 64,
+  "tables": [
+    {
+      "name": "account_moderation",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reason",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "blocked_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "blocked_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "admin_users",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_active",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "answer_votes",
+      "columns": [
+        {
+          "pk": true,
+          "name": "answer_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "answers",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "answers",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "question_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "questions",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "author_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_accepted",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "vote_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "campuses",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "address",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "city",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "latitude",
+          "type": "numeric",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "longitude",
+          "type": "numeric",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "comment_votes",
+      "columns": [
+        {
+          "pk": true,
+          "name": "comment_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "comments",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "comments",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "post_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "posts",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "author_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "parent_comment_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "comments",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "vote_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reply_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "conversation_members",
+      "columns": [
+        {
+          "pk": true,
+          "name": "conversation_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "conversations",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "joined_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "last_read_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "conversations",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "last_message_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "conversation_type",
+          "type": "conversation_type",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "title",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "member_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "departments",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "matcher_preferences",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "preferred_field",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferred_city",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferred_degree_level",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferred_university_type",
+          "type": "university_type",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "field_weight",
+          "type": "smallint",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "city_weight",
+          "type": "smallint",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "degree_weight",
+          "type": "smallint",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "type_weight",
+          "type": "smallint",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "messages",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "conversation_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "conversations",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "sender_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "edited_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "moderation_actions",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "admin_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "admin_email",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "action",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "target_type",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "target_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reason",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "reports",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "target_snapshot",
+          "type": "jsonb",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "actor_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "notification_type",
+          "type": "notification_type",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "entity_type",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "entity_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "read_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "opportunities",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "organization",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "opportunity_type",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "eligibility",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "location",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "external_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "starts_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "deadline_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "review_note",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reviewed_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "reviewed_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "opportunity_bookmarks",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "opportunity_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "opportunities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "opportunity_reminders",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "opportunity_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "opportunities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "reminder_window",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "delivered_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "post_likes",
+      "columns": [
+        {
+          "pk": true,
+          "name": "post_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "posts",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "posts",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "author_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "image_path",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "topic",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "visibility",
+          "type": "post_visibility",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "moderation_status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "removed_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "removed_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "removal_reason",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "scope",
+          "type": "post_scope",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "deleted_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "like_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "comment_count",
+          "type": "integer",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "profiles",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "email",
+          "type": "citext",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "full_name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "account_type",
+          "type": "account_type",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "avatar_path",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "bio",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_public",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "programs",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "department_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "departments",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "degree_level",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "source_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        }
+      ]
+    },
+    {
+      "name": "prospective_profiles",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "preferred_city",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferred_field",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferred_degree_level",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "preferences",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "question_tags",
+      "columns": [
+        {
+          "pk": true,
+          "name": "question_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "questions",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "tag",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "questions",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "author_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_resolved",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "reports",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reporter_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "target_type",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "target_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reason",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "details",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "assigned_to",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "resolution_notes",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "target_snapshot",
+          "type": "jsonb",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "resolved_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "saved_posts",
+      "columns": [
+        {
+          "pk": true,
+          "name": "post_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "posts",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "saved_universities",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "student_profiles",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "campus_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "campuses",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "department_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "departments",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "program_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "programs",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "academic_year",
+          "type": "smallint",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "verification_status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "verified_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "study_buddy_dismissals",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": true,
+          "name": "dismissed_user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "study_buddy_profiles",
+      "columns": [
+        {
+          "pk": true,
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "topics",
+          "type": "text[]",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "goals",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "study_modes",
+          "type": "text[]",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "languages",
+          "type": "text[]",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "availability",
+          "type": "text[]",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_active",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "study_buddy_requests",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "sender_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "receiver_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "message",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "responded_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "universities",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "slug",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "short_name",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_type",
+          "type": "university_type",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "city",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "region",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "country_code",
+          "type": "character",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "about",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "website_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "logo_path",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "is_published",
+          "type": "boolean",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "founded_year",
+          "type": "smallint",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "contact_email",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "contact_phone",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "data_source_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "data_verified_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "archived_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "archived_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "cover_image_path",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "cover_image_credit",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "cover_image_source_url",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "cover_image_license",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    },
+    {
+      "name": "university_photos",
+      "columns": [
+        {
+          "pk": true,
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "university_id",
+          "type": "uuid",
+          "nullable": false,
+          "references": {
+            "table": "universities",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "uploader_id",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "profiles",
+            "column": "id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "image_path",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "caption",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reviewed_at",
+          "type": "timestamptz",
+          "nullable": true,
+          "references": null
+        },
+        {
+          "pk": false,
+          "name": "reviewed_by",
+          "type": "uuid",
+          "nullable": true,
+          "references": {
+            "table": "admin_users",
+            "column": "user_id",
+            "schema": "public"
+          }
+        },
+        {
+          "pk": false,
+          "name": "review_note",
+          "type": "text",
+          "nullable": true,
+          "references": null
+        }
+      ]
+    }
+  ]
+}

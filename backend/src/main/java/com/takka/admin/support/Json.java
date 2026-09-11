@@ -42,7 +42,7 @@ public final class Json {
   public static String text(JsonNode node, String field, String fallback) {
     if (node == null) return fallback;
     JsonNode value = node.path(field);
-    return value.isNull() || value.isMissingNode() ? fallback : value.asText(fallback);
+    return value.isNull() || value.isMissingNode() ? fallback : value.asString(fallback);
   }
 
   public static Optional<String> optionalText(JsonNode node, String field) {

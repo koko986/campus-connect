@@ -49,7 +49,8 @@ public class SupabaseGateway {
         .retrieve()
         .body(JsonNode.class);
     if (user == null || !user.hasNonNull("id")) throw new IllegalArgumentException("Invalid session");
-    return new TakkaPrincipal(UUID.fromString(user.get("id").asText()), user.path("email").asText(""), token);
+    return new TakkaPrincipal(
+        UUID.fromString(user.get("id").asString()), user.path("email").asString(""), token);
   }
 
   /**
@@ -72,9 +73,9 @@ public class SupabaseGateway {
     JsonNode user = session.path("user");
     if (!user.hasNonNull("id")) throw new IllegalArgumentException("Invalid email or password");
     return new TakkaPrincipal(
-        UUID.fromString(user.get("id").asText()),
-        user.path("email").asText(""),
-        session.get("access_token").asText());
+        UUID.fromString(user.get("id").asString()),
+        user.path("email").asString(""),
+        session.get("access_token").asString());
   }
 
   public JsonNode get(String resourceAndQuery) {

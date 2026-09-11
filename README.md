@@ -58,8 +58,13 @@ The frontend reads and writes live Supabase tables. There is no mock-data fallba
 Generated database types live in `src/lib/database.types.ts`. Regenerate them after schema changes.
 
 Apply every SQL file in `supabase/migrations/` in filename order before deploying a frontend that
-uses the corresponding feature. The Student Hub requires both `20260909000000` and
-`20260909000100`; student verification decisions also require `20260909000200`.
+uses the corresponding feature. The Student Hub requires `20260909174128` and `20260909174138`;
+student verification decisions also require `20260909174235`, and matcher normalization requires
+`20260909175239`.
+
+The checked-in migration folder starts after TAKKA's original production baseline. It can upgrade
+an existing TAKKA database, but it cannot initialize a blank Supabase project by itself. Export and
+apply a sanitized baseline schema first when setting up a new project.
 
 ## Production Checklist
 

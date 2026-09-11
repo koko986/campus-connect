@@ -22,8 +22,8 @@ public class AccountController {
     if (!values.isArray() || values.isEmpty()) return Map.of("status", "ACTIVE");
     JsonNode moderation = values.get(0);
     return Map.of(
-        "status", moderation.path("status").asText("ACTIVE"),
-        "reason", moderation.path("reason").asText(""),
-        "blockedAt", moderation.path("blocked_at").asText(""));
+        "status", moderation.path("status").asString("ACTIVE"),
+        "reason", moderation.path("reason").asString(""),
+        "blockedAt", moderation.path("blocked_at").asString(""));
   }
 }

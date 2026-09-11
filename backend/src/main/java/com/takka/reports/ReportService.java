@@ -63,7 +63,8 @@ public class ReportService {
   private void ensureActive(UUID userId) {
     ArrayNode profile = array(supabase.get("profiles?select=id&id=eq." + userId));
     ArrayNode status = array(supabase.get("account_moderation?select=status&user_id=eq." + userId));
-    if (profile.isEmpty() || (!status.isEmpty() && "BLOCKED".equals(status.get(0).path("status").asText()))) {
+    if (profile.isEmpty()
+        || (!status.isEmpty() && "BLOCKED".equals(status.get(0).path("status").asString()))) {
       throw new IllegalArgumentException("This account cannot submit reports");
     }
   }

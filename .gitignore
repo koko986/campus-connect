@@ -20,6 +20,7 @@ dist-ssr
 **/.env
 target/
 **/target/
+supabase/.temp/
 
 # Wrangler / Cloudflare
 .wrangler/
