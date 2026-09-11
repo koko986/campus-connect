@@ -35,6 +35,10 @@ public class OpportunityModerationService {
     return opportunities.statusCounts();
   }
 
+  public long pendingCount() {
+    return statusCounts().getOrDefault("pending", 0L);
+  }
+
   public void decide(AdminIdentity administrator, UUID id, String decision, String note) {
     AdminAccess.requireAdministrator(administrator);
     if (!List.of("published", "rejected").contains(decision)) {

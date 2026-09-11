@@ -10,21 +10,25 @@ public class AdminOverviewService {
   private final AccountModerationService accountModeration;
   private final PostModerationService postModeration;
   private final UniversityDirectoryService universityDirectory;
+  private final OpportunityModerationService opportunityModeration;
 
   public AdminOverviewService(
       ReportModerationService reportModeration,
       AccountModerationService accountModeration,
       PostModerationService postModeration,
-      UniversityDirectoryService universityDirectory) {
+      UniversityDirectoryService universityDirectory,
+      OpportunityModerationService opportunityModeration) {
     this.reportModeration = reportModeration;
     this.accountModeration = accountModeration;
     this.postModeration = postModeration;
     this.universityDirectory = universityDirectory;
+    this.opportunityModeration = opportunityModeration;
   }
 
   public OverviewMetrics metrics() {
     return new OverviewMetrics(
         reportModeration.openCount(),
+        opportunityModeration.pendingCount(),
         accountModeration.totalMembers(),
         accountModeration.blockedMembers(),
         postModeration.totalPosts(),

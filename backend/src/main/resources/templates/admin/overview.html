@@ -8,26 +8,49 @@
       <div th:replace="~{admin/fragments :: flash}"></div>
 
       <section class="console-metrics">
-        <a class="console-metric" th:classappend="${metrics.hasQueue()} ? 'console-metric--alert' : ''"
-          th:href="@{/admin/reports(status='OPEN')}">
+        <a
+          class="console-metric"
+          th:classappend="${metrics.openReports() > 0} ? 'console-metric--alert' : ''"
+          th:href="@{/admin/reports(status='OPEN')}"
+        >
           <span class="console-metric-value" th:text="${metrics.openReports()}">0</span>
-          <span class="console-metric-label" th:text="#{page.overview.metric.openReports}">Reports awaiting review</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.openReports}"
+            >Reports awaiting review</span
+          >
+        </a>
+        <a
+          class="console-metric"
+          th:classappend="${metrics.pendingOpportunities() > 0} ? 'console-metric--alert' : ''"
+          th:href="@{/admin/opportunities(status='pending')}"
+        >
+          <span class="console-metric-value" th:text="${metrics.pendingOpportunities()}">0</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.pendingOpportunities}"
+            >Opportunities awaiting review</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/members}">
           <span class="console-metric-value" th:text="${metrics.members()}">0</span>
-          <span class="console-metric-label" th:text="#{page.overview.metric.members}">Members</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.members}"
+            >Members</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/members(status='BLOCKED')}">
           <span class="console-metric-value" th:text="${metrics.blockedMembers()}">0</span>
-          <span class="console-metric-label" th:text="#{page.overview.metric.blockedMembers}">Blocked accounts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.blockedMembers}"
+            >Blocked accounts</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/posts}">
           <span class="console-metric-value" th:text="${metrics.visiblePosts()}">0</span>
-          <span class="console-metric-label" th:text="#{page.overview.metric.visiblePosts}">Visible posts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.visiblePosts}"
+            >Visible posts</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/posts(status='REMOVED')}">
           <span class="console-metric-value" th:text="${metrics.removedPosts()}">0</span>
-          <span class="console-metric-label" th:text="#{page.overview.metric.removedPosts}">Removed posts</span>
+          <span class="console-metric-label" th:text="#{page.overview.metric.removedPosts}"
+            >Removed posts</span
+          >
         </a>
         <a class="console-metric" th:href="@{/admin/universities}">
           <span class="console-metric-value" th:text="${metrics.publishedUniversities()}">0</span>
@@ -46,7 +69,10 @@
       <section class="console-panel">
         <div class="console-panel-head">
           <h2 th:text="#{page.overview.queue.heading}">Longest waiting reports</h2>
-          <a th:href="@{/admin/reports}" class="console-button console-button--ghost" th:text="#{action.openQueue}"
+          <a
+            th:href="@{/admin/reports}"
+            class="console-button console-button--ghost"
+            th:text="#{action.openQueue}"
             >Open queue</a
           >
         </div>
@@ -64,15 +90,25 @@
           </thead>
           <tbody>
             <tr th:each="report : ${queue}">
-              <td th:text="${#messages.msg(report.age().messageKey(), report.age().amount())}">3d</td>
+              <td th:text="${#messages.msg(report.age().messageKey(), report.age().amount())}">
+                3d
+              </td>
               <td>
                 <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
-                <span class="console-muted" th:text="${#messages.msg(report.targetType().labelKey())}">Account</span>
+                <span
+                  class="console-muted"
+                  th:text="${#messages.msg(report.targetType().labelKey())}"
+                  >Account</span
+                >
               </td>
               <td th:text="${report.reason()}">SPAM</td>
               <td>
-                <span class="console-pill" th:classappend="'console-pill--' + ${report.statusTone()}"
-                  th:text="${#messages.msg(report.status().labelKey())}">Open</span>
+                <span
+                  class="console-pill"
+                  th:classappend="'console-pill--' + ${report.statusTone()}"
+                  th:text="${#messages.msg(report.status().labelKey())}"
+                  >Open</span
+                >
               </td>
             </tr>
           </tbody>
@@ -82,7 +118,10 @@
       <section class="console-panel">
         <div class="console-panel-head">
           <h2 th:text="#{page.overview.activity.heading}">Recent moderation activity</h2>
-          <a th:href="@{/admin/audit}" class="console-button console-button--ghost" th:text="#{action.fullAuditLog}"
+          <a
+            th:href="@{/admin/audit}"
+            class="console-button console-button--ghost"
+            th:text="#{action.fullAuditLog}"
             >Full audit log</a
           >
         </div>
@@ -91,10 +130,18 @@
         </p>
         <ul th:unless="${recentActions.isEmpty()}" class="console-timeline">
           <li th:each="entry : ${recentActions}">
-            <span class="console-pill" th:classappend="'console-pill--' + ${entry.actionTone()}"
+            <span
+              class="console-pill"
+              th:classappend="'console-pill--' + ${entry.actionTone()}"
               th:text="${entry.isTranslatable()} ? ${#messages.msg(entry.actionKey())} : ${entry.rawAction()}"
-              >Action</span>
-            <span class="console-strong" th:if="${entry.hasTargetLabel()}" th:text="${entry.targetLabel()}">Target</span>
+              >Action</span
+            >
+            <span
+              class="console-strong"
+              th:if="${entry.hasTargetLabel()}"
+              th:text="${entry.targetLabel()}"
+              >Target</span
+            >
             <span class="console-muted" th:text="${entry.adminEmail()}">admin</span>
             <span class="console-muted" th:text="${entry.recorded()}">date</span>
           </li>

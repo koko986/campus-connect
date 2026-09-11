@@ -63,7 +63,7 @@ class AdminModelTest {
 
   @Test
   void overviewMetricsDeriveTheirComplements() {
-    var metrics = new OverviewMetrics(3, 100, 12, 500, 40, 20, 15);
+    var metrics = new OverviewMetrics(3, 2, 100, 12, 500, 40, 20, 15);
 
     assertTrue(metrics.hasQueue());
     assertEquals(88, metrics.activeMembers());
@@ -73,7 +73,7 @@ class AdminModelTest {
 
   @Test
   void overviewMetricsNeverGoNegative() {
-    var metrics = new OverviewMetrics(0, 0, 5, 0, 9, 1, 4);
+    var metrics = new OverviewMetrics(0, 0, 0, 5, 0, 9, 1, 4);
 
     assertFalse(metrics.hasQueue());
     assertEquals(0, metrics.activeMembers());

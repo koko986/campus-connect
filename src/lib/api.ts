@@ -4,6 +4,7 @@ const apiUrl = (import.meta.env["VITE_TAKKA_API_URL"] ?? "http://localhost:8080"
   /\/$/,
   "",
 );
+export const adminConsoleUrl = `${apiUrl}/admin`;
 const API_TIMEOUT_MS = 15_000;
 
 /** The two member-facing endpoints the Java API serves. Moderation lives in the /admin console. */
@@ -20,6 +21,8 @@ export type AccountStatus = {
   status: "ACTIVE" | "BLOCKED";
   reason?: string;
   blockedAt?: string;
+  administrator: boolean;
+  adminRole?: "SUPER_ADMIN" | "MODERATOR";
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -44,13 +47,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } finally {
     window.clearTimeout(timeout);
   }
+  const text =
+    response.status === 204 || response.headers.get("content-length") === "0"
+      ? ""
+      : await response.text();
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Request failed (${response.status})`);
+    let message = "";
+    try {
+      message = (JSON.parse(text) as { error?: string }).error ?? "";
+    } catch {
+      if (response.headers.get("content-type")?.startsWith("text/plain")) message = text.trim();
+    }
+    throw new Error(message || `Request failed (${response.status})`);
   }
-  if (response.status === 204 || response.headers.get("content-length") === "0")
-    return undefined as T;
-  const text = await response.text();
   return (text ? JSON.parse(text) : undefined) as T;
 }
 

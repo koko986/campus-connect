@@ -27,7 +27,7 @@ class ConsoleOverviewControllerTest {
   private final MockMvc mvc = ConsoleMvc.forController(
       new ConsoleOverviewController(overview, reports, auditTrail, ConsoleMvc.layout()));
 
-  private final OverviewMetrics metrics = new OverviewMetrics(4, 2, 1, 120, 3, 40, 12);
+  private final OverviewMetrics metrics = new OverviewMetrics(4, 2, 2, 1, 120, 3, 40, 12);
 
   @BeforeEach
   void stubServices() {

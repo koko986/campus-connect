@@ -180,6 +180,7 @@ export function ReportButton({
       setDetails("");
       toast.success(t("report.sent"));
     },
+    onError: (error: Error) => toast.error(error.message),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -68,6 +68,13 @@
   "guard.loadingAccount": "Loading account",
   "guard.suspended.title": "Account suspended",
   "guard.suspended.text": "This account has been suspended by a TAKKA administrator.",
+  "guard.error.title": "We could not verify this account",
+  "guard.error.text": "The account service is unavailable. Retry before continuing.",
+  "guard.admin.superAdmin": "Super administrator",
+  "guard.admin.moderator": "Moderator",
+  "guard.admin.title": "Administration account",
+  "guard.admin.text": "This account belongs to the TAKKA administration team. Continue in the separate moderation console.",
+  "guard.admin.openConsole": "Open admin console",
 
   "auth.logIn": "Log in",
   "auth.error.network": "TAKKA cannot reach the account service right now. Check your connection and try again.",

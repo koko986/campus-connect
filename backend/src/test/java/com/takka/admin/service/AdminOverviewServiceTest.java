@@ -12,8 +12,9 @@ class AdminOverviewServiceTest {
   private final AccountModerationService accounts = mock(AccountModerationService.class);
   private final PostModerationService posts = mock(PostModerationService.class);
   private final UniversityDirectoryService universities = mock(UniversityDirectoryService.class);
+  private final OpportunityModerationService opportunities = mock(OpportunityModerationService.class);
   private final AdminOverviewService service =
-      new AdminOverviewService(reports, accounts, posts, universities);
+      new AdminOverviewService(reports, accounts, posts, universities, opportunities);
 
   @Test
   void collectsEachHeadlineCountFromItsOwnDomainService() {
@@ -24,10 +25,12 @@ class AdminOverviewServiceTest {
     when(posts.removedPosts()).thenReturn(35L);
     when(universities.totalUniversities()).thenReturn(48L);
     when(universities.publishedUniversities()).thenReturn(41L);
+    when(opportunities.pendingCount()).thenReturn(3L);
 
     var metrics = service.metrics();
 
     assertEquals(6L, metrics.openReports());
+    assertEquals(3L, metrics.pendingOpportunities());
     assertEquals(240L, metrics.members());
     assertEquals(231L, metrics.activeMembers());
     assertEquals(1_465L, metrics.visiblePosts());

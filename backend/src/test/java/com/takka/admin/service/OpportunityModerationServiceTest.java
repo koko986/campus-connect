@@ -2,6 +2,7 @@ package com.takka.admin.service;
 
 import static com.takka.admin.Fixtures.json;
 import static com.takka.admin.Fixtures.moderator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.takka.admin.model.ModerationAction;
 import com.takka.admin.repository.OpportunityRepository;
 import com.takka.admin.support.MessageException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -42,5 +44,12 @@ class OpportunityModerationServiceTest {
     assertThrows(MessageException.class,
         () -> service.decide(moderator(), opportunityId, "archived", ""));
     verify(opportunities, never()).decide(any(), any(), any(), any());
+  }
+
+  @Test
+  void pendingCountComesFromTheModerationQueue() {
+    when(opportunities.statusCounts()).thenReturn(Map.of("pending", 4L, "published", 9L));
+
+    assertEquals(4L, service.pendingCount());
   }
 }

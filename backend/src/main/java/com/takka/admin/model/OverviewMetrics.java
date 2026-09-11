@@ -3,6 +3,7 @@ package com.takka.admin.model;
 /** Headline counts shown on the console landing page. */
 public record OverviewMetrics(
     long openReports,
+    long pendingOpportunities,
     long members,
     long blockedMembers,
     long posts,
@@ -11,11 +12,11 @@ public record OverviewMetrics(
     long publishedUniversities) {
 
   public static OverviewMetrics empty() {
-    return new OverviewMetrics(0, 0, 0, 0, 0, 0, 0);
+    return new OverviewMetrics(0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   public boolean hasQueue() {
-    return openReports > 0;
+    return openReports > 0 || pendingOpportunities > 0;
   }
 
   public long draftUniversities() {
