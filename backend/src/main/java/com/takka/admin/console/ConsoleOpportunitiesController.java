@@ -3,8 +3,10 @@ package com.takka.admin.console;
 import com.takka.admin.form.OpportunityDecisionForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.service.OpportunityModerationService;
+import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -37,9 +39,20 @@ public class ConsoleOpportunitiesController {
       @RequestParam(defaultValue = "pending") String status,
       @RequestParam(defaultValue = "0") int page, Model model) {
     String filter = OpportunityModerationService.STATUSES.contains(status) ? status : "pending";
+    PageRequest request = PageRequest.of(page);
     layout.apply(model, administrator, ConsoleSection.OPPORTUNITIES);
-    model.addAttribute("opportunities", opportunities.queue(filter, PageRequest.of(page)));
-    model.addAttribute("counts", opportunities.statusCounts());
+    try {
+      model.addAttribute("opportunities", opportunities.queue(filter, request));
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("opportunities", Page.empty(request));
+      model.addAttribute("flashError", messages.get("error.opportunities.unavailable"));
+    }
+    try {
+      model.addAttribute("counts", opportunities.statusCounts());
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("counts", Map.of());
+      model.addAttribute("flashError", messages.get("error.opportunities.unavailable"));
+    }
     model.addAttribute("statusFilter", filter);
     model.addAttribute("statuses", OpportunityModerationService.STATUSES);
     model.addAttribute("filterQuery", ConsoleQuery.of("status", filter));

@@ -87,4 +87,24 @@ class ConsoleOpportunitiesControllerTest {
 
     verify(opportunities, never()).decide(any(), any(), any(), any());
   }
+
+  @Test
+  void opportunityPageStaysOpenWhenTheQueueCannotLoad() throws Exception {
+    when(opportunities.queue(any(), any())).thenThrow(new IllegalStateException("queue unavailable"));
+
+    mvc.perform(get("/admin/opportunities"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/opportunities"))
+        .andExpect(model().attributeExists("opportunities", "counts", "flashError"));
+  }
+
+  @Test
+  void opportunityPageStaysOpenWhenCountsCannotLoad() throws Exception {
+    when(opportunities.statusCounts()).thenThrow(new IllegalStateException("counts unavailable"));
+
+    mvc.perform(get("/admin/opportunities"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/opportunities"))
+        .andExpect(model().attributeExists("opportunities", "counts", "flashError"));
+  }
 }

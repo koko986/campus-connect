@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TAKKA">
-  <rect width="64" height="64" rx="16" fill="#2ec4a6" />
+  <rect width="64" height="64" rx="16" fill="#f4f0e4" />
   <path
-    d="M32 14 8 24l24 10 24-10-24-10Z"
-    fill="#ffffff"
+    d="M16 23c8 0 13 2.5 16 7.5C35 25.5 40 23 48 23v23c-7.6 0-12.7 1.8-16 5.4C28.7 47.8 23.6 46 16 46V23Z"
+    fill="none"
+    stroke="#1f5f49"
+    stroke-width="4"
+    stroke-linejoin="round"
   />
   <path
-    d="M18 30.5V41c0 4.4 6.3 8 14 8s14-3.6 14-8V30.5l-14 5.8-14-5.8Z"
-    fill="#ffffff"
-    fill-opacity="0.82"
+    d="M32 19 27 9h10l-5 10Z"
+    fill="#c5a56f"
   />
   <path
-    d="M54 26v12"
-    stroke="#ffffff"
-    stroke-width="3.5"
+    d="M33 43c1.6-8.6 5.7-15.4 13-20.4-2.8 9.2-7.1 16-13 20.4Z"
+    fill="#1f5f49"
+  />
+  <path
+    d="M20 31h8M20 37h7M44 31h-6M44 37h-7"
+    stroke="#c5a56f"
+    stroke-width="3"
     stroke-linecap="round"
   />
 </svg>

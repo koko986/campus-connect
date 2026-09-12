@@ -41,7 +41,7 @@ public class ConsoleUniversityPhotosController {
       Model model) {
     String filter =
         UniversityPhotoModerationService.STATUSES.contains(status) ? status : "PENDING";
-    layout.apply(model, administrator, ConsoleSection.UNIVERSITIES);
+    layout.apply(model, administrator, ConsoleSection.UNIVERSITY_PHOTOS);
     model.addAttribute("photos", photos.queue(filter, PageRequest.of(page)));
     model.addAttribute("statusFilter", filter);
     model.addAttribute("statuses", UniversityPhotoModerationService.STATUSES);

@@ -1,6 +1,7 @@
 package com.takka.admin.service;
 
 import com.takka.admin.model.OverviewMetrics;
+import java.util.function.LongSupplier;
 import org.springframework.stereotype.Service;
 
 /** Collects the headline counts for the console landing page. */
@@ -27,13 +28,21 @@ public class AdminOverviewService {
 
   public OverviewMetrics metrics() {
     return new OverviewMetrics(
-        reportModeration.openCount(),
-        opportunityModeration.pendingCount(),
-        accountModeration.totalMembers(),
-        accountModeration.blockedMembers(),
-        postModeration.totalPosts(),
-        postModeration.removedPosts(),
-        universityDirectory.totalUniversities(),
-        universityDirectory.publishedUniversities());
+        safeCount(reportModeration::openCount),
+        safeCount(opportunityModeration::pendingCount),
+        safeCount(accountModeration::totalMembers),
+        safeCount(accountModeration::blockedMembers),
+        safeCount(postModeration::totalPosts),
+        safeCount(postModeration::removedPosts),
+        safeCount(universityDirectory::totalUniversities),
+        safeCount(universityDirectory::publishedUniversities));
+  }
+
+  private static long safeCount(LongSupplier count) {
+    try {
+      return count.getAsLong();
+    } catch (RuntimeException unavailable) {
+      return 0;
+    }
   }
 }

@@ -14,11 +14,13 @@
   --text-muted: #66756f;
   --accent: #2f9a79;
   --accent-soft: #e1f5ed;
+  --accent-strong: #1f6f58;
   --success: #2f9a79;
   --warning: #b7791f;
   --danger: #d34848;
-  --shadow-soft: 0 1px 2px rgba(23, 48, 39, 0.05), 0 18px 42px -28px rgba(23, 48, 39, 0.28);
-  --rail-width: 232px;
+  --shadow-soft: 0 1px 2px rgba(23, 48, 39, 0.04), 0 8px 24px -12px rgba(23, 48, 39, 0.12);
+  --shadow-lift: 0 2px 4px rgba(23, 48, 39, 0.05), 0 18px 40px -18px rgba(23, 48, 39, 0.22);
+  --rail-width: 248px;
   font-family:
     "Plus Jakarta Sans", "Noto Sans Myanmar", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -34,6 +36,7 @@
     --text-muted: #a8b8b0;
     --accent: #79d8b4;
     --accent-soft: #233f35;
+    --accent-strong: #a5ebd0;
     --success: #79d8b4;
     --warning: #e0b15e;
     --danger: #f17676;
@@ -56,6 +59,9 @@ body {
 .console-body {
   display: flex;
   min-height: 100vh;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 36%, transparent), transparent 22rem),
+    var(--surface);
 }
 
 .console-body--centered {
@@ -63,6 +69,32 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+}
+
+.console-auth-body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.console-auth-header {
+  display: flex;
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 16px;
+}
+
+.console-auth-main {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
 }
 
 /* Admin rail */
@@ -73,10 +105,11 @@ body {
   display: flex;
   flex-direction: column;
   width: var(--rail-width);
-  padding: 20px 16px;
-  background: var(--surface-raised);
+  padding: 20px 18px;
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
   border-right: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
 }
 
 .console-brand {
@@ -91,8 +124,8 @@ body {
 }
 
 .console-brand-mark {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   object-fit: contain;
   background: #f4f0e4;
@@ -123,9 +156,10 @@ body {
 }
 
 .console-nav-link {
+  min-height: 44px;
   padding: 10px 12px;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--text-muted);
   text-decoration: none;
   font-size: 13px;
@@ -133,14 +167,15 @@ body {
 }
 
 .console-nav-link:hover {
-  background: var(--surface-raised);
+  background: var(--surface-inset);
   color: var(--text);
 }
 
 .console-nav-link.is-active {
   border-color: transparent;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-strong);
+  font-weight: 700;
 }
 
 .console-scope {
@@ -156,7 +191,7 @@ body {
   flex: 1;
   min-width: 0;
   margin-left: var(--rail-width);
-  padding: 20px 24px 56px;
+  padding: 20px clamp(16px, 4vw, 40px) 56px;
 }
 
 .console-topbar {
@@ -170,8 +205,9 @@ body {
 
 .console-heading h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  line-height: 1.15;
 }
 
 .console-heading p {
@@ -202,8 +238,91 @@ body {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-left: 4px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-raised);
+}
+
+.console-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
+}
+
+.console-hero h2 {
+  max-width: 720px;
+  margin: 0;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.console-hero p {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.console-kicker {
+  margin: 0 0 8px !important;
+  color: var(--accent-strong) !important;
+  font-size: 12px !important;
+  font-weight: 800;
+}
+
+.console-responsibilities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.console-responsibility {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-raised);
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--shadow-soft);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.console-responsibility:hover {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--border));
+  background: var(--surface-inset);
+  box-shadow: var(--shadow-lift);
+}
+
+.console-responsibility-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.console-responsibility strong {
+  font-size: 14px;
+}
+
+.console-responsibility small {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .console-banner--success {
@@ -237,6 +356,7 @@ body {
 
 .console-metric:hover {
   background: var(--surface-inset);
+  box-shadow: var(--shadow-lift);
 }
 
 .console-metric--alert .console-metric-value {
@@ -251,7 +371,7 @@ body {
 
 .console-metric-label {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0;
 }
 
@@ -335,10 +455,10 @@ body {
 .console-table th {
   background: var(--surface-inset);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .console-table--roomy td {
@@ -466,17 +586,19 @@ body {
   font-weight: 700;
   letter-spacing: 0;
   text-decoration: none;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
 }
 
 .console-button:hover {
-  border-color: var(--text-muted);
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .console-button--primary {
   border-color: var(--accent);
-  color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .console-button--danger {
@@ -591,7 +713,8 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
-  outline: none;
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 2px;
 }
 
 textarea {
@@ -677,11 +800,6 @@ textarea {
   color: var(--accent);
 }
 
-.console-login .console-languages {
-  width: fit-content;
-  margin: 0 auto 20px;
-}
-
 /*
  * Burmese in a console built for Latin micro-type.
  *
@@ -738,19 +856,27 @@ html:lang(my) .console-table td {
 /* Sign-in and error card */
 
 .console-login {
-  width: min(400px, 100%);
+  width: min(28rem, 100%);
   padding: 28px;
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 22px;
   background: var(--surface-raised);
   box-shadow: var(--shadow-soft);
-  text-align: center;
+}
+
+.console-login-eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .console-login h1 {
   margin: 0 0 8px;
   font-size: 24px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 .console-login-note {
@@ -762,8 +888,16 @@ html:lang(my) .console-table td {
   text-align: left;
 }
 
+.console-login input {
+  min-height: 44px;
+  padding: 9px 12px;
+  font-size: 14px;
+}
+
 .console-login .console-button {
   width: 100%;
+  min-height: 44px;
+  margin-top: 2px;
   padding: 9px 12px;
   text-align: center;
 }
@@ -843,6 +977,16 @@ html:lang(my) .console-table td {
     align-items: stretch;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .console-hero {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .console-hero .console-button {
+    width: 100%;
   }
 
   .console-identity {
@@ -931,6 +1075,20 @@ html:lang(my) .console-table td {
 
   .console-login {
     padding: 20px;
+    border-radius: 18px;
+  }
+
+  .console-auth-header {
+    padding: 16px 12px;
+  }
+
+  .console-auth-header .console-brand-text small {
+    display: none;
+  }
+
+  .console-auth-main {
+    align-items: flex-start;
+    padding: 24px 12px max(40px, env(safe-area-inset-bottom));
   }
 
   .console-photo-preview {

@@ -4,6 +4,7 @@ import com.takka.admin.form.ModerationReasonForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.PostModerationStatus;
 import com.takka.admin.service.PostModerationService;
+import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.Optional;
@@ -42,11 +43,16 @@ public class ConsolePostsController {
       @RequestParam(defaultValue = "0") int page,
       Model model) {
     Optional<PostModerationStatus> filter = PostModerationStatus.parse(status);
-
+    PageRequest request = PageRequest.of(page);
     String statusFilter = filter.map(Enum::name).orElse("");
 
     layout.apply(model, administrator, ConsoleSection.POSTS);
-    model.addAttribute("posts", posts.posts(filter, PageRequest.of(page)));
+    try {
+      model.addAttribute("posts", posts.posts(filter, request));
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("posts", Page.empty(request));
+      model.addAttribute("flashError", messages.get("error.posts.unavailable"));
+    }
     model.addAttribute("statusFilter", statusFilter);
     model.addAttribute("statuses", PostModerationStatus.values());
     model.addAttribute("filterQuery", ConsoleQuery.of("status", statusFilter));

@@ -61,6 +61,14 @@ public class ConsoleExceptionHandler {
         messages.get("error.upstream.detail", error.getStatusCode().value()));
   }
 
+  @ExceptionHandler(Exception.class)
+  String unexpected(Exception error, Model model) {
+    return errorPage(
+        model,
+        messages.get("error.unexpected.title"),
+        messages.get("error.unexpected.detail"));
+  }
+
   private String errorPage(Model model, String title, String detail) {
     model.addAttribute("errorTitle", title);
     model.addAttribute("errorDetail", detail);

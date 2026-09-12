@@ -45,4 +45,17 @@ class AdminOverviewServiceTest {
     assertEquals(0L, metrics.openReports());
     assertTrue(!metrics.hasQueue());
   }
+
+  @Test
+  void unavailableCountsFallBackToZeroSoTheConsoleCanOpen() {
+    when(reports.openCount()).thenThrow(new IllegalStateException("reports unavailable"));
+    when(accounts.totalMembers()).thenReturn(12L);
+    when(posts.totalPosts()).thenThrow(new IllegalStateException("posts unavailable"));
+
+    var metrics = service.metrics();
+
+    assertEquals(0L, metrics.openReports());
+    assertEquals(12L, metrics.members());
+    assertEquals(0L, metrics.visiblePosts());
+  }
 }

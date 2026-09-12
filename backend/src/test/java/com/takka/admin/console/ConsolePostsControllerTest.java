@@ -107,6 +107,16 @@ class ConsolePostsControllerTest {
   }
 
   @Test
+  void postsPageStaysOpenWhenTheQueueCannotLoad() throws Exception {
+    when(posts.posts(any(), any())).thenThrow(new IllegalStateException("posts unavailable"));
+
+    mvc.perform(get("/admin/posts"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/posts"))
+        .andExpect(model().attributeExists("posts", "flashError"));
+  }
+
+  @Test
   void aRemovalIsConfirmedInTheRequestedLanguage() throws Exception {
     mvc.perform(post("/admin/posts/{id}/remove", postId)
             .param("reason", "Spam link")

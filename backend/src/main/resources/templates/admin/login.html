@@ -1,56 +1,64 @@
 <!doctype html>
 <html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{admin/fragments :: head('console.title.signIn')}"></head>
-  <body class="console-body console-body--centered">
-    <main class="console-login">
-      <div class="console-brand console-brand--stacked">
+  <body class="console-auth-body">
+    <header class="console-auth-header">
+      <div class="console-brand">
         <img class="console-brand-mark" th:src="@{/admin/assets/takka-logo.png}" alt="" />
         <span class="console-brand-text">
           <strong>TAKKA</strong>
           <small th:text="#{console.brand.tagline}">Administration</small>
         </span>
       </div>
-
       <nav th:replace="~{admin/fragments :: languages}"></nav>
+    </header>
 
-      <h1 th:text="#{page.signIn.heading}">Administrator sign in</h1>
-      <p class="console-login-note" th:text="#{page.signIn.note}">
-        This console is separate from the TAKKA member app. Only accounts listed as administrators
-        can sign in here.
-      </p>
+    <main class="console-auth-main">
+      <section class="console-login" aria-labelledby="admin-sign-in-title">
+        <p class="console-login-eyebrow" th:text="#{page.signIn.eyebrow}">
+          TAKKA admin console
+        </p>
+        <h1 id="admin-sign-in-title" th:text="#{page.signIn.heading}">
+          Administrator sign in
+        </h1>
+        <p class="console-login-note" th:text="#{page.signIn.note}">
+          This console is separate from the TAKKA member app. Only accounts listed as administrators
+          can sign in here.
+        </p>
 
-      <p
-        th:if="${signInError}"
-        class="console-banner console-banner--error"
-        th:text="${signInError}"
-      ></p>
-      <p
-        th:if="${param.signedOut}"
-        class="console-banner console-banner--success"
-        th:text="#{page.signIn.signedOut}"
-      >
-        You have signed out.
-      </p>
-
-      <form th:action="@{/admin/login}" th:object="${form}" method="post" class="console-form">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        <label>
-          <span th:text="#{field.email}">Email</span>
-          <input type="email" th:field="*{email}" autocomplete="username" required autofocus />
-        </label>
-        <label>
-          <span th:text="#{field.password}">Password</span>
-          <!-- Bound by name only, so a rejected attempt never echoes the password back. -->
-          <input type="password" name="password" autocomplete="current-password" required />
-        </label>
-        <button
-          type="submit"
-          class="console-button console-button--primary"
-          th:text="#{action.signIn}"
+        <p
+          th:if="${signInError}"
+          class="console-banner console-banner--error"
+          th:text="${signInError}"
+        ></p>
+        <p
+          th:if="${param.signedOut}"
+          class="console-banner console-banner--success"
+          th:text="#{page.signIn.signedOut}"
         >
-          Sign in
-        </button>
-      </form>
+          You have signed out.
+        </p>
+
+        <form th:action="@{/admin/login}" th:object="${form}" method="post" class="console-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <label>
+            <span th:text="#{field.email}">Email</span>
+            <input type="email" th:field="*{email}" autocomplete="username" required autofocus />
+          </label>
+          <label>
+            <span th:text="#{field.password}">Password</span>
+            <!-- Bound by name only, so a rejected attempt never echoes the password back. -->
+            <input type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <button
+            type="submit"
+            class="console-button console-button--primary"
+            th:text="#{action.signIn}"
+          >
+            Sign in
+          </button>
+        </form>
+      </section>
     </main>
   </body>
 </html>

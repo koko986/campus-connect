@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -25,7 +26,8 @@ class ConsoleOverviewControllerTest {
   private final ReportModerationService reports = mock(ReportModerationService.class);
   private final AuditTrailService auditTrail = mock(AuditTrailService.class);
   private final MockMvc mvc = ConsoleMvc.forController(
-      new ConsoleOverviewController(overview, reports, auditTrail, ConsoleMvc.layout()));
+      new ConsoleOverviewController(
+          overview, reports, auditTrail, ConsoleMvc.layout(), ConsoleMvc.consoleMessages()));
 
   private final OverviewMetrics metrics = new OverviewMetrics(4, 2, 2, 1, 120, 3, 40, 12);
 
@@ -50,7 +52,7 @@ class ConsoleOverviewControllerTest {
         .andExpect(view().name("admin/overview"))
         .andExpect(model().attribute("section", ConsoleSection.OVERVIEW))
         .andExpect(model().attribute("metrics", metrics))
-        .andExpect(model().attributeExists("queue", "recentActions"));
+        .andExpect(model().attributeExists("queue", "recentActions", "responsibilities"));
 
     verify(overview).metrics();
   }
@@ -86,5 +88,23 @@ class ConsoleOverviewControllerTest {
         .andExpect(status().isOk())
         .andExpect(model().attribute("superAdmin", false))
         .andExpect(model().attribute("navigation", ConsoleSection.navigationFor(moderator)));
+  }
+
+  @Test
+  void theOldDashboardUrlRedirectsToTheConsoleOverview() throws Exception {
+    mvc.perform(get("/admin/dashboard"))
+        .andExpect(status().isFound())
+        .andExpect(redirectedUrl("/admin"));
+  }
+
+  @Test
+  void overviewStillRendersWhenPreviewDataCannotLoad() throws Exception {
+    ConsoleMvc.signIn(Fixtures.superAdmin());
+    when(reports.oldestUnresolved(anyInt())).thenThrow(new IllegalStateException("missing table"));
+
+    mvc.perform(get("/admin"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/overview"))
+        .andExpect(model().attributeExists("metrics", "queue", "recentActions", "flashError"));
   }
 }
