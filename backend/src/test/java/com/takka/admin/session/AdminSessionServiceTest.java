@@ -60,6 +60,23 @@ class AdminSessionServiceTest {
   }
 
   @Test
+  void theBootstrapAdministratorCanSignIntoTheConsole() {
+    var form = new AdminLoginForm();
+    form.setEmail("admin@gmail.com");
+    form.setPassword("123456789");
+    when(supabase.signInWithPassword(eq("admin@gmail.com"), eq("123456789")))
+        .thenReturn(new TakkaPrincipal(userId, "admin@gmail.com", "token"));
+    when(adminUsers.findActiveRole(eq(new TakkaPrincipal(userId, "admin@gmail.com", "token"))))
+        .thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
+
+    var signedIn = service.signIn(form);
+
+    assertEquals(userId, signedIn.userId());
+    assertEquals(AdminRole.SUPER_ADMIN, signedIn.role());
+    assertEquals("admin@gmail.com", signedIn.email());
+  }
+
+  @Test
   void validMemberCredentialsAreStillRefusedWithoutAnAdminAssignment() {
     supabaseAccepts();
     when(adminUsers.findActiveRole(eq(new TakkaPrincipal(userId, "super@takka.test", "token"))))

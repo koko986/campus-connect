@@ -1,6 +1,8 @@
 package com.takka.admin.repository;
 
 import com.takka.admin.model.AdminRole;
+import com.takka.admin.model.AdminRoleLookup;
+import com.takka.admin.model.AdminRoleSource;
 import com.takka.admin.support.Json;
 import com.takka.admin.support.Query;
 import com.takka.security.TakkaPrincipal;
@@ -40,15 +42,20 @@ public class AdminUserRepository {
         .flatMap(row -> AdminRole.parse(Json.text(row, "role")));
   }
 
-  /**
-   * Ensures the presentation/demo administrator exists even when the production database has not
-   * had its latest seed migration applied yet.
-   */
+  /** Ensures bootstrap administrators exist before returning the role. */
   public Optional<AdminRole> findActiveRole(TakkaPrincipal principal) {
-    if (isBootstrapAdministrator(principal.email())) {
+    return findActiveRoleWithSource(principal).role();
+  }
+
+  /** Reads the active role and records whether it came from the bootstrap allow-list. */
+  public AdminRoleLookup findActiveRoleWithSource(TakkaPrincipal principal) {
+    boolean bootstrap = isBootstrapAdministrator(principal.email());
+    if (bootstrap) {
       upsertBootstrapAdministrator(principal.id());
     }
-    return findActiveRole(principal.id());
+    return AdminRoleLookup.of(
+        findActiveRole(principal.id()),
+        bootstrap ? AdminRoleSource.BOOTSTRAP : AdminRoleSource.ADMIN_USERS);
   }
 
   public boolean isActiveAdmin(UUID userId) {

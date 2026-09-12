@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.takka.admin.model.AdminRole;
+import com.takka.admin.model.AdminRoleLookup;
+import com.takka.admin.model.AdminRoleSource;
 import com.takka.admin.repository.AdminUserRepository;
 import com.takka.security.TakkaPrincipal;
 import com.takka.supabase.SupabaseGateway;
@@ -28,36 +30,43 @@ class AccountControllerTest {
   @Test
   void activeMemberIsNotMarkedAsAnAdministrator() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree("[]"));
-    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.empty());
+    when(administrators.findActiveRoleWithSource(eq(principal)))
+        .thenReturn(AdminRoleLookup.of(Optional.empty(), AdminRoleSource.NONE));
 
     var status = controller.status(principal);
 
     assertEquals("ACTIVE", status.get("status"));
+    assertEquals("member@takka.test", status.get("email"));
     assertEquals(false, status.get("administrator"));
+    assertEquals("NONE", status.get("adminSource"));
     assertFalse(status.containsKey("adminRole"));
   }
 
   @Test
   void activeAdministratorCarriesTheirConsoleRole() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree("[]"));
-    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
+    when(administrators.findActiveRoleWithSource(eq(principal)))
+        .thenReturn(AdminRoleLookup.of(Optional.of(AdminRole.SUPER_ADMIN), AdminRoleSource.BOOTSTRAP));
 
     var status = controller.status(principal);
 
     assertTrue((Boolean) status.get("administrator"));
     assertEquals("SUPER_ADMIN", status.get("adminRole"));
+    assertEquals("BOOTSTRAP", status.get("adminSource"));
   }
 
   @Test
   void blockedStateAndAdministratorIdentityAreBothPreserved() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree(
         "[{\"status\":\"BLOCKED\",\"reason\":\"Review required\",\"blocked_at\":\"2026-09-11T00:00:00Z\"}]"));
-    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.of(AdminRole.MODERATOR));
+    when(administrators.findActiveRoleWithSource(eq(principal)))
+        .thenReturn(AdminRoleLookup.of(Optional.of(AdminRole.MODERATOR), AdminRoleSource.ADMIN_USERS));
 
     var status = controller.status(principal);
 
     assertEquals("BLOCKED", status.get("status"));
     assertEquals("Review required", status.get("reason"));
     assertEquals("MODERATOR", status.get("adminRole"));
+    assertEquals("ADMIN_USERS", status.get("adminSource"));
   }
 }

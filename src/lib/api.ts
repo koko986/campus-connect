@@ -31,8 +31,10 @@ export type AccountStatus = {
   status: "ACTIVE" | "BLOCKED";
   reason?: string;
   blockedAt?: string;
+  email?: string;
   administrator: boolean;
   adminRole?: "SUPER_ADMIN" | "MODERATOR";
+  adminSource?: "BOOTSTRAP" | "ADMIN_USERS" | "NONE";
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
