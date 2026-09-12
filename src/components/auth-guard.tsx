@@ -108,7 +108,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     return renderAccountStatusError();
   }
 
-  if (status.data?.administrator) {
+  const statusEmailMatchesSession =
+    !status.data?.email ||
+    !user.email ||
+    status.data.email.trim().toLowerCase() === user.email.trim().toLowerCase();
+
+  if (status.data?.administrator && statusEmailMatchesSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
         <div className="w-full max-w-md border bg-background p-8 text-center">

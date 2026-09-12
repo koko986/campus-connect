@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -26,22 +26,22 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { initialized, user } = useAuth();
+  const { user } = useAuth();
   const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    if (initialized && user) navigate({ to: "/dashboard", replace: true });
-  }, [initialized, navigate, user]);
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     setPending(true);
     try {
+      if (user) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) throw signOutError;
+      }
       const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (result.error) {
         setError(
