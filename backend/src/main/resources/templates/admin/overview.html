@@ -118,12 +118,6 @@
       <section class="console-panel">
         <div class="console-panel-head">
           <h2 th:text="#{page.overview.activity.heading}">Recent moderation activity</h2>
-          <a
-            th:href="@{/admin/audit}"
-            class="console-button console-button--ghost"
-            th:text="#{action.fullAuditLog}"
-            >Full audit log</a
-          >
         </div>
         <p th:if="${recentActions.isEmpty()}" class="console-empty" th:text="#{page.audit.empty}">
           No moderation actions recorded yet.

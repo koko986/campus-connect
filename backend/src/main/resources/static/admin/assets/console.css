@@ -1,31 +1,44 @@
 /*
  * TAKKA administration console.
  *
- * Intentionally unlike the student app: a dark, dense, table-first operations layout with a
- * fixed admin-only rail. Nothing here is shared with the member interface, so an administrator can
- * never mistake one for the other.
+ * Server-rendered, but visually aligned with the student app: soft mint surfaces, readable cards,
+ * and compact moderation tables.
  */
 
 :root {
-  --surface: #0f1319;
-  --surface-raised: #161b23;
-  --surface-inset: #1d232d;
-  --border: #2a323f;
-  --text: #e6eaf0;
-  --text-muted: #8b95a5;
-  --accent: #4c8dff;
-  --success: #3fb37f;
-  --warning: #d9a13b;
-  --danger: #e05a5a;
+  --surface: #fbfdfb;
+  --surface-raised: #ffffff;
+  --surface-inset: #f0f7f3;
+  --border: #dce8e1;
+  --text: #263832;
+  --text-muted: #66756f;
+  --accent: #2f9a79;
+  --accent-soft: #e1f5ed;
+  --success: #2f9a79;
+  --warning: #b7791f;
+  --danger: #d34848;
+  --shadow-soft: 0 1px 2px rgba(23, 48, 39, 0.05), 0 18px 42px -28px rgba(23, 48, 39, 0.28);
   --rail-width: 232px;
-  /*
-   * Monospace first, because the console is a dense operations table. No monospace family covers the
-   * Myanmar block, so Noto Sans Myanmar follows as the fallback the browser reaches for Burmese
-   * glyphs; the Latin text in the same sentence still renders monospaced.
-   */
   font-family:
-    ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace,
-    "Noto Sans Myanmar";
+    "Plus Jakarta Sans", "Noto Sans Myanmar", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #17211e;
+    --surface-raised: #1f2a26;
+    --surface-inset: #273630;
+    --border: rgba(255, 255, 255, 0.11);
+    --text: #f2faf5;
+    --text-muted: #a8b8b0;
+    --accent: #79d8b4;
+    --accent-soft: #233f35;
+    --success: #79d8b4;
+    --warning: #e0b15e;
+    --danger: #f17676;
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.18), 0 24px 46px -30px rgba(0, 0, 0, 0.6);
+  }
 }
 
 * {
@@ -61,8 +74,9 @@ body {
   flex-direction: column;
   width: var(--rail-width);
   padding: 20px 16px;
-  background: #0b0e13;
+  background: var(--surface-raised);
   border-right: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
 }
 
 .console-brand {
@@ -77,9 +91,9 @@ body {
 }
 
 .console-brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 4px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   object-fit: contain;
   background: #f4f0e4;
 }
@@ -90,32 +104,32 @@ body {
 }
 
 .console-brand-text strong {
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
+  font-size: 16px;
 }
 
 .console-brand-text small {
   color: var(--text-muted);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0;
 }
 
 .console-nav {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   margin-top: 28px;
 }
 
 .console-nav-link {
-  padding: 8px 10px;
-  border-left: 2px solid transparent;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   color: var(--text-muted);
   text-decoration: none;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 13px;
+  letter-spacing: 0;
 }
 
 .console-nav-link:hover {
@@ -124,15 +138,15 @@ body {
 }
 
 .console-nav-link.is-active {
-  border-left-color: var(--accent);
-  background: var(--surface-raised);
-  color: var(--text);
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .console-scope {
   margin: 0;
-  color: #5f6877;
-  font-size: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -156,16 +170,15 @@ body {
 
 .console-heading h1 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .console-heading p {
   margin: 2px 0 0;
   color: var(--text-muted);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0;
 }
 
 .console-identity {
@@ -187,7 +200,9 @@ body {
 .console-banner {
   margin: 16px 0 0;
   padding: 10px 12px;
-  border-left: 2px solid var(--border);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 14px;
   background: var(--surface-raised);
 }
 
@@ -204,10 +219,8 @@ body {
 .console-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1px;
+  gap: 12px;
   margin-top: 20px;
-  background: var(--border);
-  border: 1px solid var(--border);
 }
 
 .console-metric {
@@ -215,6 +228,8 @@ body {
   flex-direction: column;
   gap: 6px;
   padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
   background: var(--surface-raised);
   color: inherit;
   text-decoration: none;
@@ -236,9 +251,8 @@ body {
 
 .console-metric-label {
   color: var(--text-muted);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0;
 }
 
 /* Panels, filters, tables */
@@ -246,7 +260,10 @@ body {
 .console-panel {
   margin-top: 28px;
   border: 1px solid var(--border);
+  border-radius: 18px;
   background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 
 .console-panel-head {
@@ -265,9 +282,8 @@ body {
 
 .console-panel-head h2 {
   margin: 0;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0;
 }
 
 .console-scope-note {
@@ -283,7 +299,9 @@ body {
   margin-top: 20px;
   padding: 12px 16px;
   border: 1px solid var(--border);
+  border-radius: 18px;
   background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
 }
 
 .console-filters-grow {
@@ -294,8 +312,11 @@ body {
   width: 100%;
   margin-top: 20px;
   border: 1px solid var(--border);
+  border-radius: 18px;
   border-collapse: collapse;
   background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 
 .console-panel .console-table {
@@ -312,9 +333,9 @@ body {
 }
 
 .console-table th {
-  background: #12161d;
+  background: var(--surface-inset);
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -365,6 +386,7 @@ body {
   margin-top: 20px;
   padding: 28px 16px;
   border: 1px dashed var(--border);
+  border-radius: 18px;
   color: var(--text-muted);
   text-align: center;
 }
@@ -395,7 +417,7 @@ body {
   display: inline-block;
   padding: 2px 8px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 999px;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -429,16 +451,20 @@ body {
 /* Buttons and actions */
 
 .console-button {
-  display: inline-block;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 999px;
   background: var(--surface-inset);
   color: var(--text);
   cursor: pointer;
   font: inherit;
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
@@ -500,6 +526,7 @@ body {
   margin-top: 8px;
   padding: 12px;
   border: 1px solid var(--border);
+  border-radius: 16px;
   background: var(--surface-inset);
 }
 
@@ -515,6 +542,7 @@ body {
 .console-form--wide {
   padding: 16px;
   border: 1px solid var(--border);
+  border-radius: 18px;
   background: var(--surface-raised);
 }
 
@@ -542,9 +570,9 @@ label {
 
 label > span {
   color: var(--text-muted);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 input,
@@ -552,7 +580,7 @@ select,
 textarea {
   padding: 7px 9px;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
@@ -623,7 +651,7 @@ textarea {
 .console-languages {
   display: flex;
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: 999px;
   overflow: hidden;
 }
 
@@ -713,14 +741,16 @@ html:lang(my) .console-table td {
   width: min(400px, 100%);
   padding: 28px;
   border: 1px solid var(--border);
+  border-radius: 24px;
   background: var(--surface-raised);
+  box-shadow: var(--shadow-soft);
   text-align: center;
 }
 
 .console-login h1 {
   margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 800;
 }
 
 .console-login-note {

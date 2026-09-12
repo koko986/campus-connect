@@ -78,8 +78,15 @@
                   <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
                   <label>
                     <span th:text="#{field.reason}">Reason</span>
-                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
-                      th:placeholder="#{field.auditPlaceholder}"></textarea>
+                    <textarea
+                      name="reason"
+                      rows="2"
+                      minlength="3"
+                      maxlength="2000"
+                      required
+                      th:placeholder="#{field.auditPlaceholder}"
+                      th:text="#{page.posts.defaultRemovalReason}"
+                    ></textarea>
                   </label>
                   <button type="submit" class="console-button console-button--danger" th:text="#{action.confirmRemoval}">
                     Confirm removal
@@ -98,7 +105,14 @@
                   <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
                   <label>
                     <span th:text="#{field.reason}">Reason</span>
-                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required></textarea>
+                    <textarea
+                      name="reason"
+                      rows="2"
+                      minlength="3"
+                      maxlength="2000"
+                      required
+                      th:text="#{page.posts.defaultRestoreReason}"
+                    ></textarea>
                   </label>
                   <button
                     type="submit"

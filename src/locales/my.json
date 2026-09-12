@@ -19,6 +19,9 @@
   "language.label": "ဘာသာစကား",
   "language.note": "ဤဘရောက်ဇာအတွက်သာ သက်ဆိုင်ပါသည်။",
 
+  "theme.switchToDark": "အမှောင်မုဒ်သို့ ပြောင်းရန်",
+  "theme.switchToLight": "အလင်းမုဒ်သို့ ပြောင်းရန်",
+
   "field.academicYear": "ပညာသင်နှစ်",
   "field.bio": "မိမိအကြောင်း",
   "field.campus": "ကျောင်းဝင်း",

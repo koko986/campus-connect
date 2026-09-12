@@ -15,6 +15,7 @@ import { Logo } from "@/components/app-shell";
 import { UniversityCard } from "@/components/community";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Marquee } from "@/components/marquee";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Tilt } from "@/components/tilt";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -136,6 +137,7 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Logo className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
           <div className="flex items-center gap-2">
+            <ThemeToggle className="rounded-full" />
             <LanguageSwitcher className="sm:mr-1" />
             <Button asChild variant="ghost" className="hidden rounded-full sm:inline-flex">
               <Link to="/login">{t("auth.logIn")}</Link>

@@ -19,6 +19,9 @@
   "language.label": "Language",
   "language.note": "Applies to this browser only.",
 
+  "theme.switchToDark": "Switch to dark mode",
+  "theme.switchToLight": "Switch to light mode",
+
   "field.academicYear": "Academic year",
   "field.bio": "Bio",
   "field.campus": "Campus",

@@ -1,7 +1,6 @@
 package com.takka.admin.console;
 
 import com.takka.admin.model.AdminIdentity;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,8 +42,10 @@ public enum ConsoleSection {
     return name().toLowerCase(Locale.ROOT);
   }
 
-  /** Sections available to an administrator; every section is readable by both roles. */
+  /** Sections available to an administrator; every visible section is readable by both roles. */
   public static List<ConsoleSection> navigationFor(AdminIdentity administrator) {
-    return administrator == null ? List.of() : Arrays.asList(values());
+    return administrator == null
+        ? List.of()
+        : List.of(OVERVIEW, REPORTS, ACCOUNTS, POSTS, UNIVERSITIES, OPPORTUNITIES);
   }
 }

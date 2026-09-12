@@ -84,13 +84,6 @@
                 th:text="#{action.edit}"
                 >Edit</a
               >
-              <a
-                th:if="${superAdmin}"
-                th:href="@{/admin/catalog(universityId=${university.id()})}"
-                class="console-button console-button--ghost"
-                th:text="#{console.nav.catalog}"
-                >Catalog</a
-              >
 
               <details th:each="change : ${stateChanges}" th:if="${superAdmin}" class="console-action">
                 <summary

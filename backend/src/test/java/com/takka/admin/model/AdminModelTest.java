@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.takka.admin.console.ConsoleSection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,20 @@ class AdminModelTest {
     assertEquals("enum.catalog.singular.PROGRAMS", CatalogResource.PROGRAMS.singularKey());
     assertTrue(CatalogResource.require("departments") == CatalogResource.DEPARTMENTS);
     assertThrows(IllegalArgumentException.class, () -> CatalogResource.require("faculties"));
+  }
+
+  @Test
+  void consoleNavigationHidesCatalogAndAuditFromTheDemoAdmin() {
+    assertEquals(
+        List.of(
+            ConsoleSection.OVERVIEW,
+            ConsoleSection.REPORTS,
+            ConsoleSection.ACCOUNTS,
+            ConsoleSection.POSTS,
+            ConsoleSection.UNIVERSITIES,
+            ConsoleSection.OPPORTUNITIES),
+        ConsoleSection.navigationFor(new AdminIdentity(UUID.randomUUID(), "admin@gmail.com", AdminRole.SUPER_ADMIN)));
+    assertTrue(ConsoleSection.navigationFor(null).isEmpty());
   }
 
   @Test
