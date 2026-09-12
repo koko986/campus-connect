@@ -471,6 +471,7 @@
   "notifications.empty.title": "You are all caught up",
   "notifications.empty.text": "New answers and messages will appear here.",
   "notifications.noDestination": "This notification cannot open a specific page yet.",
+  "notifications.readFailed": "The notification opened, but TAKKA could not mark it as read.",
   "notifications.type.answer": "Answered your question",
   "notifications.type.comment": "Commented on your post",
   "notifications.type.helpfulVote": "Found your answer helpful",

@@ -471,6 +471,7 @@
   "notifications.empty.title": "အားလုံး ကြည့်ပြီးပါပြီ",
   "notifications.empty.text": "အဖြေနှင့် မက်ဆေ့ဂျ်အသစ်များ ဤနေရာတွင် ပေါ်ပါမည်။",
   "notifications.noDestination": "ဤအသိပေးချက်အတွက် ဖွင့်ရန် စာမျက်နှာ သတ်မှတ်မထားသေးပါ။",
+  "notifications.readFailed": "အသိပေးချက်ကို ဖွင့်နိုင်သော်လည်း ဖတ်ပြီးဟု မှတ်ရန် မအောင်မြင်ပါ။",
   "notifications.type.answer": "သင့်မေးခွန်းကို ဖြေထားသည်",
   "notifications.type.comment": "သင့်ပို့စ်တွင် မှတ်ချက်ရေးထားသည်",
   "notifications.type.helpfulVote": "သင့်အဖြေ အသုံးဝင်ကြောင်း မှတ်ထားသည်",

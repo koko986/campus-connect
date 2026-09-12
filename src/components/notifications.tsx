@@ -67,11 +67,15 @@ export function NotificationsPage() {
 
   async function openNotification(notification: MemberNotification) {
     if (!notification.read_at) {
-      await markNotificationRead(notification.id, user!.id);
-      await Promise.all([
-        client.invalidateQueries({ queryKey }),
-        client.invalidateQueries({ queryKey: ["notification-count", user!.id] }),
-      ]);
+      try {
+        await markNotificationRead(notification.id, user!.id);
+        await Promise.all([
+          client.invalidateQueries({ queryKey }),
+          client.invalidateQueries({ queryKey: ["notification-count", user!.id] }),
+        ]);
+      } catch {
+        toast.error(t("notifications.readFailed"));
+      }
     }
     if (!notification.entity_id) {
       toast.info(t("notifications.noDestination"));
