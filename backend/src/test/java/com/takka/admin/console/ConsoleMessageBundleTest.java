@@ -120,7 +120,7 @@ class ConsoleMessageBundleTest {
   /**
    * The counterpart: a key the console no longer shows anywhere is a key nobody keeps translated.
    * Enum keys are assembled at runtime, in Java as {@code "enum.role." + name()} and in Thymeleaf as
-   * {@code #messages.msg('enum.photoStatus.' + ...)}, so a key also counts as used when the sources
+   * {@code #messages.msg('enum.opportunityStatus.' + ...)}, so a key also counts as used when the sources
    * quote a dotted prefix of it in either language's quoting style.
    */
   @Test
@@ -144,6 +144,34 @@ class ConsoleMessageBundleTest {
       if (!sources.contains(key) && !isBuiltFromAQuotedPrefix(key, sources)) unused.add(key);
     }
     assertEquals(Set.of(), unused);
+  }
+
+  @Test
+  void adminActionTemplatesUseTheSharedConfirmPanel() throws IOException {
+    Path admin = RESOURCES.resolve("templates/admin");
+    var checked = List.of("members.html", "opportunities.html", "posts.html", "reports.html", "universities.html");
+    var missing = new ArrayList<String>();
+    for (String name : checked) {
+      String template = Files.readString(admin.resolve(name), StandardCharsets.UTF_8);
+      if (!template.contains("data-console-confirm")) missing.add(name + " missing trigger");
+      if (!template.contains("console-confirm-panel")) missing.add(name + " missing panel");
+      if (template.contains("class=\"console-action-form\"")) missing.add(name + " still uses old inline form");
+    }
+    assertEquals(List.of(), missing);
+  }
+
+  @Test
+  void removedAdminPhotoAndCatalogPresentationDoesNotLeakIntoVisibleTemplates() throws IOException {
+    Path admin = RESOURCES.resolve("templates/admin");
+    String visibleTemplates = "";
+    for (String name : List.of("overview.html", "universities.html", "members.html", "posts.html", "reports.html", "opportunities.html")) {
+      visibleTemplates += Files.readString(admin.resolve(name), StandardCharsets.UTF_8) + '\n';
+    }
+
+    assertTrue(Files.notExists(admin.resolve("university-photos.html")));
+    assertTrue(!visibleTemplates.contains("university photos"));
+    assertTrue(!visibleTemplates.contains("column.catalog"));
+    assertTrue(!visibleTemplates.contains("stateChanges"));
   }
 
   private static boolean isUtf8SourceFile(Path path) {

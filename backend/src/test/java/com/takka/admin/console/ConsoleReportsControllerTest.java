@@ -133,13 +133,13 @@ class ConsoleReportsControllerTest {
   }
 
   @Test
-  void aRejectedActionSendsTheAdministratorBackWithAnExplanation() throws Exception {
+  void aRejectedActionSendsTheAdministratorBackToTheReportListWithAnExplanation() throws Exception {
     when(reports.decide(any(), any(), any())).thenThrow(new MessageException("error.report.notFound"));
 
     mvc.perform(post("/admin/reports/{id}/decision", reportId)
             .param("status", "RESOLVED")
             .param("notes", "Handled it")
-            .header("Referer", "http://localhost:8080/admin/reports?status=OPEN"))
+            .param("returnStatus", "OPEN"))
         .andExpect(redirectedUrl("/admin/reports?status=OPEN"))
         .andExpect(flash().attribute("flashError", "Report not found."));
   }
@@ -155,13 +155,24 @@ class ConsoleReportsControllerTest {
   }
 
   @Test
-  void anOffSiteRefererIsNotUsedAsARedirectTarget() throws Exception {
+  void internalDecisionFailuresStayOnTheReportList() throws Exception {
     when(reports.decide(any(), any(), any())).thenThrow(new IllegalArgumentException("Nope"));
 
     mvc.perform(post("/admin/reports/{id}/decision", reportId)
             .param("status", "RESOLVED")
-            .param("notes", "Handled it")
-            .header("Referer", "https://evil.example/admin/reports"))
-        .andExpect(redirectedUrl("/admin"));
+            .param("notes", "Handled it"))
+        .andExpect(redirectedUrl("/admin/reports"))
+        .andExpect(flash().attribute(
+            "flashError", "The report action could not be completed right now. Try again in a moment."));
+  }
+
+  @Test
+  void reportsPageStaysOpenWhenTheQueueCannotLoad() throws Exception {
+    when(reports.queue(any(), any())).thenThrow(new IllegalStateException("reports unavailable"));
+
+    mvc.perform(get("/admin/reports"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/reports"))
+        .andExpect(model().attributeExists("reports", "flashError"));
   }
 }

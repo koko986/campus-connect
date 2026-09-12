@@ -4,10 +4,13 @@ import com.takka.admin.form.ReportDecisionForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.ReportStatus;
 import com.takka.admin.service.ReportModerationService;
+import com.takka.admin.support.MessageException;
+import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,11 +45,16 @@ public class ConsoleReportsController {
       @RequestParam(defaultValue = "0") int page,
       Model model) {
     Optional<ReportStatus> filter = ReportStatus.parse(status);
-
+    PageRequest request = PageRequest.of(page);
     String statusFilter = filter.map(Enum::name).orElse("");
 
     layout.apply(model, administrator, ConsoleSection.REPORTS);
-    model.addAttribute("reports", reports.queue(filter, PageRequest.of(page)));
+    try {
+      model.addAttribute("reports", reports.queue(filter, request));
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("reports", Page.empty(request));
+      model.addAttribute("flashError", messages.get("error.reports.unavailable"));
+    }
     model.addAttribute("statusFilter", statusFilter);
     model.addAttribute("statuses", ReportStatus.values());
     model.addAttribute("decisions", ReportStatus.decisions());
@@ -67,8 +75,16 @@ public class ConsoleReportsController {
       return redirect(returnStatus);
     }
 
-    ReportStatus applied = reports.decide(administrator, id, form);
-    Flash.success(attributes, messages.get(applied.decidedKey()));
+    try {
+      ReportStatus applied = reports.decide(administrator, id, form);
+      Flash.success(attributes, messages.get(applied.decidedKey()));
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.explain(expected, "error.action.generic"));
+    } catch (AccessDeniedException denied) {
+      throw denied;
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.reports.actionUnavailable"));
+    }
     return redirect(returnStatus);
   }
 

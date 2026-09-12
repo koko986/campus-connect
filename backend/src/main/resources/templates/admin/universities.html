@@ -31,7 +31,7 @@
           <tr>
             <th th:text="#{column.university}">University</th>
             <th th:text="#{column.location}">Location</th>
-            <th th:text="#{column.catalog}">Catalog</th>
+            <th th:text="#{column.directoryData}">Data</th>
             <th th:text="#{column.state}">State</th>
             <th th:text="#{column.actions}">Actions</th>
           </tr>
@@ -79,17 +79,22 @@
                 >Edit</a
               >
 
-              <details th:each="change : ${stateChanges}" th:if="${superAdmin}" class="console-action">
+              <details
+                th:if="${superAdmin and university.canPublish()}"
+                class="console-confirm"
+                data-console-confirm
+              >
                 <summary
                   class="console-button"
-                  th:classappend="${change.name() == 'ARCHIVE'} ? 'console-button--danger' : 'console-button--ghost'"
-                  th:text="${#messages.msg(change.labelKey())}"
+                  th:classappend="${university.archived()} ? 'console-button--primary' : 'console-button--ghost'"
+                  th:text="#{enum.universityState.PUBLISH}"
                   >Publish</summary
                 >
                 <form
-                  th:action="@{'/admin/universities/' + ${university.id()} + '/state/' + ${change.slug()}}"
+                  th:action="@{'/admin/universities/' + ${university.id()} + '/state/publish'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <label>
@@ -97,14 +102,90 @@
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
                       th:placeholder="#{field.auditPlaceholder}"></textarea>
                   </label>
-                  <button
-                    type="submit"
-                    class="console-button console-button--primary"
-                    th:with="operation=${#messages.msg(change.labelKey())}"
-                    th:text="#{action.confirmOperation(${operation})}"
-                  >
-                    Confirm
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--primary"
+                      th:with="operation=#{enum.universityState.PUBLISH}"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmOperation(${operation})}"
+                    >
+                      Confirm
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
+                </form>
+              </details>
+
+              <details
+                th:if="${superAdmin and university.canUnpublish()}"
+                class="console-confirm"
+                data-console-confirm
+              >
+                <summary class="console-button console-button--ghost" th:text="#{enum.universityState.UNPUBLISH}"
+                  >Unpublish</summary
+                >
+                <form
+                  th:action="@{'/admin/universities/' + ${university.id()} + '/state/unpublish'}"
+                  method="post"
+                  class="console-confirm-panel"
+                  data-console-action-form
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <label>
+                    <span th:text="#{field.reason}">Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
+                      th:placeholder="#{field.auditPlaceholder}"></textarea>
+                  </label>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--primary"
+                      th:with="operation=#{enum.universityState.UNPUBLISH}"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmOperation(${operation})}"
+                    >Confirm</button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
+                </form>
+              </details>
+
+              <details
+                th:if="${superAdmin and university.canArchive()}"
+                class="console-confirm"
+                data-console-confirm
+              >
+                <summary class="console-button console-button--danger" th:text="#{enum.universityState.ARCHIVE}"
+                  >Archive</summary
+                >
+                <form
+                  th:action="@{'/admin/universities/' + ${university.id()} + '/state/archive'}"
+                  method="post"
+                  class="console-confirm-panel"
+                  data-console-action-form
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <label>
+                    <span th:text="#{field.reason}">Reason</span>
+                    <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
+                      th:placeholder="#{field.auditPlaceholder}"></textarea>
+                  </label>
+                  <p class="console-detail" th:text="#{page.universities.archiveNote}">
+                    Archived universities are hidden from students.
+                  </p>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--danger"
+                      th:with="operation=#{enum.universityState.ARCHIVE}"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmOperation(${operation})}"
+                    >Confirm</button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
             </td>

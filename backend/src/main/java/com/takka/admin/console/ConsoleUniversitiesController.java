@@ -5,9 +5,12 @@ import com.takka.admin.form.UniversityForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.UniversityStateChange;
 import com.takka.admin.service.UniversityDirectoryService;
+import com.takka.admin.support.MessageException;
+import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -45,9 +48,14 @@ public class ConsoleUniversitiesController {
       @AuthenticationPrincipal AdminIdentity administrator,
       @RequestParam(defaultValue = "0") int page,
       Model model) {
+    PageRequest request = PageRequest.of(page);
     layout.apply(model, administrator, ConsoleSection.UNIVERSITIES);
-    model.addAttribute("universities", universities.directory(PageRequest.of(page)));
-    model.addAttribute("stateChanges", UniversityStateChange.values());
+    try {
+      model.addAttribute("universities", universities.directory(request));
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("universities", Page.empty(request));
+      model.addAttribute("flashError", messages.get("error.universities.unavailable"));
+    }
     model.addAttribute("filterQuery", "");
     return "admin/universities";
   }
@@ -77,9 +85,19 @@ public class ConsoleUniversitiesController {
       return "admin/university-form";
     }
 
-    universities.create(administrator, form);
-    Flash.success(attributes, messages.get("flash.university.created", form.getName()));
-    return LIST;
+    try {
+      universities.create(administrator, form);
+      Flash.success(attributes, messages.get("flash.university.created", form.getName()));
+      return LIST;
+    } catch (MessageException expected) {
+      model.addAttribute("flashError", messages.explain(expected, "error.action.generic"));
+    } catch (AccessDeniedException denied) {
+      throw denied;
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable"));
+    }
+    prepareForm(model, administrator, form, null);
+    return "admin/university-form";
   }
 
   @PostMapping("/{id}")
@@ -95,9 +113,19 @@ public class ConsoleUniversitiesController {
       return "admin/university-form";
     }
 
-    universities.update(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.university.updated", form.getName()));
-    return LIST;
+    try {
+      universities.update(administrator, id, form);
+      Flash.success(attributes, messages.get("flash.university.updated", form.getName()));
+      return LIST;
+    } catch (MessageException expected) {
+      model.addAttribute("flashError", messages.explain(expected, "error.action.generic"));
+    } catch (AccessDeniedException denied) {
+      throw denied;
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable"));
+    }
+    prepareForm(model, administrator, form, id);
+    return "admin/university-form";
   }
 
   @PostMapping("/{id}/state/{change}")
@@ -113,9 +141,17 @@ public class ConsoleUniversitiesController {
       return LIST;
     }
 
-    UniversityStateChange requested = UniversityStateChange.require(change);
-    String name = universities.changeState(administrator, id, requested, form);
-    Flash.success(attributes, messages.get(requested.appliedKey(), name));
+    try {
+      UniversityStateChange requested = UniversityStateChange.require(change);
+      String name = universities.changeState(administrator, id, requested, form);
+      Flash.success(attributes, messages.get(requested.appliedKey(), name));
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.explain(expected, "error.action.generic"));
+    } catch (AccessDeniedException denied) {
+      throw denied;
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.universities.actionUnavailable"));
+    }
     return LIST;
   }
 

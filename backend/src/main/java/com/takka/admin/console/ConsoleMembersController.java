@@ -6,9 +6,13 @@ import com.takka.admin.model.AccountStatus;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.MemberFilter;
 import com.takka.admin.service.AccountModerationService;
+import com.takka.admin.support.MessageException;
+import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
+import java.util.function.Supplier;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,9 +48,15 @@ public class ConsoleMembersController {
       @RequestParam(defaultValue = "0") int page,
       Model model) {
     MemberFilter filter = MemberFilter.of(search, status);
+    PageRequest request = PageRequest.of(page);
 
     layout.apply(model, administrator, ConsoleSection.ACCOUNTS);
-    model.addAttribute("members", accounts.members(filter, PageRequest.of(page)));
+    try {
+      model.addAttribute("members", accounts.members(filter, request));
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("members", Page.empty(request));
+      model.addAttribute("flashError", messages.get("error.accounts.unavailable"));
+    }
     model.addAttribute("filter", filter);
     model.addAttribute("statuses", AccountStatus.values());
     model.addAttribute("filterQuery", filterQuery(filter));
@@ -64,8 +74,10 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    String member = accounts.block(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.member.blocked", member));
+    perform(attributes, () -> {
+      String member = accounts.block(administrator, id, form);
+      return messages.get("flash.member.blocked", member);
+    });
     return redirect(search, status);
   }
 
@@ -80,8 +92,10 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    String member = accounts.unblock(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.member.unblocked", member));
+    perform(attributes, () -> {
+      String member = accounts.unblock(administrator, id, form);
+      return messages.get("flash.member.unblocked", member);
+    });
     return redirect(search, status);
   }
 
@@ -96,8 +110,10 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    String email = accounts.delete(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.member.deleted", email));
+    perform(attributes, () -> {
+      String email = accounts.delete(administrator, id, form);
+      return messages.get("flash.member.deleted", email);
+    });
     return redirect(search, status);
   }
 
@@ -111,8 +127,10 @@ public class ConsoleMembersController {
       @RequestParam(defaultValue = "") String status,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
-    String member = accounts.verifyStudent(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.member.verified", member));
+    perform(attributes, () -> {
+      String member = accounts.verifyStudent(administrator, id, form);
+      return messages.get("flash.member.verified", member);
+    });
     return redirect(search, status);
   }
 
@@ -126,9 +144,23 @@ public class ConsoleMembersController {
       @RequestParam(defaultValue = "") String status,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
-    String member = accounts.rejectStudentVerification(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.member.verificationRejected", member));
+    perform(attributes, () -> {
+      String member = accounts.rejectStudentVerification(administrator, id, form);
+      return messages.get("flash.member.verificationRejected", member);
+    });
     return redirect(search, status);
+  }
+
+  private void perform(RedirectAttributes attributes, Supplier<String> successMessage) {
+    try {
+      Flash.success(attributes, successMessage.get());
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.explain(expected, "error.action.generic"));
+    } catch (AccessDeniedException denied) {
+      throw denied;
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.accounts.actionUnavailable"));
+    }
   }
 
   private String rejected(

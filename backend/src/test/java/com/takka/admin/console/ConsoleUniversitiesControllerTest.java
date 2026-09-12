@@ -73,7 +73,7 @@ class ConsoleUniversitiesControllerTest {
         .andExpect(status().isOk())
         .andExpect(view().name("admin/universities"))
         .andExpect(model().attribute("section", ConsoleSection.UNIVERSITIES))
-        .andExpect(model().attributeExists("universities", "stateChanges"));
+        .andExpect(model().attributeExists("universities"));
   }
 
   @Test
@@ -160,7 +160,7 @@ class ConsoleUniversitiesControllerTest {
   @Test
   void anUnknownStateChangeIsRejected() throws Exception {
     mvc.perform(post("/admin/universities/{id}/state/destroy", universityId).param("reason", "Because"))
-        .andExpect(redirectedUrl("/admin"))
+        .andExpect(redirectedUrl("/admin/universities"))
         .andExpect(flash().attribute("flashError", "Unknown university operation: destroy"));
 
     verify(universities, never()).changeState(any(), any(), any(), any());
@@ -183,6 +183,27 @@ class ConsoleUniversitiesControllerTest {
     mvc.perform(post("/admin/universities/{id}/state/publish", universityId).param("reason", "Data verified"))
         .andExpect(redirectedUrl("/admin"))
         .andExpect(flash().attribute("flashError", "That action is limited to super admins."));
+  }
+
+  @Test
+  void theDirectoryStaysOpenWhenUniversitiesCannotLoad() throws Exception {
+    when(universities.directory(any())).thenThrow(new IllegalStateException("universities unavailable"));
+
+    mvc.perform(get("/admin/universities"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/universities"))
+        .andExpect(model().attributeExists("universities", "flashError"));
+  }
+
+  @Test
+  void stateActionFailuresReturnToTheDirectoryWithAConsoleError() throws Exception {
+    when(universities.changeState(any(), eq(universityId), eq(UniversityStateChange.PUBLISH), any()))
+        .thenThrow(new IllegalStateException("supabase unavailable"));
+
+    mvc.perform(post("/admin/universities/{id}/state/publish", universityId).param("reason", "Data verified"))
+        .andExpect(redirectedUrl("/admin/universities"))
+        .andExpect(flash().attribute(
+            "flashError", "The university action could not be completed right now. Try again in a moment."));
   }
 
   /** The unknown-operation message takes the attempted slug as an argument in either language. */

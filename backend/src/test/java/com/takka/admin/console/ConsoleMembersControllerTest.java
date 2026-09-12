@@ -61,6 +61,16 @@ class ConsoleMembersControllerTest {
   }
 
   @Test
+  void theAccountsPageStaysOpenWhenMembersCannotLoad() throws Exception {
+    when(accounts.members(any(), any())).thenThrow(new IllegalStateException("accounts unavailable"));
+
+    mvc.perform(get("/admin/members"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("admin/members"))
+        .andExpect(model().attributeExists("members", "flashError"));
+  }
+
+  @Test
   void theSearchAndStatusFilterReachTheService() throws Exception {
     mvc.perform(get("/admin/members").param("search", " ada ").param("status", "blocked"))
         .andExpect(model().attribute("filterQuery", "search=ada&status=BLOCKED"));
@@ -173,14 +183,15 @@ class ConsoleMembersControllerTest {
    * to something written for an administrator rather than print the internal message.
    */
   @Test
-  void anInternalFailureIsReportedGenericallyRatherThanVerbatim() throws Exception {
+  void anInternalFailureIsReportedWithAnAccountActionBanner() throws Exception {
     when(accounts.delete(any(), any(), any()))
         .thenThrow(new IllegalArgumentException("column profiles.deleted_at does not exist"));
 
     mvc.perform(post("/admin/members/{id}/delete", memberId)
             .param("reason", "Fraudulent account")
             .param("confirmEmail", "ada@takka.test"))
-        .andExpect(flash().attribute("flashError", "That action could not be completed."));
+        .andExpect(flash().attribute(
+            "flashError", "The account action could not be completed right now. Try again in a moment."));
   }
 
   @Test

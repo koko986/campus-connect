@@ -67,12 +67,13 @@
               <p class="console-detail" th:if="${post.hasRemovalReason()}" th:text="${post.removalReason()}"></p>
             </td>
             <td class="console-actions">
-              <details th:if="${post.isPublished()}" class="console-action">
+              <details th:if="${post.isPublished()}" class="console-confirm" data-console-confirm>
                 <summary class="console-button console-button--danger" th:text="#{action.remove}">Remove</summary>
                 <form
                   th:action="@{'/admin/posts/' + ${post.id()} + '/remove'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
@@ -88,18 +89,28 @@
                       th:text="#{page.posts.defaultRemovalReason}"
                     ></textarea>
                   </label>
-                  <button type="submit" class="console-button console-button--danger" th:text="#{action.confirmRemoval}">
-                    Confirm removal
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--danger"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmRemoval}"
+                    >
+                      Confirm removal
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
 
-              <details th:unless="${post.isPublished()}" class="console-action">
+              <details th:unless="${post.isPublished()}" class="console-confirm" data-console-confirm>
                 <summary class="console-button console-button--primary" th:text="#{action.restore}">Restore</summary>
                 <form
                   th:action="@{'/admin/posts/' + ${post.id()} + '/restore'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
@@ -114,13 +125,18 @@
                       th:text="#{page.posts.defaultRestoreReason}"
                     ></textarea>
                   </label>
-                  <button
-                    type="submit"
-                    class="console-button console-button--primary"
-                    th:text="#{action.confirmRestore}"
-                  >
-                    Confirm restore
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--primary"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmRestore}"
+                    >
+                      Confirm restore
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
             </td>

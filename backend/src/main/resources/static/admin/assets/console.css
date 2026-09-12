@@ -632,24 +632,53 @@ body {
   object-fit: cover;
 }
 
-.console-action summary {
+.console-confirm {
+  position: relative;
+}
+
+.console-confirm summary {
   list-style: none;
 }
 
-.console-action summary::-webkit-details-marker {
+.console-confirm summary::-webkit-details-marker {
   display: none;
 }
 
-.console-action-form {
+.console-confirm-panel {
+  position: absolute;
+  z-index: 20;
+  right: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: min(340px, 70vw);
+  width: min(360px, 76vw);
   margin-top: 8px;
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: var(--surface-inset);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-lift);
+}
+
+.console-confirm[open] > summary {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.console-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.console-confirm-actions .console-button {
+  flex: 1 1 auto;
+}
+
+.console-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 /* Forms */
@@ -1059,8 +1088,21 @@ html:lang(my) .console-table td {
     min-height: 44px;
   }
 
-  .console-action-form {
-    width: min(340px, calc(100vw - 48px));
+  .console-confirm {
+    position: static;
+  }
+
+  .console-confirm-panel {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+    box-shadow: none;
+  }
+
+  .console-confirm-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
   }
 
   .console-pagination {

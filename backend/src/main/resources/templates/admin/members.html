@@ -92,7 +92,8 @@
 
               <details
                 th:if="${member.isModeratable() and member.hasVerification() and !member.isVerifiedStudent()}"
-                class="console-action"
+                class="console-confirm"
+                data-console-confirm
               >
                 <summary class="console-button console-button--primary" th:text="#{action.verifyStudent}">
                   Verify student
@@ -100,7 +101,8 @@
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/verify'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="search" th:value="${filter.search()}" />
@@ -110,14 +112,23 @@
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
                       th:placeholder="#{page.accounts.verificationNote}"></textarea>
                   </label>
-                  <button type="submit" class="console-button console-button--primary"
-                    th:text="#{action.confirmVerification}">Confirm verification</button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--primary"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmVerification}"
+                    >Confirm verification</button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
 
               <details
                 th:if="${member.isModeratable() and member.hasVerification() and !member.isRejectedStudent()}"
-                class="console-action"
+                class="console-confirm"
+                data-console-confirm
               >
                 <summary class="console-button console-button--ghost" th:text="#{action.rejectVerification}">
                   Reject verification
@@ -125,7 +136,8 @@
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/reject-verification'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="search" th:value="${filter.search()}" />
@@ -134,17 +146,26 @@
                     <span th:text="#{field.reason}">Reason</span>
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required></textarea>
                   </label>
-                  <button type="submit" class="console-button console-button--danger"
-                    th:text="#{action.confirmRejection}">Reject verification</button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--danger"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmRejection}"
+                    >Reject verification</button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
 
-              <details th:if="${member.isModeratable() and !member.isBlocked()}" class="console-action">
+              <details th:if="${member.isModeratable() and !member.isBlocked()}" class="console-confirm" data-console-confirm>
                 <summary class="console-button console-button--danger" th:text="#{action.block}">Block</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/block'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="search" th:value="${filter.search()}" />
@@ -157,18 +178,28 @@
                   <p class="console-detail" th:text="#{page.accounts.blockNote}">
                     Blocking signs the member out everywhere and stops all posting.
                   </p>
-                  <button type="submit" class="console-button console-button--danger" th:text="#{action.confirmBlock}">
-                    Confirm block
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--danger"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmBlock}"
+                    >
+                      Confirm block
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
 
-              <details th:if="${member.isModeratable() and member.isBlocked()}" class="console-action">
+              <details th:if="${member.isModeratable() and member.isBlocked()}" class="console-confirm" data-console-confirm>
                 <summary class="console-button console-button--primary" th:text="#{action.unblock}">Unblock</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/unblock'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="search" th:value="${filter.search()}" />
@@ -178,23 +209,29 @@
                     <textarea name="reason" rows="2" minlength="3" maxlength="2000" required
                       th:placeholder="#{field.auditPlaceholder}"></textarea>
                   </label>
-                  <button
-                    type="submit"
-                    class="console-button console-button--primary"
-                    th:text="#{action.confirmUnblock}"
-                  >
-                    Confirm unblock
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--primary"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmUnblock}"
+                    >
+                      Confirm unblock
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
 
               <!-- Deletion is irreversible, so only super admins see it and the email must be retyped. -->
-              <details th:if="${superAdmin and member.isModeratable()}" class="console-action">
+              <details th:if="${superAdmin and member.isModeratable()}" class="console-confirm" data-console-confirm>
                 <summary class="console-button console-button--danger" th:text="#{action.delete}">Delete</summary>
                 <form
                   th:action="@{'/admin/members/' + ${member.id()} + '/delete'}"
                   method="post"
-                  class="console-action-form"
+                  class="console-confirm-panel"
+                  data-console-action-form
                 >
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                   <input type="hidden" name="search" th:value="${filter.search()}" />
@@ -210,13 +247,18 @@
                   <p class="console-detail" th:text="#{page.accounts.deleteNote}">
                     This deletes the Supabase account permanently. Their posts remain but lose their author.
                   </p>
-                  <button
-                    type="submit"
-                    class="console-button console-button--danger"
-                    th:text="#{action.confirmDelete}"
-                  >
-                    Delete permanently
-                  </button>
+                  <div class="console-confirm-actions">
+                    <button
+                      type="submit"
+                      class="console-button console-button--danger"
+                      th:attr="data-busy-text=#{action.working}"
+                      th:text="#{action.confirmDelete}"
+                    >
+                      Delete permanently
+                    </button>
+                    <button type="button" class="console-button console-button--ghost" data-console-close
+                      th:text="#{action.cancel}">Cancel</button>
+                  </div>
                 </form>
               </details>
             </td>
