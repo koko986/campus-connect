@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -86,6 +87,18 @@ class ConsoleOpportunitiesControllerTest {
         .andExpect(flash().attributeExists("flashError"));
 
     verify(opportunities, never()).decide(any(), any(), any(), any());
+  }
+
+  @Test
+  void opportunityActionFailuresReturnToTheListWithAConsoleError() throws Exception {
+    doThrow(new IllegalStateException("supabase unavailable")).when(opportunities).decide(any(), any(), any(), any());
+
+    mvc.perform(post("/admin/opportunities/{id}/decision", opportunityId)
+            .param("decision", "published")
+            .param("note", "Source checked"))
+        .andExpect(redirectedUrl("/admin/opportunities"))
+        .andExpect(flash().attribute(
+            "flashError", "The opportunity action could not be completed right now. Try again in a moment."));
   }
 
   @Test

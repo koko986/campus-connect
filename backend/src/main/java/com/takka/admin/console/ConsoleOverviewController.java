@@ -38,7 +38,7 @@ public class ConsoleOverviewController {
       new ResponsibilityCard(
           "page.overview.responsibility.universities.title",
           "page.overview.responsibility.universities.text",
-          ConsoleSection.UNIVERSITY_PHOTOS.href()));
+          ConsoleSection.UNIVERSITIES.href()));
 
   private final AdminOverviewService overview;
   private final ReportModerationService reports;

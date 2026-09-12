@@ -27,7 +27,7 @@
               th:each="status : ${statuses}"
               th:value="${status}"
               th:selected="${status == statusFilter}"
-              th:text="${#messages.msg('enum.photoStatus.' + ${status})}"
+              th:text="${#messages.msg('enum.photoStatus.' + status)}"
             ></option>
           </select>
         </label>
@@ -78,7 +78,7 @@
               <span
                 class="console-muted"
                 th:with="elapsed=${#messages.msg(photo.age().messageKey(), photo.age().amount())}"
-                th:text="${photo.submitted()} + ' · ' + ${elapsed}"
+                th:text="${photo.submitted() + ' · ' + elapsed}"
                 >submitted</span
               >
             </td>
@@ -86,7 +86,7 @@
               <span
                 class="console-pill"
                 th:classappend="'console-pill--' + ${photo.statusTone()}"
-                th:text="${#messages.msg('enum.photoStatus.' + ${photo.status()})}"
+                th:text="${#messages.msg('enum.photoStatus.' + photo.status())}"
                 >Pending</span
               >
             </td>

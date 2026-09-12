@@ -56,7 +56,6 @@ class AdminModelTest {
             ConsoleSection.ACCOUNTS,
             ConsoleSection.POSTS,
             ConsoleSection.UNIVERSITIES,
-            ConsoleSection.UNIVERSITY_PHOTOS,
             ConsoleSection.OPPORTUNITIES),
         ConsoleSection.navigationFor(new AdminIdentity(UUID.randomUUID(), "admin@gmail.com", AdminRole.SUPER_ADMIN)));
     assertTrue(ConsoleSection.navigationFor(null).isEmpty());

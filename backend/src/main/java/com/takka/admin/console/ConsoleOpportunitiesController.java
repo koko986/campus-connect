@@ -3,6 +3,7 @@ package com.takka.admin.console;
 import com.takka.admin.form.OpportunityDecisionForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.service.OpportunityModerationService;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
@@ -67,9 +68,15 @@ public class ConsoleOpportunitiesController {
       Flash.error(attributes, messages.invalidSubmission(binding));
       return "redirect:/admin/opportunities";
     }
-    opportunities.decide(administrator, id, form.getDecision(), form.getNote());
-    Flash.success(attributes, messages.get("published".equals(form.getDecision())
-        ? "flash.opportunity.approved" : "flash.opportunity.rejected"));
+    try {
+      opportunities.decide(administrator, id, form.getDecision(), form.getNote());
+      Flash.success(attributes, messages.get("published".equals(form.getDecision())
+          ? "flash.opportunity.approved" : "flash.opportunity.rejected"));
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.get(expected.getMessage()));
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.opportunities.actionUnavailable"));
+    }
     return "redirect:/admin/opportunities";
   }
 }

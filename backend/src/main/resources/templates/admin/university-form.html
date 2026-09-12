@@ -47,7 +47,7 @@
               <option
                 th:each="type : ${types}"
                 th:value="${type}"
-                th:text="${#messages.msg('enum.universityType.' + ${type})}"
+                th:text="${#messages.msg('enum.universityType.' + type)}"
               ></option>
             </select>
             <em class="console-field-error" th:if="${#fields.hasErrors('universityType')}"

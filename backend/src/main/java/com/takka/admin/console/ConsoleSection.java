@@ -13,7 +13,6 @@ public enum ConsoleSection {
   ACCOUNTS("/admin/members", "accounts"),
   POSTS("/admin/posts", "posts"),
   UNIVERSITIES("/admin/universities", "universities"),
-  UNIVERSITY_PHOTOS("/admin/university-photos", "universityPhotos"),
   OPPORTUNITIES("/admin/opportunities", "opportunities"),
   CATALOG("/admin/catalog", "catalog"),
   AUDIT("/admin/audit", "audit");
@@ -48,6 +47,6 @@ public enum ConsoleSection {
   public static List<ConsoleSection> navigationFor(AdminIdentity administrator) {
     return administrator == null
         ? List.of()
-        : List.of(OVERVIEW, REPORTS, ACCOUNTS, POSTS, UNIVERSITIES, UNIVERSITY_PHOTOS, OPPORTUNITIES);
+        : List.of(OVERVIEW, REPORTS, ACCOUNTS, POSTS, UNIVERSITIES, OPPORTUNITIES);
   }
 }

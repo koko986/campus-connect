@@ -101,9 +101,19 @@ class ConsolePostsControllerTest {
 
     mvc.perform(post("/admin/posts/{id}/remove", postId)
             .param("reason", "Spam link")
-            .header("Referer", "http://localhost/admin/posts?status=PUBLISHED"))
+            .param("returnStatus", "PUBLISHED"))
         .andExpect(redirectedUrl("/admin/posts?status=PUBLISHED"))
         .andExpect(flash().attribute("flashError", "Post not found."));
+  }
+
+  @Test
+  void postActionFailuresReturnToTheListWithAConsoleError() throws Exception {
+    doThrow(new IllegalStateException("supabase unavailable")).when(posts).restore(any(), any(), any());
+
+    mvc.perform(post("/admin/posts/{id}/restore", postId).param("reason", "Restore after review"))
+        .andExpect(redirectedUrl("/admin/posts"))
+        .andExpect(flash().attribute(
+            "flashError", "The post action could not be completed right now. Try again in a moment."));
   }
 
   @Test

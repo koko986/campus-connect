@@ -13,12 +13,6 @@
         </p>
         <div class="console-inline-actions">
           <a
-            th:href="@{/admin/university-photos}"
-            class="console-button console-button--ghost"
-            th:text="#{action.reviewUniversityPhotos}"
-            >Review campus photos</a
-          >
-          <a
             th:if="${superAdmin}"
             th:href="@{/admin/universities/new}"
             class="console-button console-button--primary"
@@ -46,7 +40,7 @@
           <tr th:each="university : ${universities.items()}">
             <td>
               <span class="console-strong" th:text="${university.name()}">Name</span>
-              <span class="console-muted" th:text="${university.shortName()} + ' · ' + ${university.slug()}"
+              <span class="console-muted" th:text="${university.shortName() + ' · ' + university.slug()}"
                 >short</span
               >
             </td>

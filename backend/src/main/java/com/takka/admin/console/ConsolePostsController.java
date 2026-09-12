@@ -4,6 +4,7 @@ import com.takka.admin.form.ModerationReasonForm;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.PostModerationStatus;
 import com.takka.admin.service.PostModerationService;
+import com.takka.admin.support.MessageException;
 import com.takka.admin.support.Page;
 import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
@@ -69,8 +70,14 @@ public class ConsolePostsController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
 
-    posts.remove(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.post.removed"));
+    try {
+      posts.remove(administrator, id, form);
+      Flash.success(attributes, messages.get("flash.post.removed"));
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.get(expected.getMessage()));
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.posts.actionUnavailable"));
+    }
     return redirect(returnStatus);
   }
 
@@ -84,8 +91,14 @@ public class ConsolePostsController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
 
-    posts.restore(administrator, id, form);
-    Flash.success(attributes, messages.get("flash.post.restored"));
+    try {
+      posts.restore(administrator, id, form);
+      Flash.success(attributes, messages.get("flash.post.restored"));
+    } catch (MessageException expected) {
+      Flash.error(attributes, messages.get(expected.getMessage()));
+    } catch (RuntimeException unavailable) {
+      Flash.error(attributes, messages.get("error.posts.actionUnavailable"));
+    }
     return redirect(returnStatus);
   }
 

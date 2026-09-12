@@ -15,7 +15,7 @@
         <a class="console-metric" th:href="@{/admin/opportunities(status='rejected')}"><span class="console-metric-value" th:text="${counts.getOrDefault('rejected', 0L)}">0</span><span class="console-metric-label" th:text="#{page.opportunities.metric.rejected}">Rejected</span></a>
       </section>
       <form th:action="@{/admin/opportunities}" method="get" class="console-filters">
-        <label><span th:text="#{field.status}">Status</span><select name="status"><option th:each="status : ${statuses}" th:value="${status}" th:selected="${status == statusFilter}" th:text="${#messages.msg('enum.opportunityStatus.' + ${status})}"></option></select></label>
+        <label><span th:text="#{field.status}">Status</span><select name="status"><option th:each="status : ${statuses}" th:value="${status}" th:selected="${status == statusFilter}" th:text="${#messages.msg('enum.opportunityStatus.' + status)}"></option></select></label>
         <button type="submit" class="console-button console-button--ghost" th:text="#{action.apply}">Apply</button>
       </form>
       <p th:if="${opportunities.isEmpty()}" class="console-empty" th:text="#{page.opportunities.empty}">No opportunities match this filter.</p>
