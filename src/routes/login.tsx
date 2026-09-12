@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/app-shell";
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const t = useT();
   const [email, setEmail] = useState("");
@@ -38,9 +40,12 @@ function LoginPage() {
     setError("");
     setPending(true);
     try {
+      await queryClient.cancelQueries({ queryKey: ["account-status"] });
+      queryClient.removeQueries({ queryKey: ["account-status"] });
       if (user) {
         const { error: signOutError } = await supabase.auth.signOut();
         if (signOutError) throw signOutError;
+        queryClient.removeQueries();
       }
       const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (result.error) {
@@ -49,6 +54,7 @@ function LoginPage() {
         );
         return;
       }
+      queryClient.removeQueries({ queryKey: ["account-status"] });
       await navigate({ to: "/dashboard", replace: true });
     } catch (cause) {
       setError(

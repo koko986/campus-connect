@@ -109,8 +109,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   const statusEmailMatchesSession =
-    !status.data?.email ||
-    !user.email ||
+    Boolean(status.data?.email && user.email) &&
     status.data.email.trim().toLowerCase() === user.email.trim().toLowerCase();
 
   if (status.data?.administrator && statusEmailMatchesSession) {
