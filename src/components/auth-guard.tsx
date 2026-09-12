@@ -8,8 +8,6 @@ import { ApiRequestError, adminConsoleUrl, getAccountStatus } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 
-const DEMO_ADMIN_EMAIL = "admin@gmail.com";
-
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { initialized, signOut, user } = useAuth();
   const navigate = useNavigate();
@@ -113,10 +111,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const statusEmailMatchesSession =
     Boolean(status.data?.email && user.email) &&
     status.data.email.trim().toLowerCase() === user.email.trim().toLowerCase();
-  const sessionEmail = user.email?.trim().toLowerCase() ?? "";
-  const isDemoAdminSession = sessionEmail === DEMO_ADMIN_EMAIL;
-
-  if (status.data?.administrator && statusEmailMatchesSession && isDemoAdminSession) {
+  if (status.data?.administrator && statusEmailMatchesSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
         <div className="w-full max-w-md border bg-background p-8 text-center">

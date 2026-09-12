@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
+import { adminLoginUrl } from "@/lib/api";
 import { initialLanguage, translate, useT } from "@/lib/i18n";
 import { isSupabaseConnectionError, supabase } from "@/lib/supabase";
+
+const ADMIN_EMAIL = "admin@gmail.com";
 
 export const Route = createFileRoute("/login")({
   head: () => {
@@ -40,6 +43,11 @@ function LoginPage() {
     setError("");
     setPending(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail === ADMIN_EMAIL) {
+        window.location.assign(adminLoginUrl);
+        return;
+      }
       await queryClient.cancelQueries({ queryKey: ["account-status"] });
       queryClient.removeQueries({ queryKey: ["account-status"] });
       if (user) {
@@ -47,7 +55,7 @@ function LoginPage() {
         if (signOutError) throw signOutError;
         queryClient.removeQueries();
       }
-      const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      const result = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
       if (result.error) {
         setError(
           isSupabaseConnectionError(result.error) ? t("auth.error.network") : result.error.message,

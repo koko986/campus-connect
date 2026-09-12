@@ -5,6 +5,7 @@ const apiUrl = (import.meta.env["VITE_TAKKA_API_URL"] ?? "http://localhost:8080"
   "",
 );
 export const adminConsoleUrl = `${apiUrl}/admin`;
+export const adminLoginUrl = `${apiUrl}/admin/login`;
 const API_TIMEOUT_MS = 15_000;
 
 export class ApiRequestError extends Error {
