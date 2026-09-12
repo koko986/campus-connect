@@ -32,7 +32,7 @@ public class AccountController {
     response.put("reason", moderation == null ? "" : moderation.path("reason").asString(""));
     response.put("blockedAt", moderation == null ? "" : moderation.path("blocked_at").asString(""));
 
-    var role = administrators.findActiveRole(principal.id());
+    var role = administrators.findActiveRole(principal);
     response.put("administrator", role.isPresent());
     role.ifPresent(value -> response.put("adminRole", value.name()));
     return response;

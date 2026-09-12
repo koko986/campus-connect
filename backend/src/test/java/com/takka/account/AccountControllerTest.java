@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,7 +28,7 @@ class AccountControllerTest {
   @Test
   void activeMemberIsNotMarkedAsAnAdministrator() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree("[]"));
-    when(administrators.findActiveRole(userId)).thenReturn(Optional.empty());
+    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.empty());
 
     var status = controller.status(principal);
 
@@ -39,7 +40,7 @@ class AccountControllerTest {
   @Test
   void activeAdministratorCarriesTheirConsoleRole() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree("[]"));
-    when(administrators.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
+    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
 
     var status = controller.status(principal);
 
@@ -51,7 +52,7 @@ class AccountControllerTest {
   void blockedStateAndAdministratorIdentityAreBothPreserved() throws Exception {
     when(supabase.get(anyString())).thenReturn(mapper.readTree(
         "[{\"status\":\"BLOCKED\",\"reason\":\"Review required\",\"blocked_at\":\"2026-09-11T00:00:00Z\"}]"));
-    when(administrators.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.MODERATOR));
+    when(administrators.findActiveRole(eq(principal))).thenReturn(Optional.of(AdminRole.MODERATOR));
 
     var status = controller.status(principal);
 

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +49,8 @@ class AdminSessionServiceTest {
   @Test
   void anAdministratorSignsInWithTheirStoredRole() {
     supabaseAccepts();
-    when(adminUsers.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
+    when(adminUsers.findActiveRole(eq(new TakkaPrincipal(userId, "super@takka.test", "token"))))
+        .thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
 
     var signedIn = service.signIn(credentials());
 
@@ -60,7 +62,8 @@ class AdminSessionServiceTest {
   @Test
   void validMemberCredentialsAreStillRefusedWithoutAnAdminAssignment() {
     supabaseAccepts();
-    when(adminUsers.findActiveRole(userId)).thenReturn(Optional.empty());
+    when(adminUsers.findActiveRole(eq(new TakkaPrincipal(userId, "super@takka.test", "token"))))
+        .thenReturn(Optional.empty());
 
     var error = assertThrows(AdminSignInException.class, () -> service.signIn(credentials()));
 

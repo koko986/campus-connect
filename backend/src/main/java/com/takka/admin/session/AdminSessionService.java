@@ -32,7 +32,7 @@ public class AdminSessionService {
   public AdminIdentity signIn(AdminLoginForm form) {
     TakkaPrincipal principal = authenticate(form);
     AdminRole role = adminUserRepository
-        .findActiveRole(principal.id())
+        .findActiveRole(principal)
         .orElseThrow(() -> new AdminSignInException("error.signIn.notAdministrator"));
     return new AdminIdentity(principal.id(), principal.email(), role);
   }
