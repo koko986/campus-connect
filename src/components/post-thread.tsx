@@ -233,7 +233,7 @@ export function PostThreadPage({ postId }: { postId: string }) {
         <>
           <PostCard post={post.data} userId={user!.id} linkToThread={false} />
 
-          <section className="mt-6">
+          <section id="comments" className="mt-6 scroll-mt-24">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-bold">
                 {post.data.comment_count === 1

@@ -290,32 +290,7 @@ export function UniversitiesPage() {
 
   return (
     <AppShell title={t("nav.universities")}>
-      <p className="text-sm text-muted-foreground">{t("universities.note")}</p>
       <h2 className="mt-1 text-2xl font-bold">{t("universities.heading")}</h2>
-
-      {recommendations.data?.length ? (
-        <section className="mt-7">
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-5 text-primary" />
-            <h3 className="text-lg font-bold">{t("universities.recommended")}</h3>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{t("universities.recommendedNote")}</p>
-          <div className="scroll-rail mt-4 md:grid md:grid-cols-2 md:overflow-visible xl:grid-cols-3">
-            {recommendations.data.map((university) => (
-              <div key={university.id} className="w-72 shrink-0 md:w-auto">
-                <UniversityCard university={university} />
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {university.matchReasons.map((reason) => (
-                    <Badge key={reason} variant="secondary" className="font-normal">
-                      {recommendationReason(t, reason)}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <div className="mt-7 grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem_11rem]">
         <Input
@@ -354,6 +329,30 @@ export function UniversitiesPage() {
           </SelectContent>
         </Select>
       </div>
+
+      {recommendations.data?.length ? (
+        <section className="mt-7">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-5 text-primary" />
+            <h3 className="text-lg font-bold">{t("universities.recommended")}</h3>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{t("universities.recommendedNote")}</p>
+          <div className="scroll-rail mt-4 md:grid md:grid-cols-2 md:overflow-visible xl:grid-cols-3">
+            {recommendations.data.map((university) => (
+              <div key={university.id} className="w-72 shrink-0 md:w-auto">
+                <UniversityCard university={university} />
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {university.matchReasons.map((reason) => (
+                    <Badge key={reason} variant="secondary" className="font-normal">
+                      {recommendationReason(t, reason)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {query.isLoading ? <Loading label={t("universities.loading")} /> : null}
       {query.error ? (

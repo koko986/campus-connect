@@ -194,7 +194,7 @@ export function QuestionThreadPage({ questionId }: { questionId: string }) {
             </div>
           </article>
 
-          <section className="mt-6">
+          <section id="answers" className="mt-6 scroll-mt-24">
             <div className="mb-3 flex items-center gap-2">
               <MessageSquareText className="size-5 text-primary" />
               <h3 className="text-lg font-bold">

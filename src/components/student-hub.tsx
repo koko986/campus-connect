@@ -19,7 +19,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -355,11 +355,13 @@ function DecisionCenter({
     queryFn: () => listSmartMatches(preferences),
     enabled: Boolean(stored.data && hasPreference),
   });
+  const compareKey = compareIds.join(",");
   const comparison = useQuery({
-    queryKey: ["university-comparison", compareIds],
+    queryKey: ["university-comparison", compareKey],
     queryFn: () => loadUniversityComparison(compareIds),
     enabled: compareIds.length >= 2,
   });
+  const comparisonRef = useRef<HTMLElement | null>(null);
   const save = useMutation({
     mutationFn: () => saveMatcherPreferences(preferences),
     onSuccess: async () => {
@@ -428,7 +430,7 @@ function DecisionCenter({
               </SelectContent>
             </Select>
           </Field>
-          <Field label={t("field.preferredCity")} htmlFor="matcher-city">
+          <Field label={t("field.preferredLocation")} htmlFor="matcher-city">
             <Select
               value={preferences.preferred_city ?? "none"}
               onValueChange={(value) => set("preferred_city", value === "none" ? null : value)}
@@ -532,16 +534,83 @@ function DecisionCenter({
       {matches.isSuccess && stored.data && !matches.data.length ? (
         <Empty title={t("hub.matcher.emptyTitle")} text={t("hub.matcher.emptyText")} />
       ) : null}
-      {compareIds.length === 1 ? (
-        <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-          {t("hub.compare.chooseMore")}
-        </div>
+      {compareIds.length ? (
+        <ComparisonTray
+          selected={compareIds.map((id) => ({
+            id,
+            name:
+              matches.data?.find((match) => match.id === id)?.short_name ??
+              comparison.data?.find((university) => university.id === id)?.short_name ??
+              t("hub.compare.selected"),
+          }))}
+          canView={compareIds.length >= 2}
+          onView={() =>
+            comparisonRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+          onClear={() => onCompareIdsChange([])}
+          onRemove={toggleCompare}
+        />
       ) : null}
       {comparison.isLoading ? <Loading label={t("hub.compare.loading")} /> : null}
       {comparison.data ? (
-        <ComparisonTable universities={comparison.data} onRemove={(id) => toggleCompare(id)} />
+        <ComparisonTable
+          ref={comparisonRef}
+          universities={comparison.data}
+          onRemove={(id) => toggleCompare(id)}
+        />
       ) : null}
     </div>
+  );
+}
+
+function ComparisonTray({
+  selected,
+  canView,
+  onView,
+  onClear,
+  onRemove,
+}: {
+  selected: Array<{ id: string; name: string }>;
+  canView: boolean;
+  onView: () => void;
+  onClear: () => void;
+  onRemove: (id: string) => void;
+}) {
+  const t = useT();
+  return (
+    <section className="rounded-lg border bg-primary-soft/25 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold">{t("hub.compare.selectedTitle")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {canView ? t("hub.compare.ready") : t("hub.compare.chooseMore")}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={onClear}>
+            {t("hub.compare.clear")}
+          </Button>
+          <Button type="button" size="sm" className="min-h-11" disabled={!canView} onClick={onView}>
+            {t("hub.compare.view")}
+          </Button>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {selected.map((item) => (
+          <Badge key={item.id} variant="secondary" className="gap-1.5 py-1.5">
+            {item.name}
+            <button
+              type="button"
+              className="rounded-full p-0.5 hover:bg-background"
+              aria-label={t("hub.compare.remove", { name: item.name })}
+              onClick={() => onRemove(item.id)}
+            >
+              <X aria-hidden="true" className="size-3.5" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -632,13 +701,13 @@ function MatchResults({
   );
 }
 
-function ComparisonTable({
-  universities,
-  onRemove,
-}: {
-  universities: Awaited<ReturnType<typeof loadUniversityComparison>>;
-  onRemove: (id: string) => void;
-}) {
+const ComparisonTable = forwardRef<
+  HTMLElement,
+  {
+    universities: Awaited<ReturnType<typeof loadUniversityComparison>>;
+    onRemove: (id: string) => void;
+  }
+>(function ComparisonTable({ universities, onRemove }, ref) {
   const t = useT();
   const rows = [
     [
@@ -659,7 +728,7 @@ function ComparisonTable({
     [t("hub.compare.programs"), (u: (typeof universities)[number]) => u.programs.length],
   ] as const;
   return (
-    <section aria-labelledby="comparison-title">
+    <section ref={ref} aria-labelledby="comparison-title" className="scroll-mt-24">
       <div className="flex items-center justify-between">
         <div>
           <h3 id="comparison-title" className="text-xl font-bold">
@@ -728,7 +797,7 @@ function ComparisonTable({
       </div>
     </section>
   );
-}
+});
 
 function OpportunitiesBoard() {
   const { user } = useAuth();

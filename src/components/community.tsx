@@ -215,11 +215,20 @@ export function ReportButton({
             </SelectContent>
           </Select>
           <Textarea
+            id="report-details"
             value={details}
             onChange={(event) => setDetails(event.target.value)}
             maxLength={2000}
             placeholder={t("report.detailsPlaceholder")}
+            title={t("report.detailsHelper")}
+            aria-describedby="report-details-helper"
           />
+          <p id="report-details-helper" className="text-xs text-muted-foreground">
+            {t("report.detailsHelper")}
+          </p>
+          {details.length > 0 && details.trim().length < 10 ? (
+            <p className="text-sm text-destructive">{t("report.detailsTooShort")}</p>
+          ) : null}
           {report.error ? <p className="text-sm text-destructive">{report.error.message}</p> : null}
           <Button
             disabled={

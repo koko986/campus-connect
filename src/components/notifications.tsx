@@ -73,20 +73,33 @@ export function NotificationsPage() {
         client.invalidateQueries({ queryKey: ["notification-count", user!.id] }),
       ]);
     }
-    if (!notification.entity_id) return;
+    if (!notification.entity_id) {
+      toast.info(t("notifications.noDestination"));
+      return;
+    }
     if (notification.entity_type === "question") {
-      await navigate({ to: "/questions/$id", params: { id: notification.entity_id } });
+      await navigate({
+        to: "/questions/$id",
+        params: { id: notification.entity_id },
+        hash: notification.notification_type === "answer" ? "answers" : undefined,
+      });
     } else if (notification.entity_type === "post") {
-      await navigate({ to: "/posts/$id", params: { id: notification.entity_id } });
+      await navigate({
+        to: "/posts/$id",
+        params: { id: notification.entity_id },
+        hash: notification.notification_type === "comment" ? "comments" : undefined,
+      });
     } else if (notification.entity_type === "conversation") {
       await navigate({
-        to: "/hub",
-        search: { tab: "connect" },
+        to: "/messages",
+        search: { conversation: notification.entity_id },
       });
     } else if (notification.entity_type === "opportunity") {
       await navigate({ to: "/hub", search: { tab: "opportunities" } });
     } else if (notification.entity_type === "buddy_request") {
       await navigate({ to: "/hub", search: { tab: "connect" } });
+    } else {
+      toast.info(t("notifications.noDestination"));
     }
   }
 

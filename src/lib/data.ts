@@ -590,6 +590,8 @@ export async function listProfilePosts(authorId: string, viewerId: string): Prom
       .from("posts")
       .select(`${POST_COLUMNS},${POST_RELATIONS}`)
       .eq("author_id", authorId)
+      .eq("moderation_status", "PUBLISHED")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(50),
   ) ?? []) as unknown as Omit<FeedPost, "liked" | "saved">[];
