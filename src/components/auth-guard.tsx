@@ -20,6 +20,26 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     retry: false,
     staleTime: 30_000,
   });
+  const allowLocalStatusBypass =
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+  function renderAccountStatusError() {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+        <div className="w-full max-w-md border bg-background p-8 text-center">
+          <ShieldBan className="mx-auto size-10 text-destructive" />
+          <h1 className="mt-4 text-2xl font-bold">{t("guard.error.title")}</h1>
+          <p className="mt-3 text-sm text-muted-foreground">{t("guard.error.text")}</p>
+          <Button className="mt-6 gap-2" variant="outline" onClick={() => void status.refetch()}>
+            <RefreshCw aria-hidden="true" className="size-4" />
+            {t("common.tryAgain")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (initialized && !user) navigate({ to: "/login", replace: true });
@@ -55,7 +75,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   if (status.isPending && statusGraceExpired) {
-    return children;
+    return allowLocalStatusBypass ? children : renderAccountStatusError();
   }
 
   if (status.data?.status === "BLOCKED") {
@@ -81,23 +101,11 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     (statusError.status === 0 || statusError.status >= 500);
 
   if (accountServiceUnavailable) {
-    return children;
+    return allowLocalStatusBypass ? children : renderAccountStatusError();
   }
 
   if (status.isError) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-        <div className="w-full max-w-md border bg-background p-8 text-center">
-          <ShieldBan className="mx-auto size-10 text-destructive" />
-          <h1 className="mt-4 text-2xl font-bold">{t("guard.error.title")}</h1>
-          <p className="mt-3 text-sm text-muted-foreground">{t("guard.error.text")}</p>
-          <Button className="mt-6 gap-2" variant="outline" onClick={() => void status.refetch()}>
-            <RefreshCw aria-hidden="true" className="size-4" />
-            {t("common.retry")}
-          </Button>
-        </div>
-      </div>
-    );
+    return renderAccountStatusError();
   }
 
   if (status.data?.administrator) {
@@ -111,7 +119,9 @@ export function AuthGuard({ children }: { children: ReactNode }) {
               : t("guard.admin.moderator")}
           </p>
           <h1 className="mt-2 text-2xl font-bold">{t("guard.admin.title")}</h1>
-          <p className="mt-3 text-sm text-muted-foreground">{t("guard.admin.text")}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {t("guard.admin.text", { email: user.email ?? t("notifications.takka") })}
+          </p>
           <Button className="mt-6 gap-2" asChild>
             <a href={adminConsoleUrl}>
               {t("guard.admin.openConsole")}

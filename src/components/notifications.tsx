@@ -80,13 +80,13 @@ export function NotificationsPage() {
       await navigate({ to: "/posts/$id", params: { id: notification.entity_id } });
     } else if (notification.entity_type === "conversation") {
       await navigate({
-        to: "/messages",
-        search: { conversation: notification.entity_id },
+        to: "/hub",
+        search: { tab: "connect" },
       });
     } else if (notification.entity_type === "opportunity") {
       await navigate({ to: "/hub", search: { tab: "opportunities" } });
     } else if (notification.entity_type === "buddy_request") {
-      await navigate({ to: "/hub", search: { tab: "buddies" } });
+      await navigate({ to: "/hub", search: { tab: "connect" } });
     }
   }
 

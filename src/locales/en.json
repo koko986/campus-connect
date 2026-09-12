@@ -72,8 +72,8 @@
   "guard.error.text": "The account service is unavailable. Retry before continuing.",
   "guard.admin.superAdmin": "Super administrator",
   "guard.admin.moderator": "Moderator",
-  "guard.admin.title": "Administration account",
-  "guard.admin.text": "This account belongs to the TAKKA administration team. Continue in the separate moderation console.",
+  "guard.admin.title": "Admin account detected",
+  "guard.admin.text": "{email} is an administrator account. Student pages are locked for admin accounts, so continue in the separate moderation console.",
   "guard.admin.openConsole": "Open admin console",
 
   "auth.logIn": "Log in",
