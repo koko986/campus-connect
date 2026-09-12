@@ -35,7 +35,7 @@ class AdminSessionFilterTest {
 
   private MockHttpServletRequest signedInRequest(AdminRole role) {
     var request = new MockHttpServletRequest("GET", "/admin/reports");
-    sessions.begin(request, new AdminIdentity(userId, "super@takka.test", role));
+    sessions.begin(request, new AdminIdentity(userId, "admin@gmail.com", role));
     return request;
   }
 
@@ -52,6 +52,7 @@ class AdminSessionFilterTest {
 
   @Test
   void anActiveAdministratorIsAuthenticatedWithBothAuthorities() throws Exception {
+    when(adminUsers.isAllowedAdministratorEmail("admin@gmail.com")).thenReturn(true);
     when(adminUsers.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.SUPER_ADMIN));
 
     runFilter(signedInRequest(AdminRole.SUPER_ADMIN));
@@ -69,6 +70,7 @@ class AdminSessionFilterTest {
   @Test
   void aRevokedAdministratorLosesTheirSessionOnTheNextRequest() throws Exception {
     var request = signedInRequest(AdminRole.SUPER_ADMIN);
+    when(adminUsers.isAllowedAdministratorEmail("admin@gmail.com")).thenReturn(true);
     when(adminUsers.findActiveRole(userId)).thenReturn(Optional.empty());
 
     runFilter(request);
@@ -80,6 +82,7 @@ class AdminSessionFilterTest {
   @Test
   void aDemotedAdministratorIsAuthenticatedWithTheirCurrentRole() throws Exception {
     var request = signedInRequest(AdminRole.SUPER_ADMIN);
+    when(adminUsers.isAllowedAdministratorEmail("admin@gmail.com")).thenReturn(true);
     when(adminUsers.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.MODERATOR));
 
     runFilter(request);

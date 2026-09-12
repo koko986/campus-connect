@@ -156,9 +156,17 @@ class AdminSessionServiceTest {
 
   @Test
   void currentRoleIsReadFromTheDatabaseRatherThanTheSession() {
+    when(adminUsers.isAllowedAdministratorEmail("admin@gmail.com")).thenReturn(true);
     when(adminUsers.findActiveRole(userId)).thenReturn(Optional.of(AdminRole.MODERATOR));
-    var session = new AdminSession(userId, "a@b.c", AdminRole.SUPER_ADMIN, Instant.now());
+    var session = new AdminSession(userId, "admin@gmail.com", AdminRole.SUPER_ADMIN, Instant.now());
 
     assertEquals(Optional.of(AdminRole.MODERATOR), service.currentRole(session));
+  }
+
+  @Test
+  void nonBootstrapConsoleSessionsAreNoLongerAdministrators() {
+    var session = new AdminSession(userId, "aungkhantko@gmail.com", AdminRole.SUPER_ADMIN, Instant.now());
+
+    assertEquals(Optional.empty(), service.currentRole(session));
   }
 }

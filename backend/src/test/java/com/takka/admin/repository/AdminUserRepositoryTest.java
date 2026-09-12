@@ -52,25 +52,26 @@ class AdminUserRepositoryTest {
   @Test
   void ordinaryMembersAreOnlyReadFromAdminAssignments() throws Exception {
     UUID userId = UUID.randomUUID();
-    when(supabase.get(any())).thenReturn(mapper.readTree("[]"));
+    when(supabase.get(any())).thenReturn(mapper.readTree("[{\"role\":\"MODERATOR\"}]"));
 
     Optional<AdminRole> role =
         repository.findActiveRole(new TakkaPrincipal(userId, "student@gmail.com", "token"));
 
     assertEquals(Optional.empty(), role);
+    verify(supabase, never()).get(any());
     verify(supabase, never()).post(any(), any(), any());
   }
 
   @Test
-  void storedAdminAssignmentsReportTheAdminUsersSource() throws Exception {
+  void nonBootstrapEmailsNeverReportAdminUsersSource() {
     UUID userId = UUID.randomUUID();
-    when(supabase.get(any())).thenReturn(mapper.readTree("[{\"role\":\"MODERATOR\"}]"));
 
     var lookup = repository.findActiveRoleWithSource(
-        new TakkaPrincipal(userId, "moderator@gmail.com", "token"));
+        new TakkaPrincipal(userId, "aungkhantko@gmail.com", "token"));
 
-    assertEquals(Optional.of(AdminRole.MODERATOR), lookup.role());
-    assertEquals(AdminRoleSource.ADMIN_USERS, lookup.source());
+    assertEquals(Optional.empty(), lookup.role());
+    assertEquals(AdminRoleSource.NONE, lookup.source());
+    verify(supabase, never()).get(any());
     verify(supabase, never()).post(any(), any(), any());
   }
 }

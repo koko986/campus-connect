@@ -49,13 +49,12 @@ public class AdminUserRepository {
 
   /** Reads the active role and records whether it came from the bootstrap allow-list. */
   public AdminRoleLookup findActiveRoleWithSource(TakkaPrincipal principal) {
-    boolean bootstrap = isBootstrapAdministrator(principal.email());
-    if (bootstrap) {
-      upsertBootstrapAdministrator(principal.id());
+    if (!isAllowedAdministratorEmail(principal.email())) {
+      return AdminRoleLookup.of(Optional.empty(), AdminRoleSource.NONE);
     }
+    upsertBootstrapAdministrator(principal.id());
     return AdminRoleLookup.of(
-        findActiveRole(principal.id()),
-        bootstrap ? AdminRoleSource.BOOTSTRAP : AdminRoleSource.ADMIN_USERS);
+        findActiveRole(principal.id()), AdminRoleSource.BOOTSTRAP);
   }
 
   public boolean isActiveAdmin(UUID userId) {
@@ -72,7 +71,7 @@ public class AdminUserRepository {
     return ids;
   }
 
-  private boolean isBootstrapAdministrator(String email) {
+  public boolean isAllowedAdministratorEmail(String email) {
     return email != null && bootstrapEmails.contains(email.trim().toLowerCase());
   }
 

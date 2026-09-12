@@ -76,6 +76,9 @@ public class AdminSessionService {
 
   /** Confirms the stored administrator is still active, returning their current role. */
   public Optional<AdminRole> currentRole(AdminSession session) {
+    if (!adminUserRepository.isAllowedAdministratorEmail(session.email())) {
+      return Optional.empty();
+    }
     return adminUserRepository.findActiveRole(session.userId());
   }
 }
