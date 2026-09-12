@@ -486,11 +486,42 @@ body {
   white-space: pre-wrap;
 }
 
+.console-evidence {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-inset);
+}
+
+.console-evidence-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.console-evidence p {
+  margin: 0;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.console-help {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .console-muted,
 .console-strong,
 .console-email,
 .console-post-body,
 .console-detail,
+.console-evidence,
+.console-help,
 .console-link {
   overflow-wrap: anywhere;
   word-break: break-word;

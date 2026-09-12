@@ -7,6 +7,12 @@
       <header th:replace="~{admin/fragments :: topbar}"></header>
       <div th:replace="~{admin/fragments :: flash}"></div>
 
+      <div class="console-panel-head">
+        <p class="console-scope-note" th:text="#{page.reports.note}">
+          Reports show what a member reported and the saved content snapshot from that moment.
+        </p>
+      </div>
+
       <form th:action="@{/admin/reports}" method="get" class="console-filters">
         <label>
           <span th:text="#{field.status}">Status</span>
@@ -53,6 +59,10 @@
             <td>
               <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
               <span class="console-muted" th:text="${#messages.msg(report.targetType().labelKey())}">Account</span>
+              <div class="console-evidence" th:if="${report.hasTargetSummary()}">
+                <span class="console-evidence-label" th:text="#{page.reports.reportedContent}">Reported content</span>
+                <p th:text="${report.targetSummary()}">Snapshot</p>
+              </div>
               <p class="console-detail" th:if="${report.hasDetails()}" th:text="${report.details()}"></p>
             </td>
             <td th:text="${report.reason()}">SPAM</td>
@@ -89,6 +99,9 @@
                         th:text="${#messages.msg(decision.labelKey())}"
                       ></option>
                     </select>
+                    <small class="console-help" th:text="#{page.reports.decisionHelp}">
+                      Reviewing keeps it open. Resolve closes a real problem. Dismiss closes a non-violation.
+                    </small>
                   </label>
                   <label>
                     <span th:text="#{field.notes}">Notes</span>

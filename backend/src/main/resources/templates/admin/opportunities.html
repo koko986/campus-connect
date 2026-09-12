@@ -35,13 +35,17 @@
                 method="post"
                 class="console-confirm-panel"
                 data-console-action-form
-              >
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <label>
-                  <span th:text="#{field.notes}">Notes</span>
-                  <textarea name="note" rows="3" maxlength="1000"
-                    th:placeholder="#{field.auditPlaceholder}"></textarea>
-                </label>
+                >
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
+                  <label>
+                    <span th:text="#{field.notes}">Notes</span>
+                    <textarea name="note" rows="3" maxlength="1000"
+                      th:placeholder="#{field.auditPlaceholder}"></textarea>
+                    <small class="console-help" th:text="#{page.opportunities.decisionHelp}">
+                      Approving publishes it for students. Rejecting keeps it hidden and records your note.
+                    </small>
+                  </label>
                 <div class="console-confirm-actions">
                   <button
                     type="submit"

@@ -21,6 +21,7 @@ public final class ReportMapper {
         Json.text(row, "details"),
         ReportStatus.parse(Json.text(row, "status")).orElse(ReportStatus.OPEN),
         SnapshotLabel.of(row.path("target_snapshot")),
+        SnapshotLabel.summary(row.path("target_snapshot")),
         Json.text(row, "resolution_notes"),
         Timestamps.format(created),
         Timestamps.age(created),

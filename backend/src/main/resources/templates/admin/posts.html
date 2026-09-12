@@ -7,6 +7,12 @@
       <header th:replace="~{admin/fragments :: topbar}"></header>
       <div th:replace="~{admin/fragments :: flash}"></div>
 
+      <div class="console-panel-head">
+        <p class="console-scope-note" th:text="#{page.posts.note}">
+          Posts are community feed posts. Remove unsafe posts, or restore posts that were removed by mistake.
+        </p>
+      </div>
+
       <form th:action="@{/admin/posts}" method="get" class="console-filters">
         <label>
           <span th:text="#{field.status}">Status</span>

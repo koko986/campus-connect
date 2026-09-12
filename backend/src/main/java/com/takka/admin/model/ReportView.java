@@ -12,6 +12,7 @@ public record ReportView(
     String details,
     ReportStatus status,
     String targetLabel,
+    String targetSummary,
     String resolutionNotes,
     String submitted,
     Age age,
@@ -23,6 +24,10 @@ public record ReportView(
 
   public boolean hasResolutionNotes() {
     return resolutionNotes != null && !resolutionNotes.isBlank();
+  }
+
+  public boolean hasTargetSummary() {
+    return targetSummary != null && !targetSummary.isBlank();
   }
 
   public boolean isActionable() {

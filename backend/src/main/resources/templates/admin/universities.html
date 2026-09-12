@@ -87,7 +87,7 @@
                 <summary
                   class="console-button"
                   th:classappend="${university.archived()} ? 'console-button--primary' : 'console-button--ghost'"
-                  th:text="#{enum.universityState.PUBLISH}"
+                  th:text="${university.archived()} ? #{action.restore} : #{enum.universityState.PUBLISH}"
                   >Publish</summary
                 >
                 <form

@@ -63,10 +63,11 @@ public class ConsoleOpportunitiesController {
   @PostMapping("/{id}/decision")
   String decide(@AuthenticationPrincipal AdminIdentity administrator, @PathVariable UUID id,
       @Valid @ModelAttribute OpportunityDecisionForm form, BindingResult binding,
+      @RequestParam(defaultValue = "pending") String returnStatus,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) {
       Flash.error(attributes, messages.invalidSubmission(binding));
-      return "redirect:/admin/opportunities";
+      return redirect(returnStatus);
     }
     try {
       opportunities.decide(administrator, id, form.getDecision(), form.getNote());
@@ -77,6 +78,11 @@ public class ConsoleOpportunitiesController {
     } catch (RuntimeException unavailable) {
       Flash.error(attributes, messages.get("error.opportunities.actionUnavailable"));
     }
-    return "redirect:/admin/opportunities";
+    return redirect(returnStatus);
+  }
+
+  private static String redirect(String status) {
+    String filter = OpportunityModerationService.STATUSES.contains(status) ? status : "pending";
+    return "redirect:/admin/opportunities?status=" + filter;
   }
 }

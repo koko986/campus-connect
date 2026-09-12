@@ -23,4 +23,17 @@ public final class SnapshotLabel {
     if (!email.isBlank()) return email;
     return Json.text(snapshot, "reason");
   }
+
+  public static String summary(JsonNode snapshot) {
+    if (snapshot == null || snapshot.isNull() || snapshot.isMissingNode()) return "";
+    String body = Json.text(snapshot, "body");
+    if (!body.isBlank()) return body.trim().replaceAll("\\s+", " ");
+    String email = Json.text(snapshot, "email");
+    if (!email.isBlank()) return email;
+    String name = Json.text(snapshot, "full_name");
+    String accountType = Json.text(snapshot, "account_type");
+    if (!name.isBlank() && !accountType.isBlank()) return name + " · " + accountType;
+    if (!name.isBlank()) return name;
+    return accountType;
+  }
 }

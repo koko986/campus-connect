@@ -149,6 +149,16 @@ class ConsoleUniversitiesControllerTest {
   }
 
   @Test
+  void unpublishingReportsThePastTenseStateInTheFlash() throws Exception {
+    when(universities.changeState(any(), eq(universityId), eq(UniversityStateChange.UNPUBLISH), any()))
+        .thenReturn("Yangon University");
+
+    mvc.perform(post("/admin/universities/{id}/state/unpublish", universityId).param("reason", "Needs review"))
+        .andExpect(redirectedUrl("/admin/universities"))
+        .andExpect(flash().attribute("flashSuccess", "Yangon University is now unpublished."));
+  }
+
+  @Test
   void archivingReportsThePastTenseStateInTheFlash() throws Exception {
     when(universities.changeState(any(), eq(universityId), eq(UniversityStateChange.ARCHIVE), any()))
         .thenReturn("Yangon University");

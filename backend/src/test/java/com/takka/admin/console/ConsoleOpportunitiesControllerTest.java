@@ -60,8 +60,9 @@ class ConsoleOpportunitiesControllerTest {
   void approvingAnOpportunityCallsTheModerationService() throws Exception {
     mvc.perform(post("/admin/opportunities/{id}/decision", opportunityId)
             .param("decision", "published")
-            .param("note", "Source checked"))
-        .andExpect(redirectedUrl("/admin/opportunities"))
+            .param("note", "Source checked")
+            .param("returnStatus", "pending"))
+        .andExpect(redirectedUrl("/admin/opportunities?status=pending"))
         .andExpect(flash().attribute("flashSuccess", "Opportunity approved and published."));
 
     verify(opportunities).decide(administrator, opportunityId, "published", "Source checked");
@@ -71,8 +72,9 @@ class ConsoleOpportunitiesControllerTest {
   void rejectingAnOpportunityCallsTheModerationService() throws Exception {
     mvc.perform(post("/admin/opportunities/{id}/decision", opportunityId)
             .param("decision", "rejected")
-            .param("note", "Not enough information"))
-        .andExpect(redirectedUrl("/admin/opportunities"))
+            .param("note", "Not enough information")
+            .param("returnStatus", "all"))
+        .andExpect(redirectedUrl("/admin/opportunities?status=all"))
         .andExpect(flash().attribute("flashSuccess", "Opportunity rejected. The submitting student has been notified."));
 
     verify(opportunities).decide(administrator, opportunityId, "rejected", "Not enough information");
@@ -83,7 +85,7 @@ class ConsoleOpportunitiesControllerTest {
     mvc.perform(post("/admin/opportunities/{id}/decision", opportunityId)
             .param("decision", "archived")
             .param("note", "Later"))
-        .andExpect(redirectedUrl("/admin/opportunities"))
+        .andExpect(redirectedUrl("/admin/opportunities?status=pending"))
         .andExpect(flash().attributeExists("flashError"));
 
     verify(opportunities, never()).decide(any(), any(), any(), any());
@@ -96,7 +98,7 @@ class ConsoleOpportunitiesControllerTest {
     mvc.perform(post("/admin/opportunities/{id}/decision", opportunityId)
             .param("decision", "published")
             .param("note", "Source checked"))
-        .andExpect(redirectedUrl("/admin/opportunities"))
+        .andExpect(redirectedUrl("/admin/opportunities?status=pending"))
         .andExpect(flash().attribute(
             "flashError", "The opportunity action could not be completed right now. Try again in a moment."));
   }

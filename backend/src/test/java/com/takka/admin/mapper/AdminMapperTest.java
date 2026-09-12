@@ -40,6 +40,7 @@ class AdminMapperTest {
     assertEquals(ReportTargetType.ACCOUNT, view.targetType());
     assertEquals(ReportStatus.OPEN, view.status());
     assertEquals("Ada Lovelace", view.targetLabel());
+    assertEquals("Ada Lovelace", view.targetSummary());
     assertEquals("danger", view.statusTone());
     assertTrue(view.hasDetails());
     assertFalse(view.hasResolutionNotes());
@@ -64,6 +65,7 @@ class AdminMapperTest {
         """.formatted(ID, ID, ID)));
 
     assertEquals("Buy followers now", view.targetLabel());
+    assertEquals("Buy followers now", view.targetSummary());
     assertEquals("success", view.statusTone());
     assertTrue(view.assigned());
     assertTrue(view.hasResolutionNotes());
