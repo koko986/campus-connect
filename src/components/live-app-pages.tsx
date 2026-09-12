@@ -590,7 +590,7 @@ export function UniversityDetailPage({ id }: { id: string }) {
   }
 
   const record = university.data!;
-  const coverImage = universityImageUrl(record.cover_image_path);
+  const coverImage = universityImageUrl(record.cover_image_path, record.slug);
   const canSubmitPhoto =
     member.data?.student?.verification_status === "verified" &&
     member.data.student.university_id === id;

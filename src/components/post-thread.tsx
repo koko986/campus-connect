@@ -23,6 +23,15 @@ import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const MAX_INDENT = 4;
+const COMMENT_DELETE_NOTICE_MS = 2_500;
+
+function markCommentDeleted(comments: CommentNode[], id: string): CommentNode[] {
+  return comments.map((comment) => ({
+    ...comment,
+    deleted_at: comment.id === id ? new Date().toISOString() : comment.deleted_at,
+    replies: markCommentDeleted(comment.replies, id),
+  }));
+}
 
 function CommentComposer({
   postId,
@@ -107,7 +116,14 @@ function Comment({ comment, depth }: { comment: CommentNode; depth: number }) {
   });
   const remove = useMutation({
     mutationFn: () => deleteComment(comment.id),
-    onSuccess: refresh,
+    onSuccess: () => {
+      client.setQueriesData<CommentNode[]>({ queryKey: ["comments", comment.post_id] }, (old) =>
+        old ? markCommentDeleted(old, comment.id) : old,
+      );
+      window.setTimeout(() => {
+        void refresh();
+      }, COMMENT_DELETE_NOTICE_MS);
+    },
     onError: (error: Error) => toast.error(error.message),
   });
 

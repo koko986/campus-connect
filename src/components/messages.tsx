@@ -47,6 +47,7 @@ import {
   startDirectConversation,
   subscribeToConversation,
   unsubscribe,
+  universityImageUrl,
 } from "@/lib/data";
 import { useT, type Translate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,17 @@ function memberCount(t: Translate, count: number) {
   return count === 1
     ? t("messages.memberCountOne", { count })
     : t("messages.memberCount", { count });
+}
+
+function universityMark(name: string, shortName: string | null) {
+  const source = shortName?.trim() || name;
+  const words = source.replace(/[(),]/g, " ").split(/\s+/).filter(Boolean);
+  if (words.length <= 1) return source.slice(0, 3).toUpperCase();
+  return words
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 }
 
 function ConversationRow({
@@ -252,55 +264,69 @@ function GroupDirectory({ onOpenGroup }: { onOpenGroup: (conversationId: string)
           className="h-11 pl-9"
         />
       </div>
-      {visible.map((group) => (
-        <div
-          key={group.university.id}
-          className="flex items-center gap-3 rounded-xl border border-border p-3"
-        >
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary-soft-foreground">
-            {group.university.short_name ?? group.university.name.slice(0, 2)}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">{group.university.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {memberCount(t, group.memberCount)}
-              {group.university.id === homeUniversityId ? ` · ${t("messages.yourUniversity")}` : ""}
-            </p>
-          </div>
-          {group.joined && group.conversationId ? (
-            <div className="flex shrink-0 gap-1">
+      {visible.map((group) => {
+        const image = universityImageUrl(group.university.cover_image_path, group.university.slug);
+        return (
+          <div
+            key={group.university.id}
+            className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-border bg-card p-3"
+          >
+            {image ? (
+              <img
+                src={image}
+                alt=""
+                loading="lazy"
+                className="size-12 rounded-full bg-primary-soft object-cover"
+              />
+            ) : (
+              <span className="flex size-12 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary-soft-foreground">
+                {universityMark(group.university.name, group.university.short_name)}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{group.university.name}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {memberCount(t, group.memberCount)}
+                {group.university.id === homeUniversityId
+                  ? ` · ${t("messages.yourUniversity")}`
+                  : ""}
+              </p>
+            </div>
+            {group.joined && group.conversationId ? (
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onOpenGroup(group.conversationId!)}
+                >
+                  {t("common.open")}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-9"
+                  aria-label={t("messages.leaveGroup", { name: group.university.name })}
+                  disabled={leave.isPending}
+                  onClick={() => leave.mutate(group.conversationId!)}
+                >
+                  <LogOut className="size-4" />
+                </Button>
+              </div>
+            ) : (
               <Button
                 size="sm"
-                variant="outline"
-                onClick={() => onOpenGroup(group.conversationId!)}
+                className="shrink-0"
+                disabled={join.isPending}
+                onClick={() => join.mutate(group.university.id)}
               >
-                {t("common.open")}
+                {join.isPending && join.variables === group.university.id
+                  ? t("messages.joining")
+                  : t("messages.join")}
               </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-9"
-                aria-label={t("messages.leaveGroup", { name: group.university.name })}
-                disabled={leave.isPending}
-                onClick={() => leave.mutate(group.conversationId!)}
-              >
-                <LogOut className="size-4" />
-              </Button>
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              className="shrink-0"
-              disabled={join.isPending}
-              onClick={() => join.mutate(group.university.id)}
-            >
-              {join.isPending && join.variables === group.university.id
-                ? t("messages.joining")
-                : t("messages.join")}
-            </Button>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
       {!visible.length ? (
         <Empty
           title={search ? t("messages.noGroupMatches.title") : t("messages.noGroups.title")}

@@ -37,6 +37,7 @@ export type University = Tables<"universities"> & {
 export type UniversitySummary = Pick<
   Tables<"universities">,
   | "id"
+  | "slug"
   | "name"
   | "short_name"
   | "city"
@@ -68,6 +69,102 @@ export type RecommendedUniversity = UniversitySummary & {
 
 type VerificationEmbed = Pick<Tables<"student_profiles">, "verification_status">;
 
+const UNIVERSITY_PHOTO_BY_SLUG: Record<string, string> = {
+  "bago-university": "/university-photos/BagoUni.jpg",
+  "dawei-university": "/university-photos/DaweiUni.jpg",
+  "hakha-university": "/university-photos/Hakha%20Uni.jpg",
+  "hinthada-university": "/university-photos/Hinthada%20University.jpg",
+  "kyaingtong-university": "/university-photos/Kyaing%20Tong%20University.jpg",
+  "kyaukse-university": "/university-photos/Kyaukse%20University.jpg",
+  "mandalar-university": "/university-photos/Mandalar%20University.jpg",
+  "maubin-university": "/university-photos/Maubin%20University.jpg",
+  "monywa-university-of-economics": "/university-photos/Monywa%20University%20of%20Economics.jpg",
+  "monywa-university": "/university-photos/Monywa%20University.jpg",
+  "myanmar-aerospace-engineering-university":
+    "/university-photos/Myanmar%20Aerospace%20Engineering%20University.jpg",
+  "myanmar-institute-of-information-technology":
+    "/university-photos/Myanmar%20Institute%20of%20Information%20Technology.jpg",
+  "myeik-university": "/university-photos/Myeik%20University.jpg",
+  "myingyan-university": "/university-photos/Myingyan%20University.jpg",
+  "naypyitaw-technological-university":
+    "/university-photos/Naypyitaw%20Technological%20University.jpg",
+  "national-university-of-arts-and-culture-mandalay": "/university-photos/NUAC%20Mandalay.jpg",
+  "polytechnic-university-dawei": "/university-photos/Polytechnic%20University%2C%20Dawei.jpg",
+  "polytechnic-university-myeik": "/university-photos/Polytechnic%20University(Myeik).jpg",
+  "sagaing-university-of-education": "/university-photos/Sagaing%20University%20of%20Education.jpg",
+  "sagaing-university": "/university-photos/Sagaing%20University.jpg",
+  "taungup-university": "/university-photos/Taungup%20University.jpg",
+  "technological-university-bhamo": "/university-photos/Technological%20University%20Bhamo.jpg",
+  "technological-university-kalay": "/university-photos/Technological%20University%20Kalay.jpg",
+  "technological-university-kyaingtong":
+    "/university-photos/Technological%20University%20Kyaingtong.jpg",
+  "technological-university-lashio": "/university-photos/Technological%20University%20Lashio.jpg",
+  "technological-university-loikaw": "/university-photos/Technological%20University%20Loikaw.jpg",
+  "technological-university-mandalay":
+    "/university-photos/Technological%20University%20Mandalay.jpg",
+  "technological-university-maubin": "/university-photos/Technological%20University%20Maubin.jpg",
+  "technological-university-mawlamyine":
+    "/university-photos/Technological%20University%20Mawlamyine.jpg",
+  "technological-university-hinthada":
+    "/university-photos/Technological%20University%2C%20Hinthada.jpg",
+  "technological-university-kyaukse":
+    "/university-photos/Technological%20University%2C%20Kyaukse.jpg",
+  "technological-university-magway":
+    "/university-photos/Technological%20University%2C%20Magway.jpg",
+  "university-of-computer-studies-kalay":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Kalay.jpg",
+  "university-of-computer-studies-lashio":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Lashio.jpg",
+  "university-of-computer-studies-loikaw":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Loikaw.jpg",
+  "university-of-computer-studies-magway":
+    "/university-photos/university%20of%20computer%20studies%2C%20magway.jpg",
+  "university-of-computer-studies-mandalay":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Mandalay.jpg",
+  "university-of-computer-studies-maubin":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Maubin.jpg",
+  "university-of-computer-studies-meiktila":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Meiktila.jpg",
+  "university-of-computer-studies-monywa":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Monywa.jpg",
+  "university-of-computer-studies-myeik":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Myeik.jpg",
+  "university-of-computer-studies-myitkyina":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Myitkyina.jpg",
+  "university-of-computer-studies-pakokku":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Pakokku.jpg",
+  "university-of-computer-studies-panglong":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Panglong.jpg",
+  "university-of-computer-studies-pathein":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Pathein.jpg",
+  "university-of-computer-studies-pyay":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Pyay.jpg",
+  "university-of-computer-studies-sittwe":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Sittwe.jpg",
+  "university-of-computer-studies-taungoo":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Taungoo.jpg",
+  "university-of-computer-studies-thaton":
+    "/university-photos/University%20of%20Computer%20Studies%2C%20Thaton.jpg",
+  "university-of-dental-medicine-yangon":
+    "/university-photos/University%20of%20Dental%20Medicine%2C%20Yangon.jpg",
+  "university-of-distance-education-mandalay":
+    "/university-photos/University%20of%20Distance%20Education%2C%20Mandalay.jpg",
+  "university-of-distance-education-yangon":
+    "/university-photos/University%20of%20Distance%20Education%2C%20Yangon.jpg",
+  "university-of-east-yangon": "/university-photos/University%20of%20East%20Yangon.jpg",
+  "university-of-forestry-and-environmental-science-yezin":
+    "/university-photos/University%20of%20Forestry%20and%20Environmental%20Science%2C%20Yezin.jpg",
+  "university-of-information-technology":
+    "/university-photos/University%20of%20Information%20Technology.jpg",
+  "university-of-kalay": "/university-photos/University%20of%20Kalay.jpg",
+  "university-of-pharmacy-yangon": "/university-photos/University%20of%20Pharmacy%2C%20Yangon.jpg",
+  "university-of-veterinary-science-yezin":
+    "/university-photos/University%20of%20Veterinary%20Science%2C%20Yezin.jpg",
+  "university-of-west-yangon": "/university-photos/University%20of%20West%20Yangon.jpg",
+  "west-yangon-technological-university":
+    "/university-photos/West%20Yangon%20Technological%20University.jpg",
+};
+
 export type CommunityProfile = Pick<
   Tables<"profiles">,
   "id" | "full_name" | "avatar_path" | "account_type"
@@ -83,7 +180,8 @@ export function isVerifiedStudent(profile: CommunityProfile | null | undefined) 
   return record?.verification_status === "verified";
 }
 
-export type UniversityTag = Pick<Tables<"universities">, "id" | "name" | "short_name">;
+export type UniversityTag = Pick<Tables<"universities">, "id" | "name" | "short_name"> &
+  Partial<Pick<Tables<"universities">, "slug">>;
 
 export type FeedPost = Pick<
   Tables<"posts">,
@@ -169,7 +267,7 @@ export type DiscoverableGroup = {
   conversationId: string | null;
   joined: boolean;
   memberCount: number;
-  university: UniversityTag;
+  university: UniversityTag & Pick<Tables<"universities">, "cover_image_path">;
 };
 
 export type ConversationMessage = Tables<"messages"> & { sender: CommunityProfile | null };
@@ -211,7 +309,9 @@ export function postImageUrl(path: string | null) {
   return publicUrl("post-media", path);
 }
 
-export function universityImageUrl(path: string | null) {
+export function universityImageUrl(path: string | null, slug?: string | null) {
+  if (!path && slug) return UNIVERSITY_PHOTO_BY_SLUG[slug] ?? null;
+  if (path?.startsWith("/")) return path;
   return publicUrl("university-media", path);
 }
 
@@ -301,7 +401,7 @@ export async function getUniversity(id: string): Promise<University> {
 }
 
 const UNIVERSITY_SUMMARY_COLUMNS =
-  "id,name,short_name,city,region,university_type,description,cover_image_path,cover_image_credit,cover_image_source_url,cover_image_license,departments(count)";
+  "id,slug,name,short_name,city,region,university_type,description,cover_image_path,cover_image_credit,cover_image_source_url,cover_image_license,departments(count)";
 
 export async function listUniversitySummaries(options: {
   page: number;
@@ -606,7 +706,15 @@ export async function listComments(
     if (parent) parent.replies.push(node);
     else roots.push(node);
   }
-  return roots;
+  return pruneDeletedCommentLeaves(roots);
+}
+
+function pruneDeletedCommentLeaves(comments: CommentNode[]): CommentNode[] {
+  return comments.flatMap((comment) => {
+    const replies = pruneDeletedCommentLeaves(comment.replies);
+    if (comment.deleted_at && replies.length === 0) return [];
+    return [{ ...comment, replies }];
+  });
 }
 
 export async function createComment(input: {
@@ -982,7 +1090,7 @@ export async function listUniversityGroups(userId: string): Promise<Discoverable
   const [universityResult, groupResult, membershipResult] = await Promise.all([
     supabase
       .from("universities")
-      .select("id,name,short_name")
+      .select("id,slug,name,short_name,cover_image_path")
       .eq("is_published", true)
       .is("archived_at", null)
       .order("name"),

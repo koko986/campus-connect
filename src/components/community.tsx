@@ -445,7 +445,7 @@ function hasDetailedDepartments(
 
 export function UniversityCard({ university }: { university: University | UniversitySummary }) {
   const t = useT();
-  const image = universityImageUrl(university.cover_image_path);
+  const image = universityImageUrl(university.cover_image_path, university.slug);
   const count = departmentCount(university);
   return (
     <Tilt as="article" className="card-soft flex flex-col overflow-hidden">
