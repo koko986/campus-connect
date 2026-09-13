@@ -23,6 +23,8 @@ import com.takka.admin.session.AdminSessionService;
 import com.takka.config.SecurityConfig;
 import com.takka.security.TakkaPrincipal;
 import com.takka.supabase.SupabaseGateway;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -153,6 +155,15 @@ class ConsoleSecurityTest {
   }
 
   @Test
+  void sameHostAdminRedirectsStayRelativeBehindAProxy() throws Exception {
+    withConsoleSession(AdminRole.SUPER_ADMIN);
+
+    mvc.perform(get("/admin/absolute-redirect").header("Host", "localhost"))
+        .andExpect(status().isFound())
+        .andExpect(header().string("Location", "/admin/reports"));
+  }
+
+  @Test
   void anApiRequestWithoutATokenIsRefusedWithoutARedirect() throws Exception {
     mvc.perform(get("/api/probe"))
         .andExpect(status().is4xxClientError())
@@ -241,6 +252,11 @@ class ConsoleSecurityTest {
     @PostMapping("/admin/reports/decide")
     String decide() {
       return "decided";
+    }
+
+    @GetMapping("/admin/absolute-redirect")
+    void absoluteRedirect(HttpServletResponse response) throws IOException {
+      response.sendRedirect("http://localhost/admin/reports");
     }
 
     @GetMapping("/api/probe")

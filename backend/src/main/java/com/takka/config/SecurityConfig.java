@@ -4,6 +4,13 @@ import com.takka.admin.session.AdminSessionFilter;
 import com.takka.admin.session.AdminSessionService;
 import com.takka.security.SupabaseAuthenticationFilter;
 import com.takka.supabase.SupabaseGateway;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +21,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -48,6 +56,7 @@ public class SecurityConfig {
         .exceptionHandling(exceptions -> exceptions
             .authenticationEntryPoint((request, response, denied) -> response.sendRedirect(LOGIN_PAGE))
             .accessDeniedPage("/admin/forbidden"))
+        .addFilterBefore(new SameHostRelativeRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(new AdminSessionFilter(sessions), UsernamePasswordAuthenticationFilter.class)
         .build();
   }
@@ -83,5 +92,54 @@ public class SecurityConfig {
     var source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/api/**", configuration);
     return source;
+  }
+
+  /**
+   * Railway terminates HTTPS before the Java process. If a servlet redirect is expanded to
+   * {@code http://...}, keep the user on the current browser scheme by sending a relative Location.
+   */
+  private static final class SameHostRelativeRedirectFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws ServletException, IOException {
+      chain.doFilter(request, new RelativeRedirectResponse(response, request));
+    }
+  }
+
+  private static final class RelativeRedirectResponse extends HttpServletResponseWrapper {
+    private final HttpServletRequest request;
+
+    private RelativeRedirectResponse(HttpServletResponse response, HttpServletRequest request) {
+      super(response);
+      this.request = request;
+    }
+
+    @Override
+    public void sendRedirect(String location) throws IOException {
+      String relative = sameHostRelativeLocation(location);
+      if (relative == null) {
+        super.sendRedirect(location);
+        return;
+      }
+      setStatus(SC_FOUND);
+      setHeader("Location", encodeRedirectURL(relative));
+    }
+
+    private String sameHostRelativeLocation(String location) {
+      if (location == null || location.isBlank()) return "/";
+      if (location.startsWith("/")) return location;
+      try {
+        URI uri = URI.create(location);
+        if (uri.getHost() == null || !uri.getHost().equalsIgnoreCase(request.getServerName())) {
+          return null;
+        }
+        String path = uri.getRawPath() == null || uri.getRawPath().isBlank() ? "/" : uri.getRawPath();
+        String query = uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery();
+        String fragment = uri.getRawFragment() == null ? "" : "#" + uri.getRawFragment();
+        return path + query + fragment;
+      } catch (IllegalArgumentException invalid) {
+        return null;
+      }
+    }
   }
 }
