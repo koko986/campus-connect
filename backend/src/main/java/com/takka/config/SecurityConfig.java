@@ -40,7 +40,7 @@ public class SecurityConfig {
   @Order(Ordered.HIGHEST_PRECEDENCE)
   SecurityFilterChain adminConsoleSecurity(HttpSecurity http, AdminSessionService sessions) throws Exception {
     return http
-        .securityMatcher("/admin/**")
+        .securityMatcher("/admin", "/admin/**")
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(LOGIN_PAGE, "/admin/forbidden", "/admin/assets/**").permitAll()
             .anyRequest().hasAuthority(AdminSessionFilter.ADMIN_AUTHORITY))

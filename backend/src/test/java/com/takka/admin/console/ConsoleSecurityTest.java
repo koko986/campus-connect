@@ -89,6 +89,13 @@ class ConsoleSecurityTest {
   }
 
   @Test
+  void theConsoleRootAlsoRequiresAnAdministratorSession() throws Exception {
+    mvc.perform(get("/admin"))
+        .andExpect(status().isFound())
+        .andExpect(redirectedUrl("/admin/login"));
+  }
+
+  @Test
   void theLoginPageIsReachableWithoutASession() throws Exception {
     mvc.perform(get("/admin/login")).andExpect(status().isOk());
   }
@@ -98,6 +105,15 @@ class ConsoleSecurityTest {
     withConsoleSession(AdminRole.SUPER_ADMIN);
 
     mvc.perform(get("/admin/reports"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(administrator.email()));
+  }
+
+  @Test
+  void anAdministratorSessionReachesTheConsoleRootToo() throws Exception {
+    withConsoleSession(AdminRole.SUPER_ADMIN);
+
+    mvc.perform(get("/admin"))
         .andExpect(status().isOk())
         .andExpect(content().string(administrator.email()));
   }
@@ -214,6 +230,11 @@ class ConsoleSecurityTest {
 
     @GetMapping("/admin/reports")
     String reports(@AuthenticationPrincipal AdminIdentity administrator) {
+      return administrator.email();
+    }
+
+    @GetMapping("/admin")
+    String overview(@AuthenticationPrincipal AdminIdentity administrator) {
       return administrator.email();
     }
 
