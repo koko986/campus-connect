@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -31,8 +31,8 @@ public class SupabaseGateway {
       @Value("${takka.supabase.url}") String url,
       @Value("${takka.supabase.publishable-key}") String publishableKey,
       @Value("${takka.supabase.secret-key}") String secretKey) {
-    var requestFactory = new SimpleClientHttpRequestFactory();
-    requestFactory.setConnectTimeout(10_000);
+    var requestFactory = new HttpComponentsClientHttpRequestFactory();
+    requestFactory.setConnectionRequestTimeout(10_000);
     requestFactory.setReadTimeout(20_000);
     this.client = RestClient.builder().requestFactory(requestFactory).build();
     this.mapper = mapper;
