@@ -1,6 +1,8 @@
 package com.takka.admin.console;
 
 import com.takka.admin.model.AdminIdentity;
+import com.takka.admin.model.AdminNotifications;
+import com.takka.admin.service.AdminNotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -10,16 +12,25 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /** Adds the shared shell attributes that every console page renders. */
 @Component
 public class ConsoleLayout {
   private final ConsoleMessages messages;
   private final HttpServletRequest request;
+  private final AdminNotificationService notifications;
 
   public ConsoleLayout(ConsoleMessages messages, HttpServletRequest request) {
+    this(messages, request, null);
+  }
+
+  @Autowired
+  public ConsoleLayout(
+      ConsoleMessages messages, HttpServletRequest request, AdminNotificationService notifications) {
     this.messages = messages;
     this.request = request;
+    this.notifications = notifications;
   }
 
   public void apply(Model model, AdminIdentity administrator, ConsoleSection section) {
@@ -28,6 +39,7 @@ public class ConsoleLayout {
     model.addAttribute("section", section);
     model.addAttribute("pageTitle", messages.get(section.titleKey()));
     model.addAttribute("superAdmin", administrator != null && administrator.isSuperAdmin());
+    model.addAttribute("adminNotifications", notificationState(administrator));
     applyLanguage(model);
   }
 
@@ -42,6 +54,15 @@ public class ConsoleLayout {
     return Arrays.stream(ConsoleLanguage.values())
         .map(language -> new LanguageChoice(language, hrefFor(language), language == current))
         .toList();
+  }
+
+  private AdminNotifications notificationState(AdminIdentity administrator) {
+    if (notifications == null || administrator == null) return AdminNotifications.empty();
+    try {
+      return notifications.topbar(administrator);
+    } catch (RuntimeException unavailable) {
+      return AdminNotifications.empty();
+    }
   }
 
   /**

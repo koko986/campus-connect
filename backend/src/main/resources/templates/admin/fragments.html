@@ -57,6 +57,34 @@
       </div>
       <div class="console-identity">
         <nav th:replace="~{admin/fragments :: languages}"></nav>
+        <details class="console-notifications" data-console-notifications>
+          <summary class="console-notification-button" th:attr="aria-label=#{console.notifications.open}">
+            <span th:text="#{console.notifications.short}">Notifications</span>
+            <strong th:if="${adminNotifications.hasUnread()}" th:text="${adminNotifications.unreadCount()}">0</strong>
+          </summary>
+          <div class="console-notification-menu">
+            <div class="console-notification-head">
+              <strong th:text="#{console.notifications.title}">Admin notifications</strong>
+              <span th:if="${adminNotifications.hasUnread()}" th:text="#{console.notifications.unread(${adminNotifications.unreadCount()})}">0 unread</span>
+            </div>
+            <p
+              th:unless="${adminNotifications.hasRecent()}"
+              class="console-notification-empty"
+              th:text="#{console.notifications.empty}"
+            >
+              No admin notifications yet.
+            </p>
+            <a
+              th:each="notification : ${adminNotifications.recent()}"
+              th:href="@{'/admin/notifications/' + ${notification.id()} + '/open'}"
+              class="console-notification-item"
+              th:classappend="${notification.unread()} ? 'is-unread' : ''"
+            >
+              <span th:text="${notification.body()}">New admin review item.</span>
+              <small th:text="${notification.created()}">date</small>
+            </a>
+          </div>
+        </details>
         <span class="console-email" th:text="${administrator.email()}">admin@takka</span>
         <span
           class="console-pill"

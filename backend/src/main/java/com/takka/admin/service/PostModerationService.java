@@ -5,6 +5,7 @@ import com.takka.admin.mapper.PostMapper;
 import com.takka.admin.model.AdminIdentity;
 import com.takka.admin.model.ModerationAction;
 import com.takka.admin.model.PostModerationStatus;
+import com.takka.admin.model.PostModerationMetrics;
 import com.takka.admin.model.PostView;
 import com.takka.admin.repository.PostRepository;
 import com.takka.admin.repository.ReportRepository;
@@ -40,12 +41,29 @@ public class PostModerationService {
     return postRepository.findPage(status, request).map(row -> PostMapper.toView(row, reportCounts));
   }
 
+  public Page<PostView> posts(Optional<PostModerationStatus> status, boolean reportedOnly, PageRequest request) {
+    Map<UUID, Integer> reportCounts = reportRepository.countByReportedPost();
+    if (reportedOnly) {
+      return postRepository.findPageByIds(reportCounts.keySet(), status, request)
+          .map(row -> PostMapper.toView(row, reportCounts));
+    }
+    return postRepository.findPage(status, request).map(row -> PostMapper.toView(row, reportCounts));
+  }
+
   public long totalPosts() {
     return postRepository.countAll();
   }
 
   public long removedPosts() {
     return postRepository.countWithStatus(PostModerationStatus.REMOVED);
+  }
+
+  public PostModerationMetrics metrics() {
+    Map<UUID, Integer> reportCounts = reportRepository.countByReportedPost();
+    long published = postRepository.countWithStatus(PostModerationStatus.PUBLISHED);
+    long removed = postRepository.countWithStatus(PostModerationStatus.REMOVED);
+    long total = postRepository.countAll();
+    return new PostModerationMetrics(total, postRepository.countReported(reportCounts), published, removed);
   }
 
   public void remove(AdminIdentity administrator, UUID postId, ModerationReasonForm form) {

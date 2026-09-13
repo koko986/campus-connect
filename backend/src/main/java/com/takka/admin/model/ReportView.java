@@ -11,6 +11,8 @@ public record ReportView(
     String reason,
     String details,
     ReportStatus status,
+    String reporterName,
+    String reporterEmail,
     String targetLabel,
     String targetHref,
     String targetSummary,
@@ -25,6 +27,11 @@ public record ReportView(
 
   public boolean hasResolutionNotes() {
     return resolutionNotes != null && !resolutionNotes.isBlank();
+  }
+
+  public boolean hasReporter() {
+    return (reporterName != null && !reporterName.isBlank())
+        || (reporterEmail != null && !reporterEmail.isBlank());
   }
 
   public boolean hasTargetSummary() {

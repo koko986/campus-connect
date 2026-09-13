@@ -46,7 +46,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr th:each="report : ${reports.items()}">
+          <tr
+            th:each="report : ${reports.items()}"
+            th:id="'report-' + ${report.id()}"
+            th:classappend="${highlight == report.id().toString()} ? 'is-highlighted' : ''"
+          >
             <td>
               <span th:text="${report.submitted()}">date</span>
               <span
@@ -59,13 +63,15 @@
             <td>
               <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
               <span class="console-muted" th:text="${#messages.msg(report.targetType().labelKey())}">Account</span>
+              <span class="console-muted" th:if="${report.hasReporter()}">
+                <span th:text="#{field.reporter}">Reporter</span>:
+                <span th:text="${#strings.isEmpty(report.reporterName()) ? report.reporterEmail() : report.reporterName()}">Reporter</span>
+              </span>
               <a
                 th:if="${report.hasTargetHref()}"
                 th:href="${report.targetHref()}"
                 class="console-link"
-                target="_blank"
-                rel="noopener"
-                th:text="#{action.openTarget}"
+                th:text="#{action.viewReportedContent}"
                 >Open admin preview</a
               >
               <div class="console-evidence" th:if="${report.hasTargetSummary()}">
@@ -89,48 +95,22 @@
               <span th:unless="${report.isActionable()}" class="console-muted" th:text="#{page.reports.closed}"
                 >Closed</span
               >
-              <details th:if="${report.isActionable()}" class="console-confirm" data-console-confirm>
-                <summary class="console-button console-button--primary" th:text="#{action.decide}">Decide</summary>
-                <form
-                  th:action="@{'/admin/reports/' + ${report.id()} + '/decision'}"
-                  method="post"
-                  class="console-confirm-panel"
-                  data-console-action-form
-                >
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                  <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
-                  <label>
-                    <span th:text="#{field.decision}">Decision</span>
-                    <select name="status" required>
-                      <option
-                        th:each="decision : ${decisions}"
-                        th:value="${decision.name()}"
-                        th:text="${#messages.msg(decision.labelKey())}"
-                      ></option>
-                    </select>
-                    <small class="console-help" th:text="#{page.reports.decisionHelp}">
-                      Reviewing keeps it open. Resolve closes a real problem. Dismiss closes a non-violation.
-                    </small>
-                  </label>
-                  <label>
-                    <span th:text="#{field.notes}">Notes</span>
-                    <textarea name="notes" rows="3" minlength="3" maxlength="2000" required
-                      th:placeholder="#{field.auditPlaceholder}"></textarea>
-                  </label>
-                  <div class="console-confirm-actions">
-                    <button
-                      type="submit"
-                      class="console-button console-button--primary"
-                      th:attr="data-busy-text=#{action.working}"
-                      th:text="#{action.saveDecision}"
-                    >
-                      Save decision
-                    </button>
-                    <button type="button" class="console-button console-button--ghost" data-console-close
-                      th:text="#{action.cancel}">Cancel</button>
-                  </div>
-                </form>
-              </details>
+              <button
+                th:if="${report.isActionable()}"
+                type="button"
+                class="console-button console-button--primary"
+                data-console-modal-open="report-decision-modal"
+                th:attr="
+                  data-action=@{'/admin/reports/' + ${report.id()} + '/decision'},
+                  data-title=${report.targetLabel()},
+                  data-subtitle=${#messages.msg(report.targetType().labelKey())},
+                  data-reason=${report.reason()},
+                  data-details=${report.hasDetails() ? report.details() : #messages.msg('page.reports.noDetails')},
+                  data-snapshot=${report.hasTargetSummary() ? report.targetSummary() : #messages.msg('page.preview.empty')}"
+                th:text="#{action.decide}"
+              >
+                Decide
+              </button>
             </td>
           </tr>
         </tbody>
@@ -138,6 +118,62 @@
 
       <div th:unless="${reports.isEmpty()}">
         <nav th:replace="~{admin/fragments :: pagination(${reports}, '/admin/reports')}"></nav>
+      </div>
+
+      <div id="report-decision-modal" class="console-modal" aria-hidden="true" data-console-modal>
+        <div class="console-modal-backdrop" data-console-modal-close></div>
+        <section class="console-modal-panel" role="dialog" aria-modal="true" th:attr="aria-label=#{action.decide}">
+          <div class="console-modal-head">
+            <div>
+              <p class="console-kicker" th:text="#{page.reports.reportedContent}">Reported content</p>
+              <h2 data-console-modal-title>Report decision</h2>
+              <p data-console-modal-subtitle></p>
+            </div>
+            <button type="button" class="console-button console-button--ghost" data-console-modal-close th:text="#{action.cancel}">Cancel</button>
+          </div>
+          <dl class="console-modal-evidence">
+            <div>
+              <dt th:text="#{column.reason}">Reason</dt>
+              <dd data-console-modal-reason></dd>
+            </div>
+            <div>
+              <dt th:text="#{field.description}">Description</dt>
+              <dd data-console-modal-details></dd>
+            </div>
+            <div>
+              <dt th:text="#{page.reports.reportedContent}">Reported content</dt>
+              <dd data-console-modal-snapshot></dd>
+            </div>
+          </dl>
+          <form method="post" class="console-form" data-console-modal-form data-console-action-form>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" name="returnStatus" th:value="${statusFilter}" />
+            <input type="hidden" name="returnPage" th:value="${currentPage}" />
+            <label>
+              <span th:text="#{field.decision}">Decision</span>
+              <select name="status" required>
+                <option
+                  th:each="decision : ${decisions}"
+                  th:value="${decision.name()}"
+                  th:text="${#messages.msg(decision.labelKey())}"
+                ></option>
+              </select>
+              <small class="console-help" th:text="#{page.reports.decisionHelp}">
+                Reviewing keeps it open. Resolve closes a real problem. Dismiss closes a non-violation.
+              </small>
+            </label>
+            <label>
+              <span th:text="#{field.notes}">Admin comment</span>
+              <textarea name="notes" rows="4" minlength="3" maxlength="2000" required th:placeholder="#{field.auditPlaceholder}"></textarea>
+            </label>
+            <div class="console-confirm-actions">
+              <button type="submit" class="console-button console-button--primary" th:attr="data-busy-text=#{action.working}" th:text="#{action.saveDecision}">
+                Save decision
+              </button>
+              <button type="button" class="console-button console-button--ghost" data-console-modal-close th:text="#{action.cancel}">Cancel</button>
+            </div>
+          </form>
+        </section>
       </div>
     </main>
   </body>

@@ -20,6 +20,7 @@ import tools.jackson.databind.JsonNode;
 /** Reads and updates the {@code reports} queue. */
 @Repository
 public class ReportRepository {
+  private static final String SELECT = "*,profiles!reports_reporter_id_fkey(full_name,email)";
   private static final String RETURN_ROW = "return=representation";
   private final SupabaseGateway supabase;
 
@@ -29,7 +30,7 @@ public class ReportRepository {
 
   public Page<JsonNode> findPage(Optional<ReportStatus> status, PageRequest request) {
     var query = Query.from("reports")
-        .select("*")
+        .select(SELECT)
         .orderBy("created_at", Query.Direction.DESCENDING)
         .page(request);
     status.ifPresent(value -> query.eq("status", value));
@@ -39,7 +40,7 @@ public class ReportRepository {
   /** The oldest still-open reports, surfaced on the overview page. */
   public List<JsonNode> findOldestUnresolved(int limit) {
     var query = Query.from("reports")
-        .select("*")
+        .select(SELECT)
         .in("status", ReportStatus.awaitingAttention())
         .orderBy("created_at", Query.Direction.ASCENDING)
         .limit(limit);

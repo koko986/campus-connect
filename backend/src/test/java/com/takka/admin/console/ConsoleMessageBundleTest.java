@@ -153,8 +153,11 @@ class ConsoleMessageBundleTest {
     var missing = new ArrayList<String>();
     for (String name : checked) {
       String template = Files.readString(admin.resolve(name), StandardCharsets.UTF_8);
-      if (!template.contains("data-console-confirm")) missing.add(name + " missing trigger");
-      if (!template.contains("console-confirm-panel")) missing.add(name + " missing panel");
+      boolean usesInlineConfirm = template.contains("data-console-confirm")
+          && template.contains("console-confirm-panel");
+      boolean usesModalConfirm = template.contains("data-console-modal-open")
+          && template.contains("data-console-modal-form");
+      if (!usesInlineConfirm && !usesModalConfirm) missing.add(name + " missing confirm UI");
       if (template.contains("class=\"console-action-form\"")) missing.add(name + " still uses old inline form");
     }
     assertEquals(List.of(), missing);

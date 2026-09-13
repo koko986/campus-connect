@@ -47,6 +47,7 @@ public class ConsoleReportsController {
       @AuthenticationPrincipal AdminIdentity administrator,
       @RequestParam(defaultValue = "") String status,
       @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "") String highlight,
       Model model) {
     Optional<ReportStatus> filter = ReportStatus.parse(status);
     PageRequest request = PageRequest.of(page);
@@ -63,6 +64,8 @@ public class ConsoleReportsController {
     model.addAttribute("statuses", ReportStatus.values());
     model.addAttribute("decisions", ReportStatus.decisions());
     model.addAttribute("filterQuery", ConsoleQuery.of("status", statusFilter));
+    model.addAttribute("currentPage", request.page());
+    model.addAttribute("highlight", highlight);
     return "admin/reports";
   }
 
@@ -73,10 +76,11 @@ public class ConsoleReportsController {
       @Valid @ModelAttribute ReportDecisionForm form,
       BindingResult binding,
       @RequestParam(defaultValue = "") String returnStatus,
+      @RequestParam(defaultValue = "0") int returnPage,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) {
       Flash.error(attributes, messages.invalidSubmission(binding));
-      return redirect(returnStatus);
+      return redirect(returnStatus, returnPage);
     }
 
     try {
@@ -90,13 +94,14 @@ public class ConsoleReportsController {
       String reference = AdminActionDiagnostics.log(log, "POST /admin/reports/{id}/decision", administrator, id, unavailable);
       Flash.error(attributes, messages.get("error.reports.actionUnavailable", reference));
     }
-    return redirect(returnStatus);
+    return redirect(returnStatus, returnPage);
   }
 
   /** Rebuilt from the parsed filter so only a known status name reaches the location header. */
-  private static String redirect(String status) {
+  private static String redirect(String status, int page) {
+    String pageParameter = page > 0 ? (ReportStatus.parse(status).isPresent() ? "&page=" : "?page=") + page : "";
     return ReportStatus.parse(status)
-        .map(value -> "redirect:/admin/reports?status=" + value.name())
-        .orElse("redirect:/admin/reports");
+        .map(value -> "redirect:/admin/reports?status=" + value.name() + pageParameter)
+        .orElse("redirect:/admin/reports" + pageParameter);
   }
 }

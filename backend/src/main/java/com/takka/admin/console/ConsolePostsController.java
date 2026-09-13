@@ -2,6 +2,7 @@ package com.takka.admin.console;
 
 import com.takka.admin.form.ModerationReasonForm;
 import com.takka.admin.model.AdminIdentity;
+import com.takka.admin.model.PostModerationMetrics;
 import com.takka.admin.model.PostModerationStatus;
 import com.takka.admin.service.PostModerationService;
 import com.takka.admin.support.MessageException;
@@ -45,6 +46,8 @@ public class ConsolePostsController {
   String posts(
       @AuthenticationPrincipal AdminIdentity administrator,
       @RequestParam(defaultValue = "") String status,
+      @RequestParam(defaultValue = "false") boolean reported,
+      @RequestParam(defaultValue = "") String highlight,
       @RequestParam(defaultValue = "0") int page,
       Model model) {
     Optional<PostModerationStatus> filter = PostModerationStatus.parse(status);
@@ -53,14 +56,22 @@ public class ConsolePostsController {
 
     layout.apply(model, administrator, ConsoleSection.POSTS);
     try {
-      model.addAttribute("posts", posts.posts(filter, request));
+      model.addAttribute("posts", posts.posts(filter, reported, request));
     } catch (RuntimeException unavailable) {
       model.addAttribute("posts", Page.empty(request));
       model.addAttribute("flashError", messages.get("error.posts.unavailable"));
     }
+    try {
+      model.addAttribute("postMetrics", posts.metrics());
+    } catch (RuntimeException unavailable) {
+      model.addAttribute("postMetrics", new PostModerationMetrics(0, 0, 0, 0));
+    }
     model.addAttribute("statusFilter", statusFilter);
+    model.addAttribute("reportedFilter", reported);
+    model.addAttribute("highlight", highlight);
     model.addAttribute("statuses", PostModerationStatus.values());
-    model.addAttribute("filterQuery", ConsoleQuery.of("status", statusFilter));
+    model.addAttribute("filterQuery", ConsoleQuery.of("status", statusFilter, "reported", reported ? "true" : ""));
+    model.addAttribute("currentPage", request.page());
     return "admin/posts";
   }
 
@@ -71,8 +82,10 @@ public class ConsolePostsController {
       @Valid @ModelAttribute ModerationReasonForm form,
       BindingResult binding,
       @RequestParam(defaultValue = "") String returnStatus,
+      @RequestParam(defaultValue = "false") boolean returnReported,
+      @RequestParam(defaultValue = "0") int returnPage,
       RedirectAttributes attributes) {
-    if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
+    if (binding.hasErrors()) return rejected(binding, attributes, returnStatus, returnReported, returnPage);
 
     try {
       posts.remove(administrator, id, form);
@@ -83,7 +96,7 @@ public class ConsolePostsController {
       String reference = AdminActionDiagnostics.log(log, "POST /admin/posts/{id}/remove", administrator, id, unavailable);
       Flash.error(attributes, messages.get("error.posts.actionUnavailable", reference));
     }
-    return redirect(returnStatus);
+    return redirect(returnStatus, returnReported, returnPage);
   }
 
   @PostMapping("/{id}/restore")
@@ -93,8 +106,10 @@ public class ConsolePostsController {
       @Valid @ModelAttribute ModerationReasonForm form,
       BindingResult binding,
       @RequestParam(defaultValue = "") String returnStatus,
+      @RequestParam(defaultValue = "false") boolean returnReported,
+      @RequestParam(defaultValue = "0") int returnPage,
       RedirectAttributes attributes) {
-    if (binding.hasErrors()) return rejected(binding, attributes, returnStatus);
+    if (binding.hasErrors()) return rejected(binding, attributes, returnStatus, returnReported, returnPage);
 
     try {
       posts.restore(administrator, id, form);
@@ -105,17 +120,20 @@ public class ConsolePostsController {
       String reference = AdminActionDiagnostics.log(log, "POST /admin/posts/{id}/restore", administrator, id, unavailable);
       Flash.error(attributes, messages.get("error.posts.actionUnavailable", reference));
     }
-    return redirect(returnStatus);
+    return redirect(returnStatus, returnReported, returnPage);
   }
 
-  private String rejected(BindingResult binding, RedirectAttributes attributes, String status) {
+  private String rejected(BindingResult binding, RedirectAttributes attributes, String status, boolean reported, int page) {
     Flash.error(attributes, messages.invalidSubmission(binding));
-    return redirect(status);
+    return redirect(status, reported, page);
   }
 
-  private static String redirect(String status) {
-    return PostModerationStatus.parse(status)
-        .map(value -> "redirect:/admin/posts?status=" + value.name())
-        .orElse("redirect:/admin/posts");
+  private static String redirect(String status, boolean reported, int page) {
+    var query = new java.util.LinkedHashMap<String, String>();
+    PostModerationStatus.parse(status).ifPresent(value -> query.put("status", value.name()));
+    if (reported) query.put("reported", "true");
+    if (page > 0) query.put("page", String.valueOf(page));
+    String built = ConsoleQuery.of(query);
+    return built.isBlank() ? "redirect:/admin/posts" : "redirect:/admin/posts?" + built;
   }
 }

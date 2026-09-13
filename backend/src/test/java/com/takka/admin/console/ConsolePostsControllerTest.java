@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.takka.admin.Fixtures;
 import com.takka.admin.model.AdminIdentity;
+import com.takka.admin.model.PostModerationMetrics;
 import com.takka.admin.model.PostModerationStatus;
 import com.takka.admin.service.PostModerationService;
 import com.takka.admin.support.MessageException;
@@ -41,7 +42,8 @@ class ConsolePostsControllerTest {
   @BeforeEach
   void signIn() {
     ConsoleMvc.signIn(administrator);
-    when(posts.posts(any(), any())).thenReturn(Page.empty(PageRequest.of(0)));
+    when(posts.posts(any(), eq(false), any())).thenReturn(Page.empty(PageRequest.of(0)));
+    when(posts.metrics()).thenReturn(new PostModerationMetrics(0, 0, 0, 0));
   }
 
   @AfterEach
@@ -55,7 +57,7 @@ class ConsolePostsControllerTest {
         .andExpect(status().isOk())
         .andExpect(view().name("admin/posts"))
         .andExpect(model().attribute("section", ConsoleSection.POSTS))
-        .andExpect(model().attributeExists("posts", "statuses", "statusFilter", "filterQuery"));
+        .andExpect(model().attributeExists("posts", "postMetrics", "statuses", "statusFilter", "filterQuery"));
   }
 
   @Test
@@ -64,7 +66,16 @@ class ConsolePostsControllerTest {
         .andExpect(model().attribute("statusFilter", "REMOVED"))
         .andExpect(model().attribute("filterQuery", "status=REMOVED"));
 
-    verify(posts).posts(eq(Optional.of(PostModerationStatus.REMOVED)), any());
+    verify(posts).posts(eq(Optional.of(PostModerationStatus.REMOVED)), eq(false), any());
+  }
+
+  @Test
+  void reportedFilterIsKeptForPaging() throws Exception {
+    mvc.perform(get("/admin/posts").param("reported", "true"))
+        .andExpect(model().attribute("reportedFilter", true))
+        .andExpect(model().attribute("filterQuery", "reported=true"));
+
+    verify(posts).posts(eq(Optional.empty()), eq(true), any());
   }
 
   @Test
@@ -119,7 +130,7 @@ class ConsolePostsControllerTest {
 
   @Test
   void postsPageStaysOpenWhenTheQueueCannotLoad() throws Exception {
-    when(posts.posts(any(), any())).thenThrow(new IllegalStateException("posts unavailable"));
+    when(posts.posts(any(), eq(false), any())).thenThrow(new IllegalStateException("posts unavailable"));
 
     mvc.perform(get("/admin/posts"))
         .andExpect(status().isOk())

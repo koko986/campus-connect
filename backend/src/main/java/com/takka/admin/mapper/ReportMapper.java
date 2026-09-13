@@ -13,6 +13,7 @@ public final class ReportMapper {
 
   public static ReportView toView(JsonNode row) {
     var created = Json.optionalInstant(row, "created_at");
+    JsonNode reporter = Json.embeddedRow(row, "profiles");
     return new ReportView(
         Json.uuid(row, "id"),
         ReportTargetType.parse(Json.text(row, "target_type")).orElse(ReportTargetType.ACCOUNT),
@@ -20,6 +21,8 @@ public final class ReportMapper {
         Json.text(row, "reason"),
         Json.text(row, "details"),
         ReportStatus.parse(Json.text(row, "status")).orElse(ReportStatus.OPEN),
+        Json.text(reporter, "full_name"),
+        Json.text(reporter, "email"),
         SnapshotLabel.of(row.path("target_snapshot")),
         targetHref(row),
         SnapshotLabel.summary(row.path("target_snapshot")),

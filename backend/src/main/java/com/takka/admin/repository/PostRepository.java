@@ -8,7 +8,9 @@ import com.takka.admin.support.Query;
 import com.takka.supabase.SupabaseGateway;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.JsonNode;
@@ -32,6 +34,17 @@ public class PostRepository {
   public Page<JsonNode> findPage(Optional<PostModerationStatus> status, PageRequest request) {
     var query = Query.from("posts")
         .select(POST_SELECT)
+        .orderBy("created_at", Query.Direction.DESCENDING)
+        .page(request);
+    status.ifPresent(value -> query.eq("moderation_status", value));
+    return Page.ofLookahead(Json.rows(supabase.get(query.build())), request);
+  }
+
+  public Page<JsonNode> findPageByIds(Collection<UUID> ids, Optional<PostModerationStatus> status, PageRequest request) {
+    if (ids.isEmpty()) return Page.empty(request);
+    var query = Query.from("posts")
+        .select(POST_SELECT)
+        .in("id", ids)
         .orderBy("created_at", Query.Direction.DESCENDING)
         .page(request);
     status.ifPresent(value -> query.eq("moderation_status", value));
@@ -68,5 +81,9 @@ public class PostRepository {
   public long countWithStatus(PostModerationStatus status) {
     var query = Query.from("posts").select("moderation_status");
     return Json.countMatching(supabase.get(query.build()), "moderation_status", status.name());
+  }
+
+  public long countReported(Map<UUID, Integer> reportCounts) {
+    return reportCounts.values().stream().filter(count -> count > 0).count();
   }
 }

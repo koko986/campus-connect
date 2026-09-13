@@ -31,6 +31,10 @@ public record PostView(
     return reportCount > 0;
   }
 
+  public String previewHref() {
+    return "/admin/preview/posts/" + id;
+  }
+
   public boolean hasRemovalReason() {
     return removalReason != null && !removalReason.isBlank();
   }
