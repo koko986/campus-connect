@@ -59,6 +59,15 @@
             <td>
               <span class="console-strong" th:text="${report.targetLabel()}">Target</span>
               <span class="console-muted" th:text="${#messages.msg(report.targetType().labelKey())}">Account</span>
+              <a
+                th:if="${report.hasTargetHref()}"
+                th:href="${report.targetHref()}"
+                class="console-link"
+                target="_blank"
+                rel="noopener"
+                th:text="#{action.openTarget}"
+                >Open target</a
+              >
               <div class="console-evidence" th:if="${report.hasTargetSummary()}">
                 <span class="console-evidence-label" th:text="#{page.reports.reportedContent}">Reported content</span>
                 <p th:text="${report.targetSummary()}">Snapshot</p>

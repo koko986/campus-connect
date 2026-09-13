@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 @Component
 public class SupabaseGateway {
@@ -127,8 +128,13 @@ public class SupabaseGateway {
         .accept(MediaType.APPLICATION_JSON);
     if (prefer != null) request.header("Prefer", prefer);
     if (body != null) request.contentType(MediaType.APPLICATION_JSON).body(body);
-    JsonNode response = request.retrieve().body(JsonNode.class);
-    return response == null ? mapper.createArrayNode() : response;
+    try {
+      JsonNode response = request.retrieve().body(JsonNode.class);
+      return response == null ? mapper.createArrayNode() : response;
+    } catch (RestClientResponseException failure) {
+      throw new SupabaseRequestException(
+          method, resourceAndQuery, failure.getStatusCode().value(), failure.getResponseBodyAsString(), failure);
+    }
   }
 
   private void authAdmin(HttpMethod method, String path, Object body) {
@@ -139,7 +145,12 @@ public class SupabaseGateway {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + secretKey)
         .accept(MediaType.APPLICATION_JSON);
     if (body != null) request.contentType(MediaType.APPLICATION_JSON).body(body);
-    request.retrieve().toBodilessEntity();
+    try {
+      request.retrieve().toBodilessEntity();
+    } catch (RestClientResponseException failure) {
+      throw new SupabaseRequestException(
+          method, path, failure.getStatusCode().value(), failure.getResponseBodyAsString(), failure);
+    }
   }
 
   private static void requireKey(String value, String name) {

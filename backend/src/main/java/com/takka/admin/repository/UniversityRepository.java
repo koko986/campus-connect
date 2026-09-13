@@ -69,9 +69,9 @@ public class UniversityRepository {
     return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), NOT_SAVED);
   }
 
-  public void applyState(UUID universityId, Map<String, Object> attributes) {
-    var query = Query.from("universities").eq("id", universityId);
-    supabase.patch(query.build(), attributes, null);
+  public JsonNode applyState(UUID universityId, Map<String, Object> attributes) {
+    var query = Query.from("universities").select("*").eq("id", universityId);
+    return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), NOT_SAVED);
   }
 
   public long countAll() {

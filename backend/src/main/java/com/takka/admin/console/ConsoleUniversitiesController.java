@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,6 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/universities")
 public class ConsoleUniversitiesController {
   private static final String LIST = "redirect:/admin/universities";
+  private static final Logger log = LoggerFactory.getLogger(ConsoleUniversitiesController.class);
 
   private final UniversityDirectoryService universities;
   private final ConsoleLayout layout;
@@ -94,7 +97,8 @@ public class ConsoleUniversitiesController {
     } catch (AccessDeniedException denied) {
       throw denied;
     } catch (RuntimeException unavailable) {
-      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/universities", administrator, null, unavailable);
+      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable", reference));
     }
     prepareForm(model, administrator, form, null);
     return "admin/university-form";
@@ -122,7 +126,8 @@ public class ConsoleUniversitiesController {
     } catch (AccessDeniedException denied) {
       throw denied;
     } catch (RuntimeException unavailable) {
-      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/universities/{id}", administrator, id, unavailable);
+      model.addAttribute("flashError", messages.get("error.universities.actionUnavailable", reference));
     }
     prepareForm(model, administrator, form, id);
     return "admin/university-form";
@@ -150,7 +155,8 @@ public class ConsoleUniversitiesController {
     } catch (AccessDeniedException denied) {
       throw denied;
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.universities.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/universities/{id}/state/{change}", administrator, id, unavailable);
+      Flash.error(attributes, messages.get("error.universities.actionUnavailable", reference));
     }
     return LIST;
   }

@@ -1,6 +1,7 @@
 package com.takka.admin.console;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -213,7 +214,7 @@ class ConsoleUniversitiesControllerTest {
     mvc.perform(post("/admin/universities/{id}/state/publish", universityId).param("reason", "Data verified"))
         .andExpect(redirectedUrl("/admin/universities"))
         .andExpect(flash().attribute(
-            "flashError", "The university action could not be completed right now. Try again in a moment."));
+            "flashError", startsWith("The university action could not be completed right now. Try again in a moment. Reference: ADM-")));
   }
 
   /** The unknown-operation message takes the attempted slug as an argument in either language. */

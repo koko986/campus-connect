@@ -10,6 +10,8 @@ import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/posts")
 public class ConsolePostsController {
+  private static final Logger log = LoggerFactory.getLogger(ConsolePostsController.class);
+
   private final PostModerationService posts;
   private final ConsoleLayout layout;
   private final ConsoleMessages messages;
@@ -76,7 +80,8 @@ public class ConsolePostsController {
     } catch (MessageException expected) {
       Flash.error(attributes, messages.get(expected.getMessage()));
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.posts.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/posts/{id}/remove", administrator, id, unavailable);
+      Flash.error(attributes, messages.get("error.posts.actionUnavailable", reference));
     }
     return redirect(returnStatus);
   }
@@ -97,7 +102,8 @@ public class ConsolePostsController {
     } catch (MessageException expected) {
       Flash.error(attributes, messages.get(expected.getMessage()));
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.posts.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/posts/{id}/restore", administrator, id, unavailable);
+      Flash.error(attributes, messages.get("error.posts.actionUnavailable", reference));
     }
     return redirect(returnStatus);
   }

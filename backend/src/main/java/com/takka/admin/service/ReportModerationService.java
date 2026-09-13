@@ -13,12 +13,16 @@ import com.takka.admin.support.PageRequest;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
 /** Report queue reads and decisions. */
 @Service
 public class ReportModerationService {
+  private static final Logger log = LoggerFactory.getLogger(ReportModerationService.class);
+
   private final ReportRepository reportRepository;
   private final AuditTrailService auditTrail;
 
@@ -54,7 +58,7 @@ public class ReportModerationService {
     if (status.isClosed()) {
       ModerationAction action =
           status == ReportStatus.RESOLVED ? ModerationAction.RESOLVE_REPORT : ModerationAction.DISMISS_REPORT;
-      auditTrail.record(administrator, action, reportId, form.getNotes(), reportId, updated.path("target_snapshot"));
+      recordAudit(administrator, action, reportId, form.getNotes(), reportId, updated.path("target_snapshot"));
     }
     return status;
   }
@@ -65,5 +69,26 @@ public class ReportModerationService {
    */
   public void closeLinkedReport(AdminIdentity administrator, Optional<UUID> reportId, String reason) {
     reportId.ifPresent(id -> reportRepository.resolveAlongsideAction(id, administrator.userId(), reason));
+  }
+
+  private void recordAudit(
+      AdminIdentity administrator,
+      ModerationAction action,
+      UUID targetId,
+      String reason,
+      UUID reportId,
+      JsonNode snapshot) {
+    try {
+      auditTrail.record(administrator, action, targetId, reason, reportId, snapshot);
+    } catch (RuntimeException failure) {
+      log.error(
+          "Report decision succeeded but audit recording failed action={} adminEmail={} adminId={} targetId={} reportId={}",
+          action,
+          administrator.email(),
+          administrator.userId(),
+          targetId,
+          reportId,
+          failure);
+    }
   }
 }

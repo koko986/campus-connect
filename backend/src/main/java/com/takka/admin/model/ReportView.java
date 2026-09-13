@@ -12,6 +12,7 @@ public record ReportView(
     String details,
     ReportStatus status,
     String targetLabel,
+    String targetHref,
     String targetSummary,
     String resolutionNotes,
     String submitted,
@@ -28,6 +29,10 @@ public record ReportView(
 
   public boolean hasTargetSummary() {
     return targetSummary != null && !targetSummary.isBlank();
+  }
+
+  public boolean hasTargetHref() {
+    return targetHref != null && !targetHref.isBlank();
   }
 
   public boolean isActionable() {

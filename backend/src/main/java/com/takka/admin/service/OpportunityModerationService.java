@@ -11,12 +11,15 @@ import com.takka.admin.support.PageRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /** Queue, decisions, notifications and audit history for student opportunity submissions. */
 @Service
 public class OpportunityModerationService {
   public static final List<String> STATUSES = List.of("pending", "published", "rejected", "closed", "archived", "all");
+  private static final Logger log = LoggerFactory.getLogger(OpportunityModerationService.class);
 
   private final OpportunityRepository opportunities;
   private final AuditTrailService auditTrail;
@@ -52,6 +55,16 @@ public class OpportunityModerationService {
     var reason = note == null || note.isBlank()
         ? ("published".equals(decision) ? "Approved opportunity" : "Rejected opportunity")
         : note.trim();
-    auditTrail.record(administrator, action, id, reason, null, updated);
+    try {
+      auditTrail.record(administrator, action, id, reason, null, updated);
+    } catch (RuntimeException failure) {
+      log.error(
+          "Opportunity decision succeeded but audit recording failed action={} adminEmail={} adminId={} targetId={}",
+          action,
+          administrator.email(),
+          administrator.userId(),
+          id,
+          failure);
+    }
   }
 }

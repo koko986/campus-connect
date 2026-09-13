@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +63,19 @@ class ReportModerationServiceTest {
             eq("Handled it"),
             eq(reportId),
             any());
+  }
+
+  @Test
+  void aResolvedReportStillAppliesWhenAuditRecordingFails() {
+    when(reportRepository.applyDecision(eq(reportId), eq(ReportStatus.RESOLVED), any(), eq("Handled it")))
+        .thenReturn(Optional.of(storedReport("RESOLVED")));
+    doThrow(new IllegalStateException("audit unavailable"))
+        .when(auditTrail)
+        .record(any(), any(), any(), any(), any(), any());
+
+    var applied = service.decide(administrator, reportId, form("RESOLVED", "Handled it"));
+
+    assertEquals(ReportStatus.RESOLVED, applied);
   }
 
   @Test

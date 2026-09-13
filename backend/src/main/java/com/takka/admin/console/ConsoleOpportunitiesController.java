@@ -9,6 +9,8 @@ import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +27,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/opportunities")
 public class ConsoleOpportunitiesController {
+  private static final Logger log = LoggerFactory.getLogger(ConsoleOpportunitiesController.class);
+
   private final OpportunityModerationService opportunities;
   private final ConsoleLayout layout;
   private final ConsoleMessages messages;
@@ -76,7 +80,8 @@ public class ConsoleOpportunitiesController {
     } catch (MessageException expected) {
       Flash.error(attributes, messages.get(expected.getMessage()));
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.opportunities.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/opportunities/{id}/decision", administrator, id, unavailable);
+      Flash.error(attributes, messages.get("error.opportunities.actionUnavailable", reference));
     }
     return redirect(returnStatus);
   }

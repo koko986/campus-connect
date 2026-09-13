@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +38,19 @@ class OpportunityModerationServiceTest {
 
     verify(auditTrail).record(any(), eq(ModerationAction.APPROVE_OPPORTUNITY),
         eq(opportunityId), eq("Source checked"), eq(null), any());
+  }
+
+  @Test
+  void approvalStillPublishesWhenAuditRecordingFails() {
+    when(opportunities.decide(eq(opportunityId), eq("published"), any(), eq("Source checked")))
+        .thenReturn(Optional.of(json("{\"id\":\"%s\",\"title\":\"Scholarship\"}".formatted(opportunityId))));
+    doThrow(new IllegalStateException("audit unavailable"))
+        .when(auditTrail)
+        .record(any(), any(), any(), any(), any(), any());
+
+    service.decide(moderator(), opportunityId, "published", "Source checked");
+
+    verify(opportunities).decide(eq(opportunityId), eq("published"), any(), eq("Source checked"));
   }
 
   @Test

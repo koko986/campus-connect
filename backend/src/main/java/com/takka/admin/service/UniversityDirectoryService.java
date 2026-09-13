@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -24,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 @Service
 public class UniversityDirectoryService {
   private static final String DIRECTORY_REASON = "University catalog update";
+  private static final Logger log = LoggerFactory.getLogger(UniversityDirectoryService.class);
 
   private final UniversityRepository universityRepository;
   private final AuditTrailService auditTrail;
@@ -61,15 +64,14 @@ public class UniversityDirectoryService {
     AdminAccess.requireSuperAdmin(administrator);
     JsonNode saved = universityRepository.insert(form.toAttributes());
     UUID id = Json.uuid(saved, "id");
-    auditTrail.record(administrator, ModerationAction.CREATE_UNIVERSITY, id, DIRECTORY_REASON, null, saved);
+    recordAudit(administrator, ModerationAction.CREATE_UNIVERSITY, id, DIRECTORY_REASON, null, saved);
     return id;
   }
 
   public UUID update(AdminIdentity administrator, UUID universityId, UniversityForm form) {
     AdminAccess.requireSuperAdmin(administrator);
     JsonNode saved = universityRepository.update(universityId, form.toAttributes());
-    auditTrail.record(
-        administrator, ModerationAction.UPDATE_UNIVERSITY, universityId, DIRECTORY_REASON, null, saved);
+    recordAudit(administrator, ModerationAction.UPDATE_UNIVERSITY, universityId, DIRECTORY_REASON, null, saved);
     return universityId;
   }
 
@@ -79,10 +81,30 @@ public class UniversityDirectoryService {
     AdminAccess.requireSuperAdmin(administrator);
     JsonNode university = universityRepository.requireStateById(universityId);
 
-    universityRepository.applyState(universityId, attributesFor(change, administrator));
-    auditTrail.record(
-        administrator, change.auditAction(), universityId, form.getReason(), form.getReportId(), university);
+    JsonNode updated = universityRepository.applyState(universityId, attributesFor(change, administrator));
+    recordAudit(administrator, change.auditAction(), universityId, form.getReason(), form.getReportId(), updated);
     return Json.text(university, "name");
+  }
+
+  private void recordAudit(
+      AdminIdentity administrator,
+      ModerationAction action,
+      UUID targetId,
+      String reason,
+      UUID reportId,
+      JsonNode snapshot) {
+    try {
+      auditTrail.record(administrator, action, targetId, reason, reportId, snapshot);
+    } catch (RuntimeException failure) {
+      log.error(
+          "University action succeeded but audit recording failed action={} adminEmail={} adminId={} targetId={} reportId={}",
+          action,
+          administrator.email(),
+          administrator.userId(),
+          targetId,
+          reportId,
+          failure);
+    }
   }
 
   private static Map<String, Object> attributesFor(UniversityStateChange change, AdminIdentity administrator) {

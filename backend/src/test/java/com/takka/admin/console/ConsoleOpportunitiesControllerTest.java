@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -100,7 +101,7 @@ class ConsoleOpportunitiesControllerTest {
             .param("note", "Source checked"))
         .andExpect(redirectedUrl("/admin/opportunities?status=pending"))
         .andExpect(flash().attribute(
-            "flashError", "The opportunity action could not be completed right now. Try again in a moment."));
+            "flashError", startsWith("The opportunity action could not be completed right now. Try again in a moment. Reference: ADM-")));
   }
 
   @Test

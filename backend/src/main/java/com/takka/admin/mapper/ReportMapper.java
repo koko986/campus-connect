@@ -21,10 +21,22 @@ public final class ReportMapper {
         Json.text(row, "details"),
         ReportStatus.parse(Json.text(row, "status")).orElse(ReportStatus.OPEN),
         SnapshotLabel.of(row.path("target_snapshot")),
+        targetHref(row),
         SnapshotLabel.summary(row.path("target_snapshot")),
         Json.text(row, "resolution_notes"),
         Timestamps.format(created),
         Timestamps.age(created),
         Json.optionalUuid(row, "assigned_to").isPresent());
+  }
+
+  private static String targetHref(JsonNode row) {
+    ReportTargetType type = ReportTargetType.parse(Json.text(row, "target_type")).orElse(null);
+    return Json.optionalUuid(row, "target_id")
+        .map(id -> {
+          if (type == ReportTargetType.POST) return "/posts/" + id;
+          if (type == ReportTargetType.ACCOUNT) return "/profiles/" + id;
+          return "";
+        })
+        .orElse("");
   }
 }

@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,6 +76,18 @@ class UniversityDirectoryServiceTest {
   }
 
   @Test
+  void creatingAUniversityReturnsTheSavedIdWhenAuditRecordingFails() {
+    when(universities.insert(any())).thenReturn(stored());
+    doThrow(new IllegalStateException("audit unavailable"))
+        .when(auditTrail)
+        .record(any(), any(), any(), any(), any(), any());
+
+    var created = service.create(superAdmin(), form());
+
+    assertEquals(universityId, created);
+  }
+
+  @Test
   void updatingAUniversityRequiresSuperAdminAndAudits() {
     when(universities.update(eq(universityId), any())).thenReturn(stored());
 
@@ -82,6 +95,18 @@ class UniversityDirectoryServiceTest {
 
     service.update(superAdmin(), universityId, form());
     verify(auditTrail).record(any(), eq(ModerationAction.UPDATE_UNIVERSITY), eq(universityId), any(), eq(null), any());
+  }
+
+  @Test
+  void updatingAUniversityStillReturnsWhenAuditRecordingFails() {
+    when(universities.update(eq(universityId), any())).thenReturn(stored());
+    doThrow(new IllegalStateException("audit unavailable"))
+        .when(auditTrail)
+        .record(any(), any(), any(), any(), any(), any());
+
+    var updated = service.update(superAdmin(), universityId, form());
+
+    assertEquals(universityId, updated);
   }
 
   @Test
@@ -122,6 +147,19 @@ class UniversityDirectoryServiceTest {
     assertEquals(false, attributes.get("is_published"));
     assertEquals(administrator.userId(), attributes.get("archived_by"));
     assertTrue(attributes.get("archived_at") instanceof String);
+  }
+
+  @Test
+  void stateChangesStillApplyWhenAuditRecordingFails() {
+    when(universities.requireStateById(universityId)).thenReturn(stored());
+    when(universities.applyState(eq(universityId), any())).thenReturn(stored());
+    doThrow(new IllegalStateException("audit unavailable"))
+        .when(auditTrail)
+        .record(any(), any(), any(), any(), any(), any());
+
+    var name = service.changeState(superAdmin(), universityId, UniversityStateChange.PUBLISH, reason("Verified"));
+
+    assertEquals("Yangon University", name);
   }
 
   @Test

@@ -1,6 +1,7 @@
 package com.takka.admin.console;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -191,7 +192,7 @@ class ConsoleMembersControllerTest {
             .param("reason", "Fraudulent account")
             .param("confirmEmail", "ada@takka.test"))
         .andExpect(flash().attribute(
-            "flashError", "The account action could not be completed right now. Try again in a moment."));
+            "flashError", startsWith("The account action could not be completed right now. Try again in a moment. Reference: ADM-")));
   }
 
   @Test

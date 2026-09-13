@@ -12,6 +12,8 @@ import com.takka.admin.support.PageRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -29,6 +31,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/members")
 public class ConsoleMembersController {
+  private static final Logger log = LoggerFactory.getLogger(ConsoleMembersController.class);
+
   private final AccountModerationService accounts;
   private final ConsoleLayout layout;
   private final ConsoleMessages messages;
@@ -74,7 +78,7 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    perform(attributes, () -> {
+    perform(attributes, "POST /admin/members/{id}/block", administrator, id, () -> {
       String member = accounts.block(administrator, id, form);
       return messages.get("flash.member.blocked", member);
     });
@@ -92,7 +96,7 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    perform(attributes, () -> {
+    perform(attributes, "POST /admin/members/{id}/unblock", administrator, id, () -> {
       String member = accounts.unblock(administrator, id, form);
       return messages.get("flash.member.unblocked", member);
     });
@@ -110,7 +114,7 @@ public class ConsoleMembersController {
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
 
-    perform(attributes, () -> {
+    perform(attributes, "POST /admin/members/{id}/delete", administrator, id, () -> {
       String email = accounts.delete(administrator, id, form);
       return messages.get("flash.member.deleted", email);
     });
@@ -127,7 +131,7 @@ public class ConsoleMembersController {
       @RequestParam(defaultValue = "") String status,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
-    perform(attributes, () -> {
+    perform(attributes, "POST /admin/members/{id}/verify", administrator, id, () -> {
       String member = accounts.verifyStudent(administrator, id, form);
       return messages.get("flash.member.verified", member);
     });
@@ -144,14 +148,19 @@ public class ConsoleMembersController {
       @RequestParam(defaultValue = "") String status,
       RedirectAttributes attributes) {
     if (binding.hasErrors()) return rejected(binding, attributes, search, status);
-    perform(attributes, () -> {
+    perform(attributes, "POST /admin/members/{id}/reject-verification", administrator, id, () -> {
       String member = accounts.rejectStudentVerification(administrator, id, form);
       return messages.get("flash.member.verificationRejected", member);
     });
     return redirect(search, status);
   }
 
-  private void perform(RedirectAttributes attributes, Supplier<String> successMessage) {
+  private void perform(
+      RedirectAttributes attributes,
+      String route,
+      AdminIdentity administrator,
+      UUID targetId,
+      Supplier<String> successMessage) {
     try {
       Flash.success(attributes, successMessage.get());
     } catch (MessageException expected) {
@@ -159,7 +168,8 @@ public class ConsoleMembersController {
     } catch (AccessDeniedException denied) {
       throw denied;
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.accounts.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, route, administrator, targetId, unavailable);
+      Flash.error(attributes, messages.get("error.accounts.actionUnavailable", reference));
     }
   }
 

@@ -22,11 +22,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** The report queue and the decisions applied to it. */
 @Controller
 @RequestMapping("/admin/reports")
 public class ConsoleReportsController {
+  private static final Logger log = LoggerFactory.getLogger(ConsoleReportsController.class);
+
   private final ReportModerationService reports;
   private final ConsoleLayout layout;
   private final ConsoleMessages messages;
@@ -83,7 +87,8 @@ public class ConsoleReportsController {
     } catch (AccessDeniedException denied) {
       throw denied;
     } catch (RuntimeException unavailable) {
-      Flash.error(attributes, messages.get("error.reports.actionUnavailable"));
+      String reference = AdminActionDiagnostics.log(log, "POST /admin/reports/{id}/decision", administrator, id, unavailable);
+      Flash.error(attributes, messages.get("error.reports.actionUnavailable", reference));
     }
     return redirect(returnStatus);
   }

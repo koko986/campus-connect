@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -113,7 +114,7 @@ class ConsolePostsControllerTest {
     mvc.perform(post("/admin/posts/{id}/restore", postId).param("reason", "Restore after review"))
         .andExpect(redirectedUrl("/admin/posts"))
         .andExpect(flash().attribute(
-            "flashError", "The post action could not be completed right now. Try again in a moment."));
+            "flashError", startsWith("The post action could not be completed right now. Try again in a moment. Reference: ADM-")));
   }
 
   @Test
