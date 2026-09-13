@@ -10,6 +10,7 @@ import com.takka.admin.console.ConsoleCatalogController;
 import com.takka.admin.console.ConsoleMembersController;
 import com.takka.admin.console.ConsoleOverviewController;
 import com.takka.admin.console.ConsolePostsController;
+import com.takka.admin.console.ConsolePreviewController;
 import com.takka.admin.console.ConsoleReportsController;
 import com.takka.admin.console.ConsoleUniversitiesController;
 import java.util.List;
@@ -48,6 +49,7 @@ class ApplicationContextTest {
     assertNotNull(context.getBean(ConsoleReportsController.class));
     assertNotNull(context.getBean(ConsoleMembersController.class));
     assertNotNull(context.getBean(ConsolePostsController.class));
+    assertNotNull(context.getBean(ConsolePreviewController.class));
     assertNotNull(context.getBean(ConsoleUniversitiesController.class));
     assertNotNull(context.getBean(ConsoleCatalogController.class));
     assertNotNull(context.getBean(ConsoleAuditController.class));
@@ -74,7 +76,7 @@ class ApplicationContextTest {
   void everyConsoleTemplateAndTheStylesheetArePackaged() {
     for (String template : List.of(
         "fragments", "login", "overview", "reports", "members", "posts", "universities",
-        "university-form", "university-photos", "catalog", "audit", "error")) {
+        "university-form", "preview", "catalog", "audit", "error")) {
       assertTrue(
           new ClassPathResource("templates/admin/" + template + ".html").exists(),
           "Missing console template: " + template);

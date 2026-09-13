@@ -1,0 +1,45 @@
+<!doctype html>
+<html th:lang="${language.tag()}" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{admin/fragments :: head('console.title.preview')}"></head>
+  <body class="console-body">
+    <aside th:replace="~{admin/fragments :: sidebar}"></aside>
+    <main class="console-main">
+      <header th:replace="~{admin/fragments :: topbar}"></header>
+      <div th:replace="~{admin/fragments :: flash}"></div>
+
+      <article class="console-panel console-preview">
+        <div class="console-panel-head">
+          <div>
+            <span class="console-pill console-pill--info" th:text="${#messages.msg(preview.typeKey())}">Target</span>
+            <h2 th:text="${preview.title()}">Preview</h2>
+            <p class="console-scope-note" th:text="#{page.preview.note}">
+              This is a read-only admin preview of the reported student content.
+            </p>
+          </div>
+          <a class="console-button console-button--ghost" th:href="@{/admin/reports}" th:text="#{action.backToReports}">
+            Back to reports
+          </a>
+        </div>
+
+        <div class="console-preview-card">
+          <div class="console-preview-meta">
+            <span th:if="${preview.hasPrimaryMeta()}" th:text="${preview.primaryMeta()}">Primary</span>
+            <span th:if="${preview.hasSecondaryMeta()}" th:text="${preview.secondaryMeta()}">Secondary</span>
+            <span class="console-pill console-pill--muted" th:text="${preview.status()}">Status</span>
+          </div>
+          <p th:if="${preview.hasBody()}" class="console-preview-body" th:text="${preview.body()}">Body</p>
+          <p th:unless="${preview.hasBody()}" class="console-empty" th:text="#{page.preview.empty}">
+            No written content is available for this item.
+          </p>
+        </div>
+
+        <dl class="console-preview-fields">
+          <div th:each="field : ${preview.fields()}" th:if="${field.hasValue()}">
+            <dt th:text="${#messages.msg(field.labelKey())}">Field</dt>
+            <dd th:text="${field.value()}">Value</dd>
+          </div>
+        </dl>
+      </article>
+    </main>
+  </body>
+</html>

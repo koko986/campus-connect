@@ -782,6 +782,67 @@ textarea:focus {
 
 textarea {
   resize: vertical;
+  min-height: 5.75rem;
+  line-height: 1.5;
+}
+
+.console-confirm-panel textarea {
+  min-height: 6.5rem;
+  padding: 10px 11px;
+}
+
+.console-preview {
+  margin-top: 24px;
+}
+
+.console-preview-card {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-inset);
+}
+
+.console-preview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.console-preview-body {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.console-preview-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.console-preview-fields div {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-raised);
+}
+
+.console-preview-fields dt {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.console-preview-fields dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .console-checkbox {

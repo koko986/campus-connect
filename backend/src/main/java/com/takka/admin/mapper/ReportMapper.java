@@ -33,8 +33,8 @@ public final class ReportMapper {
     ReportTargetType type = ReportTargetType.parse(Json.text(row, "target_type")).orElse(null);
     return Json.optionalUuid(row, "target_id")
         .map(id -> {
-          if (type == ReportTargetType.POST) return "/posts/" + id;
-          if (type == ReportTargetType.ACCOUNT) return "/profiles/" + id;
+          if (type == ReportTargetType.POST) return "/admin/preview/posts/" + id;
+          if (type == ReportTargetType.ACCOUNT) return "/admin/preview/profiles/" + id;
           return "";
         })
         .orElse("");

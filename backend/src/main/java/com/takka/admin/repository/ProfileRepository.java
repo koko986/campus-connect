@@ -23,6 +23,8 @@ public class ProfileRepository {
       + "student_profiles(university_id,verification_status,universities(name)),"
       + "account_moderation(status,reason,blocked_at)";
   private static final String SNAPSHOT_SELECT = "id,email,full_name,account_type";
+  private static final String PREVIEW_SELECT = "id,email,full_name,account_type,bio,is_public,created_at,"
+      + "student_profiles(university_id,verification_status,universities(name))";
 
   private final SupabaseGateway supabase;
 
@@ -64,6 +66,11 @@ public class ProfileRepository {
 
   public JsonNode requireById(UUID userId) {
     return findById(userId).orElseThrow(() -> new MessageException("error.member.notFound"));
+  }
+
+  public JsonNode requirePreviewById(UUID userId) {
+    var query = Query.from("profiles").select(PREVIEW_SELECT).eq("id", userId).limit(1);
+    return Json.requireFirstRow(supabase.get(query.build()), "error.member.notFound");
   }
 
   public void updateStudentVerification(UUID userId, String status) {

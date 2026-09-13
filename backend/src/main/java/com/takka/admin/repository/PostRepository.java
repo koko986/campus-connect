@@ -19,6 +19,9 @@ public class PostRepository {
   private static final String POST_SELECT =
       "id,body,created_at,moderation_status,removal_reason,removed_at,author_id,profiles(full_name,email)";
   private static final String SNAPSHOT_SELECT = "id,body,author_id,moderation_status";
+  private static final String PREVIEW_SELECT =
+      "id,body,created_at,moderation_status,removal_reason,removed_at,author_id,profiles(full_name,email)";
+  private static final String RETURN_ROW = "return=representation";
 
   private final SupabaseGateway supabase;
 
@@ -40,7 +43,12 @@ public class PostRepository {
     return Json.requireFirstRow(supabase.get(query.build()), "error.post.notFound");
   }
 
-  public void applyModeration(UUID postId, PostModerationStatus status, String reason, UUID administratorId) {
+  public JsonNode requirePreviewById(UUID postId) {
+    var query = Query.from("posts").select(PREVIEW_SELECT).eq("id", postId).limit(1);
+    return Json.requireFirstRow(supabase.get(query.build()), "error.post.notFound");
+  }
+
+  public JsonNode applyModeration(UUID postId, PostModerationStatus status, String reason, UUID administratorId) {
     boolean removed = status == PostModerationStatus.REMOVED;
     var attributes = new HashMap<String, Object>();
     attributes.put("moderation_status", status.name());
@@ -49,8 +57,8 @@ public class PostRepository {
     attributes.put("removal_reason", removed ? reason : null);
     attributes.put("updated_at", Instant.now().toString());
 
-    var query = Query.from("posts").eq("id", postId);
-    supabase.patch(query.build(), attributes, null);
+    var query = Query.from("posts").select(SNAPSHOT_SELECT).eq("id", postId);
+    return Json.requireFirstRow(supabase.patch(query.build(), attributes, RETURN_ROW), "error.post.notFound");
   }
 
   public long countAll() {
